@@ -1,9 +1,11 @@
+import { MAJOR_SITES } from './sites.js';
 // SVG map navigation. Convert client coordinates through the root SVG matrix so
 // dragging and zoom anchors also work in the letterboxed parts of the map.
 export function installMapNavigation({world, viewport, zoomIn, zoomOut, reset, back, onExitFocus, onChange, onInteract}) {
  const minScale=.75,maxScale=48;
  const portrait=window.matchMedia('(max-width:850px) and (orientation:portrait)');
- const defaultView=()=>{const scale=portrait.matches?1.4**2:1;return {scale,x:180-330*scale,y:90-90*scale};};
+ const wenchang=MAJOR_SITES.find(site=>site.id==='wenchang');
+ const defaultView=()=>{const scale=portrait.matches?1.4**2:1,center=portrait.matches?wenchang:{longitude:150,latitude:0};return {scale,x:180-(center.longitude+180)*scale,y:90-(90-center.latitude)*scale};};
  let home=defaultView();
  let previousView=null,focusMode=false;
  let view={...home},gesture=null,moved=false,suppressClickUntil=0;

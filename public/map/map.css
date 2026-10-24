@@ -163,3 +163,6 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
  .mobile-task-time .task-time-label,.mobile-task-time small{font-size:11px;color:#7187a1}
  .mobile-task-time b{font-size:12px;font-weight:650;font-variant-numeric:tabular-nums}
 }
+
+.play-actions .rewind-button{display:inline-flex;align-items:center;justify-content:center;color:#356bb4;background:#e8f0fc;border-color:#c3d5ee}
+.rewind-button svg{display:block;width:22px;height:22px;flex-shrink:0;pointer-events:none}
