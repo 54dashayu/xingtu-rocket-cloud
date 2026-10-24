@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "records": [{
+    "launchId": "9648124f-8568-46d2-86d7-4b4d6f12187f",
+    "net": "2026-10-23T10:15:00Z",
+    "reviewedAt": "2026-10-24",
+    "launchSource": {"name": "新华社：遥感五十号03星发射记录", "url": "https://www.xinhuanet.com/tech/20261023/d3fe3e3c756a464ba655a60f217ee494/c.html"},
+    "observation": {
+      "status": "confirmed",
+      "basis": "公开报道与具名摄影记录，不是由晨昏模型推定",
+      "sources": [
+        {"name": "北京日报：10月23日发射形成火箭云，北京等地可见", "url": "https://xinwen.bjd.com.cn/content/s6adc18fee4b0e42f8f01fef2.html", "publishedAt": "2026-10-24T10:33:00+08:00"},
+        {"name": "大众新闻：泰山、济南、烟台、青岛的目击记录", "url": "https://sd.dzwww.com/sdnews/202610/t20261024_18235434.htm", "publishedAt": "2026-10-24T07:43:00+08:00"}
+      ],
+      "locations": [
+        {"name": "北京", "latitude": 39.90, "longitude": 116.40, "sourceIndex": 0},
+        {"name": "泰山", "latitude": 36.26, "longitude": 117.10, "sourceIndex": 1, "reportedTime": "2026-10-23T10:17:00Z", "timePrecision": "报道约18:17"},
+        {"name": "济南", "latitude": 36.65, "longitude": 117.12, "sourceIndex": 1},
+        {"name": "烟台", "latitude": 37.46, "longitude": 121.45, "sourceIndex": 1},
+        {"name": "青岛", "latitude": 36.07, "longitude": 120.38, "sourceIndex": 1}
+      ],
+      "coordinateNote": "城市/山体代表坐标，非拍摄者精确位置；除特别标注外，报道未提供精确观测时刻"
+    },
+    "direction": {
+      "kind": "reported_sector",
+      "label": "报道为西南方向",
+      "center": 225,
+      "halfWidth": 22.5,
+      "source": {"name": "京报网转载大众日报：向西南方向飞行", "url": "https://news.bjd.com.cn/2026/10/24/12005335.shtml", "publishedAt": "2026-10-24T06:39:00+08:00"},
+      "note": "报道只给出西南方位词；225°及±22.5°为八方位词的模型展开，非测量值、官方方位或官方误差范围"
+    }
+  }]
+}

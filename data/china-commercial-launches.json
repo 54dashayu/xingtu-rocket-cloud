@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "title": "中国商业航天公开信息补充池",
+    "description": "仅收录可公开访问、可回溯至原始出处的发射计划；不抓取或绕过受限内容。"
+  },
+  "publicSources": [
+    { "name": "蓝箭航天", "url": "https://www.landspace.com/", "kind": "company_official" },
+    { "name": "星河动力", "url": "https://www.galactic-energy.cn/", "kind": "company_official" },
+    { "name": "国家航天局", "url": "https://www.cnsa.gov.cn/", "kind": "government_official" },
+    { "name": "中国航天科技集团", "url": "https://www.spacechina.com/", "kind": "state_enterprise_official" }
+  ],
+  "launches": []
+}

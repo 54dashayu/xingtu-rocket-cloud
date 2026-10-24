@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.DS_Store
+coverage/
+output/
+.playwright-cli/
+data/cache.json
+data/history-cache.json
+data/calendar-archive.json
+*.log

@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101f34"><title>订阅发射日历 · 星途</title><link rel="stylesheet" href="./calendar.css?v=20260921b"></head>
+<body><main>
+<a class="back" href="./">‹ 返回星途发射日历</a>
+<header><p class="eyebrow">星途 · 日历订阅</p><h1>一次订阅，<br>跟上每次发射。</h1><p>新增任务、改期和发射结果，随日历软件刷新而更新。</p></header>
+<section><h2>订阅整个发射日历</h2><p>从 <strong id="since-label"></strong> 开始回溯，持续保留已收录记录，并加入后续公开的发射计划。不受首页筛选影响。</p><label for="feed">你的固定订阅地址</label><input id="feed" readonly aria-label="日历订阅地址"><div class="actions"><button id="copy-feed">复制订阅地址</button><a id="apple" class="button secondary">在支持的日历中订阅</a></div><p id="feedback" role="status"></p><p class="hint">请在日历的“通过网址添加 / 添加订阅日历”中使用这个地址。下载文件后导入只会得到一次性副本。</p></section>
+<section id="single" hidden><h2>只添加这一次发射</h2><p id="single-info"></p><a id="single-download" class="button" hidden>下载单次日程 .ics</a><button id="copy-task" class="secondary" hidden>复制任务文字</button><p class="hint">导入副本不会自动跟随改期；重复导入可能产生重复事项。时间明确的日程占位10分钟，不代表任务时长。</p></section>
+<section><h2>选一种适合你的方式</h2>
+<details open><summary>iPhone / iPad / Mac</summary><p>点击上方订阅按钮，或在日历中选择“添加订阅日历”，粘贴地址后确认。可选择 iCloud 账户。Mac 可设置自动刷新频率。</p></details>
+<details><summary>谷歌账户 → 手机日历</summary><p>用电脑打开 Google 日历，在“其他日历”旁点击“＋ → 通过网址添加”，粘贴订阅地址。手机登录同一谷歌账户并开启日历同步，勾选这份日历。需要能连接谷歌服务；手机是否显示取决于账户与日历软件支持。</p></details>
+<details><summary>小米 / 其他安卓日历</summary><p>先检查日历设置是否有“网址订阅”或可同步上述订阅的账户。仅把 ICS 导入小米账户不会建立持续更新。若只支持文件导入，可使用单次日程；无法导入时复制任务文字，手动创建事项。小米15兼容性仍在真机验证中。</p></details>
+</section>
+<section><h2>更新与退出</h2><p>后台定期采集公开数据，数据源可能延迟；日历软件决定何时刷新，不保证每次打开立即同步。日期明确、时刻未定的任务以全天事项标注；日期完全待定的任务暂不新增日程。已订阅任务改为日期待定时撤销原日程，日期明确后恢复。</p><p>取消时，在日历软件中删除“星途·全球航天发射日历”订阅即可。这里不会读取你的私人日程，也不发送微信订阅消息。</p><p class="hint">已保存的订阅地址包含固定起始日期。更换设备可继续使用原地址；清除浏览器数据后重新生成地址，起点可能变化。首次回溯范围取决于数据源已收录记录。</p></section>
+</main><script type="module" src="./calendar.js?v=20260921b"></script></body></html>

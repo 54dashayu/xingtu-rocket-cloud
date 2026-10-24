@@ -1,0 +1,38 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { normalizeLaunches } from '../src/normalize.js';
+
+test('subscription HTTP roundtrip: fixed range, ETag, revisions, validation and legacy endpoints', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'xingtu-http-'));
+  process.env.CACHE_FILE = join(dir, 'cache.json');
+  process.env.HISTORY_CACHE_FILE = join(dir, 'history.json');
+  process.env.CALENDAR_ARCHIVE_FILE = join(dir, 'archive.json');
+  const launches = normalizeLaunches(JSON.parse(await readFile(new URL('./fixtures/launches.json', import.meta.url))));
+  const value = JSON.stringify({ fetchedAt: new Date().toISOString(), launches, stale: false });
+  await Promise.all([writeFile(process.env.CACHE_FILE, value), writeFile(process.env.HISTORY_CACHE_FILE, value)]);
+  const { createServer } = await import('../src/server.js');
+  const { calendarArchive } = await import('../src/calendar-archive.js');
+  const server = createServer(); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await rm(dir, { recursive: true, force: true }); });
+  const base = 'http://127.0.0.1:' + server.address().port;
+  const url = base + '/api/calendar/subscription.ics?since=2026-08-22';
+  let response = await fetch(url), body = await response.text(), etag = response.headers.get('etag');
+  assert.equal(response.status, 200); assert.match(body, /UID:china-1/); assert.match(body, /UID:usa-1/);
+  assert.match(response.headers.get('content-type'), /text\/calendar/);
+  assert.equal((body.match(/BEGIN:VEVENT/g) || []).length, 2);
+  assert.equal((await fetch(url, { headers: { 'if-none-match': etag } })).status, 304);
+  const moved = structuredClone(launches[0]); moved.timing.net = '2026-09-09T00:00:00Z'; moved.lastUpdated = '2026-09-05T00:00:00Z';
+  await calendarArchive.merge([moved]);
+  response = await fetch(url, { headers: { 'if-none-match': etag } }); body = await response.text();
+  assert.equal(response.status, 200); assert.match(body, /DTSTART:20260909T000000Z/); assert.notEqual(response.headers.get('etag'), etag);
+  assert.equal((await fetch(base + '/api/calendar/subscription.ics?since=2026-02-30')).status, 400);
+  assert.equal((await fetch(base + '/api/calendar/subscription.ics')).status, 400);
+  response = await fetch(base + '/api/launches/china-1.ics'); assert.equal(response.status, 200); assert.match(await response.text(), /DTEND:/);
+  assert.equal((await fetch(base + '/api/launches/cancel-1.ics')).status, 409);
+  assert.equal((await fetch(base + '/api/launches?days=30')).status, 200);
+  assert.equal((await fetch(base + '/api/launches/previous?days=30')).status, 200);
+  for (const path of ['/calendar.html', '/calendar.js', '/calendar.css']) assert.equal((await fetch(base + path)).status, 200);
+});

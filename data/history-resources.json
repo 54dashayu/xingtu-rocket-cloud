@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "policy": "仅收录公开可访问、可回溯到原始出处的报道、回放或任务记录；每个任务最多显示三条。",
+  "resourcesByLaunchId": {
+    "cb6f4df1-c045-423b-904c-e63bf1ee5168": [
+      {
+        "name": "中国航天科技集团：长二丙火箭成功发射SEO卫星",
+        "url": "https://www.spacechina.com/n25/n2014789/n2888836/c4689881/content.html",
+        "kind": "official_report",
+        "lastVerified": "2026-09-15"
+      },
+      {
+        "name": "新京报：长征二号丙成功发射SEO卫星",
+        "url": "https://www.bjnews.com.cn/detail/1786965494019762.html",
+        "kind": "news_report",
+        "lastVerified": "2026-09-15"
+      }
+    ],
+    "95eb9265-bdbe-43ad-b08c-6be7eb4e58f4": [
+      {
+        "name": "中国国家航天局：我国成功发射遥感五十三号、遥感五十六号卫星",
+        "url": "https://www.cnsa.gov.cn/n6758823/n6758838/c10773720/content.html",
+        "kind": "official_report",
+        "lastVerified": "2026-09-15"
+      }
+    ],
+    "48c449c2-3c09-4d36-9c2d-d853b3a39289": [
+      {
+        "name": "新华网：一箭7星，长征六号丙遥一运载火箭发射成功",
+        "url": "https://www.news.cn/politics/20260825/030df298b73048ad842f566a876d91fa/c.html",
+        "kind": "news_report",
+        "lastVerified": "2026-09-15"
+      },
+      {
+        "name": "新华网：银河航天三颗卫星发射成功",
+        "url": "https://www.news.cn/finance/20260825/a5f13ba8129a44caba613d09e9e9fea9/c.html",
+        "kind": "news_report",
+        "lastVerified": "2026-09-15"
+      }
+    ],
+    "521f3a1c-f977-4306-9b7f-495858719adf": [
+      {
+        "name": "新华网：美国发射罗曼空间望远镜",
+        "url": "https://www.news.cn/tech/20260830/2ed3c7a147cf40c2ac68e990b39dc262/c.html",
+        "kind": "news_report",
+        "lastVerified": "2026-09-15"
+      }
+    ],
+    "ef02e2cf-e617-4b38-a526-951ac9204b0a": [
+      {
+        "name": "国家航天局：我国首次成功实施重复使用运载火箭陆地回收",
+        "url": "https://www.cnsa.gov.cn/n6758823/n6758838/c10768762/content.html",
+        "kind": "official_report",
+        "lastVerified": "2026-09-15"
+      },
+      {
+        "name": "新华社报道：朱雀三号实现陆地回收",
+        "url": "https://english.scio.gov.cn/chinavoices/2026-08/19/content_118654353.html",
+        "kind": "news_report",
+        "lastVerified": "2026-09-15"
+      },
+      {
+        "name": "Next Spaceflight：朱雀三号／鸿鹄03任务记录",
+        "url": "https://nextspaceflight.com/launches/details/8308/",
+        "kind": "launch_record",
+        "lastVerified": "2026-09-15"
+      }
+    ]
+  }
+}

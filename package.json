@@ -1,0 +1,23 @@
+{
+  "name": "xingtu-rocket-cloud",
+  "version": "0.0.1",
+  "private": false,
+  "description": "星途火箭云：全球航天发射日历与观测条件推演",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test test/*.test.js",
+    "check": "node --check src/server.js && node --check public/app.js && node --check public/map/app.js && node --check public/map/model.js && node --check public/map/solar.js",
+    "verify": "npm run check && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/54dashayu/xingtu-rocket-cloud.git"
+  },
+  "homepage": "https://space.bh1jss.net/launch/rocket-cloud/"
+}

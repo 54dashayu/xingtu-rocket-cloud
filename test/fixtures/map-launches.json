@@ -1,0 +1,112 @@
+[
+  {
+    "id": "demo-wenchang",
+    "name": "文昌 · 暮光发射演示",
+    "rocket": "教学火箭 A",
+    "pad": {
+      "location": "中国文昌航天发射场"
+    },
+    "timing": {
+      "net": "2026-10-24T10:00:00Z",
+      "precision": "精确到分钟"
+    },
+    "scheduleStatus": {
+      "code": "confirmed",
+      "label": "已确认（示例）"
+    },
+    "mission": {
+      "orbit": "Low Earth Orbit"
+    },
+    "sources": [],
+    "lastUpdated": null,
+    "demo": true
+  },
+  {
+    "id": "demo-wenchang-2",
+    "name": "文昌 · 第二次暮光演示",
+    "rocket": "教学火箭 A2",
+    "pad": {
+      "location": "中国文昌航天发射场"
+    },
+    "timing": {
+      "net": "2026-10-25T10:20:00Z",
+      "precision": "精确到分钟"
+    },
+    "scheduleStatus": {
+      "code": "confirmed",
+      "label": "暂定（示例）"
+    },
+    "mission": {
+      "orbit": "Low Earth Orbit"
+    },
+    "sources": [],
+    "lastUpdated": null,
+    "demo": true
+  },
+  {
+    "id": "demo-cape",
+    "name": "卡纳维拉尔角 · 东向演示",
+    "rocket": "教学火箭 B",
+    "pad": {
+      "location": "Cape Canaveral"
+    },
+    "timing": {
+      "net": "2026-10-25T10:30:00Z",
+      "precision": "精确到分钟"
+    },
+    "scheduleStatus": {
+      "code": "tentative",
+      "label": "暂定（示例）"
+    },
+    "mission": {
+      "orbit": "Geostationary Transfer Orbit"
+    },
+    "sources": [],
+    "lastUpdated": null,
+    "demo": true
+  },
+  {
+    "id": "demo-vandenberg",
+    "name": "范登堡 · 极轨演示",
+    "rocket": "教学火箭 C",
+    "pad": {
+      "location": "Vandenberg"
+    },
+    "timing": {
+      "net": "2026-10-26T01:30:00Z",
+      "precision": "精确到分钟"
+    },
+    "scheduleStatus": {
+      "code": "confirmed",
+      "label": "已确认（示例）"
+    },
+    "mission": {
+      "orbit": "Sun-Synchronous Orbit"
+    },
+    "sources": [],
+    "lastUpdated": null,
+    "demo": true
+  },
+  {
+    "id": "demo-mahia",
+    "name": "马希亚 · 跨日界线演示",
+    "rocket": "教学火箭 D",
+    "pad": {
+      "location": "Mahia"
+    },
+    "timing": {
+      "net": "2026-10-27T06:30:00Z",
+      "precision": "精确到分钟"
+    },
+    "scheduleStatus": {
+      "code": "confirmed",
+      "label": "已确认（示例）"
+    },
+    "mission": {
+      "orbit": "Low Earth Orbit"
+    },
+    "sources": [],
+    "lastUpdated": null,
+    "demo": true
+  }
+]
