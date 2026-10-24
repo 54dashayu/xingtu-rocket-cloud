@@ -1,7 +1,7 @@
 // SVG map navigation. Convert client coordinates through the root SVG matrix so
 // dragging and zoom anchors also work in the letterboxed parts of the map.
 export function installMapNavigation({world, viewport, zoomIn, zoomOut, reset, back, onExitFocus, onChange, onInteract}) {
- const minScale=.75,maxScale=12;
+ const minScale=.75,maxScale=48;
  const home={scale:1,x:-150,y:0};
  let previousView=null,focusMode=false;
  let view={...home},gesture=null,moved=false,suppressClickUntil=0;

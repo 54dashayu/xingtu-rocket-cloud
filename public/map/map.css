@@ -91,3 +91,16 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 .utility-footer #contact-author[hidden]+#close-utility-bottom{margin-left:auto}
 
 .assessment-body .assessment-context{font-size:12px;color:#657b96;margin-top:-3px}.assessment-body>p{line-height:1.65}.assessment-body>small{font-size:11px;line-height:1.6;color:#667e9a}
+
+/* Compact map status; route details expand on demand without covering the map. */
+.trajectory-caption{pointer-events:auto;padding:0!important;max-width:min(310px,calc(100% - 82px))!important;overflow:hidden}
+.trajectory-caption summary{display:flex;align-items:center;gap:8px;padding:7px 9px;list-style:none;cursor:pointer;min-height:38px}
+.trajectory-caption summary::-webkit-details-marker{display:none}
+.trajectory-caption .mode-pill{margin:0;font-size:12px;letter-spacing:0;white-space:nowrap;padding:1px 6px}
+.trajectory-caption .area-caption{font-size:12px;line-height:1.4;white-space:nowrap}
+.caption-chevron{font-size:16px;color:#647b99;margin-left:auto;transition:transform .15s}
+.trajectory-caption[open] .caption-chevron{transform:rotate(180deg)}
+.caption-detail{padding:7px 10px 9px;border-top:1px solid #dce6f2}
+.trajectory-caption .route-caption{font-size:13px}
+.trajectory-caption small{line-height:1.5}
+@media(max-width:850px){.trajectory-caption{top:9px;right:9px;max-width:calc(100% - 80px)!important}.trajectory-caption summary{gap:6px;padding:5px 8px;min-height:36px}.trajectory-caption .area-caption{font-size:12px}.caption-detail{max-width:235px}}

@@ -11,7 +11,7 @@ import { simulationProfile } from './prediction.js?v=20261024ay';
 import { flightProfile } from './flight-path.js?v=20261024am';
 import { cloudStatus, cloudOpportunity } from '../cloud-status.js?v=20261024ba';
 import { visibilityFootprint, jellyfishReferenceHeight } from './visibility.js?v=20261024ay';
-import { installMapNavigation } from './navigation.js?v=0.01.4-20261024ad';
+import { installMapNavigation } from './navigation.js?v=0.01.8';
 import { solarPosition, altitudeAt } from './solar.js?v=20261024ad';
 import { localSunContext, sunEvents, padTimezone } from './sun-events.js?v=20261024aq';
 import { mapLaunch, upcoming, countdown, preciseTime, destination, project, splitLine, DISCLAIMER, cloudCandidate, siteInventory, geometryRating, isSunlit, siteMarkerRadius, pastLaunches } from './model.js?v=20261024al';
@@ -40,9 +40,9 @@ for(let y=0;y<=180;y+=30)$('grid').append(svg('path',{d:`M0,${y}H360`,stroke:'#9
 async function loadLand(){try{const r=await fetch('./map/land.json');if(!r.ok)throw Error();const data=await r.json();for(const f of data.features){const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;for(const polygon of polys){const d=polygon.map(r=>r.map(([lon,lat],i)=>`${i?'L':'M'}${lon+180},${90-lat}`).join('')+'Z').join('');$('land').append(svg('path',{d,fill:'#b7ccde',stroke:'#8faac3','stroke-width':'.22','fill-rule':'evenodd'}));}}}catch{$('map-error').textContent='海岸线暂不可用；场址与任务图层仍可使用。';}}
 function paintSky(date){
  const sun=solarPosition(date);$('shade').replaceChildren();$('terminator').replaceChildren();
- if($('night').checked){const belowHorizon=solarShadePath(sun,0),night=solarShadePath(sun,-6);
+ const belowHorizon=solarShadePath(sun,0),night=solarShadePath(sun,-6);
  $('shade').append(svg('path',{d:night,fill:'#28445d',opacity:'.32','data-solar-band':'night'}),svg('path',{d:belowHorizon+night,fill:'#e4bd86',opacity:'.24','fill-rule':'evenodd','data-solar-band':'twilight'}));
- for(const seg of splitLine(Array.from({length:361},(_,i)=>destination(sun,i,Math.PI*6371/2))))$('terminator').append(svg('path',{d:linePath(seg),fill:'none',stroke:'#7d94a8','stroke-width':'.38',opacity:'.8'}));}
+ for(const seg of splitLine(Array.from({length:361},(_,i)=>destination(sun,i,Math.PI*6371/2))))$('terminator').append(svg('path',{d:linePath(seg),fill:'none',stroke:'#7d94a8','stroke-width':'.38',opacity:'.8'}));
  const [x,y]=project(sun);$('sun').replaceChildren(svg('circle',{cx:x,cy:y,r:2,fill:'#ffcb78',opacity:'.2'}),svg('circle',{cx:x,cy:y,r:.85,fill:'#ffe1a3'}));
 }
 function closePopover(){clearTimeout(popoverTimer);$('site-popover').hidden=true;popoverPinned=false;popoverAnchor=null;}
@@ -109,7 +109,7 @@ function stopPlayback(){clearInterval(playTimer);playTimer=null;$('play-ascent')
 function selectLaunch(l,{focus=true}={}){
  clearTimeout(manualAssessmentTimer);
  stopPlayback();manualLaunch=null;selected=l||null;offset=0;manualDirection=false;warningConstraint=null;areaCache=null;$('offset').value=0;azimuth=headingEstimate(l||{}).azimuth;
- $('night').checked=true;$('trajectories').checked=true;setView('map');
+ $('trajectories').checked=true;setView('map');
  renderList();renderDetail();document.querySelector('.detail').scrollTop=0;
  if(focus&&l?.coordinates){const p=currentProfile(l).full;navigation.focus(p[Math.floor(p.length/2)]||l.coordinates,6);}
  draw();
@@ -276,7 +276,7 @@ function renderWatchingArea(l,timed){
    mapLabel($('sector-cells'),point,historyMode()?'可能观看区':'预测可能观看区','#1261b5',{dx:0,dy:12,kind:'region'});
   }
   const scope=`当前时刻 · T${atSeconds<0?'−':'+'}${Math.abs(Math.round(atSeconds))} 秒`;
-  const caption=document.querySelector('.area-caption');if(caption)caption.textContent=cells.length?'▧ 当前时刻可能观看区':'▧ 当前时刻无候选观看区';
+  const caption=document.querySelector('.area-caption');if(caption)caption.textContent=cells.length?'当前有观看区':'当前暂无观看区';
   box.innerHTML=`<h3>${historyMode()?'可能观看区':'预测可能观看区'}</h3><p class="visibility-scope">${scope}</p>${areaLegend()}<small>从起飞起逐时计算受光尾迹的地面可视范围，包含较低高度的尾迹。普通蓝色区域要求当地太阳低于 −6°，中／浅蓝仅要求低于 −1°；颜色表示几何与天空明暗条件，不是可见概率。分析至 ${Math.round(profile.target)} km，尾迹留存最多 5 分钟、无漂移；未计天气、散射亮度与扩散。高仰角不自动排除；可见尾迹不等于能辨认水母形态。</small>`;
  }else box.innerHTML='<h3>观看区域待计算</h3><p>缺少已核实的方向、轨迹或精确时刻，暂不绘制回算范围。</p>';
 }
@@ -307,8 +307,8 @@ function draw(){
  if(c){
   const profile=currentProfile(l,{elapsed:Math.max(0,offset*60)});renderProfile(profile);
   const style=trajectoryStyle(profile.kind,historyMode()),observed=Boolean(l.cloudEvidence?.observation);
-  $('trajectory-caption').innerHTML=`<b class="mode-pill ${historyMode()?'history':'future'}">${historyMode()?'历史回溯':manualLaunch?'手动时间模拟':'未来预测'}</b><strong class="route-caption" style="color:${style.color}">➜ ${esc(style.label)}</strong><span class="area-caption">▧ ${historyMode()?'回算':'预测'}可能观看区</span><small>${profile.kind==='predicted'?(historyMode()?(l.direction.kind==='reported_sector'?esc(l.direction.label)+' · 代表角度 '+azimuth+'°':'固定资料航向 '+azimuth+'°'):(warningConstraint?'航警模拟约束':manualDirection?'手动航向':headingEstimate(l).label)+' '+azimuth+'°'):profile.full.length?'采用本次任务资料':'航向／轨迹待核实'}${timed?'':' · 发射时刻待定'}</small>`;
-  if(!profile.full.length){document.querySelector('.route-caption').textContent='轨迹待核实';document.querySelector('.area-caption').textContent='观看区域待计算';}
+  $('trajectory-caption').innerHTML=`<summary aria-label="查看或收起地图说明"><b class="mode-pill ${historyMode()?'history':'future'}">${historyMode()?'回溯':manualLaunch?'试算':'预测'}</b><span class="area-caption">观看区待计算</span><span class="caption-chevron" aria-hidden="true">⌄</span></summary><div class="caption-detail"><strong class="route-caption" style="color:${style.color}">➜ ${esc(style.label)}</strong><small>${profile.kind==='predicted'?(historyMode()?(l.direction.kind==='reported_sector'?esc(l.direction.label)+' · 代表角度 '+azimuth+'°':'固定资料航向 '+azimuth+'°'):(warningConstraint?'航警模拟约束':manualDirection?'手动航向':headingEstimate(l).label)+' '+azimuth+'°'):profile.full.length?'采用本次任务资料':'航向／轨迹待核实'}${timed?'':' · 发射时刻待定'}</small></div>`;
+  if(!profile.full.length){document.querySelector('.route-caption').textContent='轨迹待核实';document.querySelector('.area-caption').textContent='观看区待计算';}
   $('route-legend').textContent=profile.full.length?style.label:'轨迹待核实';$('route-legend').previousElementSibling.style.borderColor=style.color;
   $('area-legend').textContent=(historyMode()?'可能观看区':'预测可能观看区');
   if($('trajectories').checked)renderRoute(profile,timed);
@@ -351,7 +351,7 @@ const navigation=installMapNavigation({
 $('site-popover').onpointerenter=()=>clearTimeout(popoverTimer);$('site-popover').onpointerleave=delayPopoverClose;$('close-popover').onclick=closePopover;document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePopover();if(!$('back-view').hidden&&!$('utility').open)$('back-view').click();}});window.addEventListener('resize',()=>{renderSites();scheduleDraw();if(popoverAnchor&&!$('site-popover').hidden)positionPopover(popoverAnchor);});
 $('offset').oninput=e=>seekTime(Number(e.target.value));$('reset-time').onclick=()=>seekTime(0);$('reset-earliest').onclick=()=>seekTime(Number($('offset').min));$('play-ascent').onclick=togglePlayback;
 $('play-speed').onchange=e=>{const next=Number(e.target.value);if(![1,2,4,10,20].includes(next))return;advancePlayback();playSpeed=next;scheduleDraw();};
-$('night').onchange=$('sector').onchange=scheduleDraw;$('trajectories').onchange=()=>{renderCandidateTrails();scheduleDraw();};$('cloud-only').onchange=renderList;$('refresh').onclick=()=>void load();
+$('sector').onchange=scheduleDraw;$('trajectories').onchange=()=>{renderCandidateTrails();scheduleDraw();};$('cloud-only').onchange=renderList;$('refresh').onclick=()=>void load();
 $('range-upcoming').onclick=()=>setRange('upcoming');$('range-history').onclick=()=>setRange('history');
 $('view-map').onclick=$('home').onclick=()=>setView('map');$('view-agenda').onclick=()=>setView('agenda');
 async function setRange(mode){if(datasetMode===mode)return;datasetMode=mode;all=[];selected=null;manualLaunch=null;areaCache=null;$('cloud-only').checked=false;renderList();renderDetail();setView('map');const url=new URL(location.href);if(mode==='history')url.searchParams.set('range','history');else url.searchParams.delete('range');url.searchParams.delete('launch');history.replaceState({},'',url);await load();}
