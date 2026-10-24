@@ -166,3 +166,24 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 
 .play-actions .rewind-button{display:inline-flex;align-items:center;justify-content:center;color:#356bb4;background:#e8f0fc;border-color:#c3d5ee}
 .rewind-button svg{display:block;width:22px;height:22px;flex-shrink:0;pointer-events:none}
+
+/* Keep the slogan beside the title on narrow phones. */
+@media(max-width:850px){
+ .topbar{flex-wrap:nowrap;padding:8px 10px;gap:8px}
+ .topbar .brand{flex:0 1 auto;min-width:0;gap:6px}
+ .topbar .brand-logo{width:32px;height:32px}
+ .topbar .brand .brand-title{font-size:20px;gap:4px;white-space:nowrap}
+ .topbar .brand .brand-feature{font-size:22px;gap:3px;letter-spacing:0}
+ .topbar .brand .brand-divider{font-size:14px}
+ .topbar .brand .brand-predict{font-size:10px;letter-spacing:0}
+ .topbar .brand .brand-subtitle{font-size:10px;letter-spacing:.08em}
+ .brand-slogan{flex:0 0 auto;font-size:12px;letter-spacing:0;align-self:flex-start;padding-top:5px}
+}
+@media(max-width:350px){
+ .topbar{padding-inline:8px;gap:5px}
+ .topbar .brand-logo{width:28px;height:28px}
+ .topbar .brand{gap:4px}
+ .topbar .brand .brand-title{font-size:18px;gap:3px}
+ .topbar .brand .brand-feature{font-size:20px}
+ .brand-slogan{font-size:11px}
+}
