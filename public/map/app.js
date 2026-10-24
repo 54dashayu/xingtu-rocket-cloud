@@ -152,7 +152,7 @@ function bindManualTime(){
   const scenario=mapLaunch(simulationLaunch(selected,$('manual-fold').value));
   manualLaunch={...scenario,coordinates:selected.coordinates,siteId:selected.siteId,direction:selected.direction};
   stopPlayback();offset=0;areaCache=null;$('offset').value=0;
-  renderDetail();draw();if(play)togglePlayback();
+  renderDetail();draw();if(play)togglePlayback({inPlace:true});
  };
  const edited=()=>{
   clearTimeout(manualAssessmentTimer);stopPlayback();manualLaunch=null;warningConstraint=null;offset=0;areaCache=null;update();renderRating();
@@ -398,7 +398,7 @@ $('about').onclick=()=>{$('contact-author').hidden=false;$('author-wechat').hidd
 <h3>1. 选一次发射</h3><p>在任务列表中选择发射，或点击地图上的发射场。可以切换“未来 30 天”和“回溯 30 天”；勾选“可能出现火箭云”可缩小列表。手机底部有“地图演示”“发射日历”“观测分析”三个入口；先在日历选任务，再切换查看地图和分析。</p>
 <h3>2. 播放，看范围怎样变化</h3><p>点击“模拟发射”，拖动时间条也能查看某一时刻。双左箭头按钮回到发射前，T0 是发射时刻，2×、4×等表示播放速度。手机观测分析页的“演示图表”会在当前页播放高度曲线，再点一次暂停；“在地图演示”会切换到地图、放大轨迹并继续播放，播放结束后可再次点击重播；地图上的“返回”回到之前的视角，没有之前的视角时返回世界地图。</p>
 <h3>3. 地图颜色怎么看</h3><p>发射场圆点越大，近期任务越多。灰点是常驻场址，蓝点有近期任务，金色点有值得关注的火箭云候选。地图亮暗底色表示白天和夜晚；橙色线表示模拟上升轨迹。</p><p>蓝色覆盖区域表示当前时刻可能看到受光尾迹的地方，具体分区见“观测分析”中的色标。浅蓝边缘的尾迹更靠近地平线，容易被建筑和云层挡住；深蓝“水母云关注区”值得留意，但不代表一定出现水母形状。地图颜色不等于晴天，出发前还要看“观看建议”。</p>
-<h3>4. 时间未定，也可以试一试</h3><p>选中时间待定的未来任务，在“观测分析”中填写发射地的当地日期和时间，参考旁边的晨昏时间，再点击“按此时间演示”。填写的时间只用于这次模拟，不会改动公布的发射计划。</p>
+<h3>4. 时间未定，也可以试一试</h3><p>选中时间待定的未来任务，在“观测分析”中填写发射地的当地日期和时间，参考旁边的晨昏时间，再点击“按此时间演示”，在当前页观看图表播放；需要查看地图时，再点“在地图演示”。填写的时间只用于这次模拟，不会改动公布的发射计划。</p>
 <h3>5. 航警和其他设置</h3><p>右侧若有“航警方向参考”，展开后可选择候选用于模拟；点击“恢复建议”可撤销。它只提供可能的方向，需要核对是否对应这次任务。100 / 150 公里是演示的终点高度，不是距离你多远；通常保留默认值即可。</p>
 <h3>6. 提前准备观看</h3><p>结合任务时间、所在位置和天气决定是否留意，临近发射再刷新确认是否改期。“已证实火箭云”表示有公开观测报道；没有这一标记，不等于当时没有火箭云。点击“订阅日历”可将发射安排加入日历软件。</p><p>本工具提供观看参考，实际还会受到真实航迹、云层和遮挡影响。想了解计算方法，可查看页脚 GitHub 中的技术说明。</p>`;$('utility').showModal();};
 $('subscribe').onclick=()=>{$('contact-author').hidden=true;$('author-wechat').hidden=true;
