@@ -1,13 +1,18 @@
 <p align="center"><img src="public/icons/rocket-cloud-180.png" width="112" alt="星途火箭云标志"></p>
 <h1 align="center">星途 · 火箭云预测</h1>
 <p align="center">全球航天发射日历与火箭云观测条件推演 · V0.01</p>
-<p align="center"><a href="https://space.bh1jss.net/launch/rocket-cloud/">在线使用</a> · <a href="docs/MODEL.md">设计思路与数学模型</a> · <a href="docs/DATA.md">数据与接口</a> · <a href="docs/ROADMAP.md">改进路线</a></p>
+<p align="center"><a href="https://space.bh1jss.net/launch/rocket-cloud/">在线使用</a> · <a href="docs/GUIDE.md">使用指南</a> · <a href="docs/MODEL.md">模型技术说明</a> · <a href="docs/DATA.md">数据与接口</a> · <a href="docs/ROADMAP.md">改进路线</a></p>
 
-最近，长征六号甲等火箭发射后的“火箭云”“太空水母”视频让我产生了一个想法：既然我已经做了[星途·全球航天发射日历](https://space.bh1jss.net/launch/)，为什么不进一步结合发射参数、晨昏光照和天气，估算下一次有没有机会看到火箭云？
+用一张地图查看近期发射，估算什么时候、哪些地方有机会看到火箭云。
 
-我希望用一个页面回答：**哪次发射值得关注、什么时候看、哪些区域可能具备观看条件？** 工具从任务时间和场址出发，在每个模拟时刻计算尾迹是否受光、地面观察者的太阳高度和视线仰角，再为候选观测点查询天气。新闻影像作为独立观测证据，显示在任务卡片的“已证实火箭云”标记中。
+## 怎么用
 
-我把它作为一个公开、可复现的**观测条件推演工具**持续完善。目前尚未完成可见概率的统计验证，参考轨迹不等于任务遥测，地图蓝色范围也不代表必然可见。[notam-whisper](https://github.com/lzq1206/notam-whisper) 等公开项目已经先行探索相关方向，我希望在这些探索之外，分享自己的实现思路与实践。
+1. [打开网页版](https://space.bh1jss.net/launch/rocket-cloud/)，选一次发射；也可以点击地图上的发射场。
+2. 点击“模拟发射”，观察蓝色观看区域怎样随时间变化。⏪ 回到最早，T0 是发射时刻，2×、4×等控制播放速度。
+3. 查看右侧“模型与天气”，结合所在位置和天气决定是否留意。蓝色区域是观看参考，不保证一定可见。
+4. 手机竖屏时，向下滑动查看任务和分析。“返回”退出放大的地图视角。
+
+详细操作、颜色含义和常见问题见[使用指南](docs/GUIDE.md)。想了解我为什么做这个工具，以及它怎样计算，可阅读[设计初衷与模型技术说明](docs/MODEL.md)。
 
 ## V0.01 已实现
 

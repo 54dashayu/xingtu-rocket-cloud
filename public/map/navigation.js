@@ -15,7 +15,7 @@ export function installMapNavigation({world, viewport, zoomIn, zoomOut, reset, b
   view.y=Math.max(135-180*view.scale,Math.min(45,view.y));
   viewport.setAttribute('transform',`translate(${view.x} ${view.y}) scale(${view.scale})`);
   zoomIn.disabled=view.scale>=maxScale;zoomOut.disabled=view.scale<=minScale;
-  if(back)back.hidden=!previousView;
+  if(back)back.hidden=false;
   onChange({...view});
  }
  function zoom(factor,anchor={x:180,y:90}) {
@@ -67,13 +67,14 @@ export function installMapNavigation({world, viewport, zoomIn, zoomOut, reset, b
  },{passive:false});
  world.addEventListener('dblclick',e=>{if(e.target.closest('.site'))return;e.preventDefault();zoom(e.shiftKey?.5:2,point(e.clientX,e.clientY));});
  zoomIn.onclick=()=>zoom(1.4);zoomOut.onclick=()=>zoom(1/1.4);
- reset.onclick=()=>{onInteract();previousView=null;focusMode=false;onExitFocus?.();paint(home);};
- if(back)back.onclick=()=>{if(!previousView)return;onInteract();const saved=previousView;previousView=null;focusMode=false;onExitFocus?.();paint(saved);};
+ const resetHome=()=>{onInteract();previousView=null;focusMode=false;onExitFocus?.();paint(home);};
+ if(reset)reset.onclick=resetHome;
+ if(back)back.onclick=()=>{if(!previousView){resetHome();return;}onInteract();const saved=previousView;previousView=null;focusMode=false;onExitFocus?.();paint(saved);};
  world.addEventListener('keydown',e=>{
   if(e.target!==world)return;
   if(['+','=','-','0','Home','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))e.preventDefault();else return;
   if(e.key==='+'||e.key==='=')zoom(1.4);else if(e.key==='-')zoom(1/1.4);
-  else if(e.key==='0'||e.key==='Home')reset.click();
+  else if(e.key==='0'||e.key==='Home')resetHome();
   else {onInteract();paint({...view,x:view.x+({ArrowLeft:18,ArrowRight:-18}[e.key]||0),y:view.y+({ArrowUp:18,ArrowDown:-18}[e.key]||0)});}
  });
  paint(view);

@@ -11,7 +11,7 @@ import { simulationProfile } from './prediction.js?v=20261024ay';
 import { flightProfile } from './flight-path.js?v=20261024am';
 import { cloudStatus, cloudOpportunity } from '../cloud-status.js?v=20261024ba';
 import { visibilityFootprint, jellyfishReferenceHeight } from './visibility.js?v=20261024ay';
-import { installMapNavigation } from './navigation.js?v=20261024ad';
+import { installMapNavigation } from './navigation.js?v=0.01.4-20261024ad';
 import { solarPosition, altitudeAt } from './solar.js?v=20261024ad';
 import { localSunContext, sunEvents, padTimezone } from './sun-events.js?v=20261024aq';
 import { mapLaunch, upcoming, countdown, preciseTime, destination, project, splitLine, DISCLAIMER, cloudCandidate, siteInventory, geometryRating, isSunlit, siteMarkerRadius, pastLaunches } from './model.js?v=20261024al';
@@ -63,19 +63,20 @@ function showSitePopover(sites,anchor,pinned=false){
 function renderSites(){
  $('sites').replaceChildren();
  // Merge visually colliding labels at global scale; separate again when zooming.
- const clusters=[];for(const site of inventory.sites){const [x,y]=project(site);let c=clusters.find(c=>Math.hypot(c.x-x,c.y-y)<3.8/scale);if(c)c.sites.push(site);else clusters.push({x,y,sites:[site]});}
+ const uiScale=Math.max(1,900/$('world').clientWidth);
+ const clusters=[];for(const site of inventory.sites){const [x,y]=project(site);let c=clusters.find(c=>Math.hypot(c.x-x,c.y-y)<5*uiScale/scale);if(c)c.sites.push(site);else clusters.push({x,y,sites:[site]});}
  for(const copy of [-720,-360,0,360,720])for(const cluster of clusters){
  const {x,y,sites}=cluster,launches=sites.flatMap(s=>s.launches),clouds=launches.filter(cloudCandidate),chosen=launches.some(l=>l.id===selected?.id);
  const g=svg('g',{class:'site',tabindex:0,role:'button','aria-label':`${sites.map(s=>s.name).join('、')}，${launches.length}项任务${clouds.length?'，含可能出现火箭云的任务':''}`,'data-site-ids':sites.map(s=>s.id).join(','),'data-task-count':launches.length,transform:`translate(${x+copy},${y}) scale(${1/scale})`,'data-world-copy':copy});
  const markerLabel=sites.length>1?`${sites.length}处场址`:sites[0].short;
- const radius=siteMarkerRadius(launches.length);const labelWidth=(markerLabel.length+(launches.length?4:0))*3+radius;
+ const radius=siteMarkerRadius(launches.length)*1.3*uiScale;const labelWidth=(markerLabel.length+(launches.length?4:0))*4.5*uiScale+radius;
  const showLabel=launches.length>0||scale>1.3;
- g.append(svg('rect',{x:showLabel&&x>315?-labelWidth-4:-4,y:-6,width:showLabel?labelWidth+8:8,height:10,fill:'transparent',stroke:'none',class:'hit-target'}));
+ g.append(svg('rect',{x:showLabel&&x>315?-labelWidth-4:-4,y:-Math.max(6,radius),width:showLabel?labelWidth+8:Math.max(8,radius*2),height:Math.max(12,radius*2),fill:'transparent',stroke:'none',class:'hit-target'}));
 
  if(clouds.length)g.append(svg('circle',{r:radius+1.1,fill:'#ffc779',opacity:'.16'}));
  if(chosen)g.append(svg('circle',{r:radius+1.2,class:'selected-ring'}));
  g.append(svg('circle',{r:radius,fill:clouds.length?'#c48625':launches.length?'#3c78ba':'#7e99a4'}));
- if(launches.length || scale>1.3){const label=sites.length>1?`${sites.length}处场址`:sites[0].short;g.append(svg('text',{x:x>315?-radius-1.5:radius+1.5,y:-2,'text-anchor':x>315?'end':'start'},`${label}${launches.length?' · '+launches.length:''}`));}
+ if(launches.length || scale>1.3){const label=sites.length>1?`${sites.length}处场址`:sites[0].short;g.append(svg('text',{x:x>315?-radius-1.5:radius+1.5,y:-2,style:`font-size:${4.5*uiScale}px`,'text-anchor':x>315?'end':'start'},`${label}${launches.length?' · '+launches.length:''}`));}
  g.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch')showSitePopover(sites,g);});g.addEventListener('pointerleave',delayPopoverClose);
  g.addEventListener('focus',()=>showSitePopover(sites,g));g.addEventListener('blur',delayPopoverClose);
  g.addEventListener('click',()=>showSitePopover(sites,g,true));g.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();showSitePopover(sites,g,true);}});$('sites').append(g);
@@ -215,7 +216,7 @@ function renderProfile(profile){
  $('ascent-state').textContent=`${offset<0?'发射前':`T+${Math.round(offset*60)} 秒`} · 高度 ${last.height.toFixed(1)} km${profile.elapsed>=profile.duration-1e-7?(cutoff?' · 公开关车节点':predicted?' · 参考截点':' · 资料段结束'):(last.emitting===false?' · '+(predicted?'模型滑行':'关车滑行'):'')}`;
 }
 function mapLabel(group,point,text,color,{dx=0,dy=0,anchor='start',kind='label'}={}){
- const [x,y]=project(point),font=4.6,w=Array.from(text).reduce((n,c)=>n+(/[\u0000-\u007f]/.test(c)?2.5:4.6),0)+5,h=8;
+ const uiScale=Math.max(1,720/$('world').clientWidth),[x,y]=project(point),font=5.5*uiScale,w=Array.from(text).reduce((n,c)=>n+(/[\u0000-\u007f]/.test(c)?3:5.5)*uiScale,0)+5,h=10*uiScale;
  const left=anchor==='end'?-w:0;
  const g=svg('g',{transform:`translate(${x} ${y}) scale(${1/scale})`,'data-map-label':kind,'pointer-events':'none'});
  if(dx||dy)g.append(svg('path',{d:`M0,0L${dx},${dy}`,stroke:color,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'}));
@@ -285,7 +286,7 @@ function updateTimeline(profile){
  slider.min=w.start/60;slider.max=w.end/60;
  offset=clampPlayback(offset*60,w)/60;slider.value=offset;
  $('timeline-start').textContent=`T−${Math.abs(w.start)} 秒`;$('timeline-end').textContent=`T＋${Math.round(w.end)} 秒`;
- $('reset-earliest').textContent=`回到最早（T−${Math.abs(w.start)} 秒）`;$('reset-earliest').title='回到最早：发射前1分钟';
+ $('reset-earliest').textContent='⏪';$('reset-earliest').title='回到最早：发射前1分钟';
  const place=(node,f)=>node.style.left=`calc(${f*100}% + ${8-16*f}px)`;
  place($('t0-marker'),w.zeroFraction);
  $('arrival-marker').hidden=w.arrival===null;
@@ -344,10 +345,10 @@ async function load(){
  }catch(e){if(id!==requestId)return;all=[];selected=null;$('data-state').className='data-state warning';$('data-state').textContent=`任务数据暂不可用（${e.message}）；主要场址仍可查看。`;renderList();renderDetail();scheduleDraw();}finally{if(id===requestId)$('refresh').disabled=false;}
 }
 const navigation=installMapNavigation({
- world:$('world'),viewport:$('viewport'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),reset:$('reset-view'),back:$('back-view'),onExitFocus:()=>{stopPlayback();offset=0;$('offset').value=0;scheduleDraw();},
+ world:$('world'),viewport:$('viewport'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),back:$('back-view'),onExitFocus:()=>{stopPlayback();offset=0;$('offset').value=0;scheduleDraw();},
  onInteract:closePopover,onChange:view=>{const changed=scale!==view.scale;scale=view.scale;if(changed){renderSites();scheduleDraw();}}
 });
-$('site-popover').onpointerenter=()=>clearTimeout(popoverTimer);$('site-popover').onpointerleave=delayPopoverClose;$('close-popover').onclick=closePopover;document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePopover();if(!$('back-view').hidden&&!$('utility').open)$('back-view').click();}});window.addEventListener('resize',()=>{if(popoverAnchor&&!$('site-popover').hidden)positionPopover(popoverAnchor);});
+$('site-popover').onpointerenter=()=>clearTimeout(popoverTimer);$('site-popover').onpointerleave=delayPopoverClose;$('close-popover').onclick=closePopover;document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePopover();if(!$('back-view').hidden&&!$('utility').open)$('back-view').click();}});window.addEventListener('resize',()=>{renderSites();scheduleDraw();if(popoverAnchor&&!$('site-popover').hidden)positionPopover(popoverAnchor);});
 $('offset').oninput=e=>seekTime(Number(e.target.value));$('reset-time').onclick=()=>seekTime(0);$('reset-earliest').onclick=()=>seekTime(Number($('offset').min));$('play-ascent').onclick=togglePlayback;
 $('play-speed').onchange=e=>{const next=Number(e.target.value);if(![1,2,4,10,20].includes(next))return;advancePlayback();playSpeed=next;scheduleDraw();};
 $('night').onchange=$('sector').onchange=scheduleDraw;$('trajectories').onchange=()=>{renderCandidateTrails();scheduleDraw();};$('cloud-only').onchange=renderList;$('refresh').onclick=()=>void load();
@@ -355,8 +356,14 @@ $('range-upcoming').onclick=()=>setRange('upcoming');$('range-history').onclick=
 $('view-map').onclick=$('home').onclick=()=>setView('map');$('view-agenda').onclick=()=>setView('agenda');
 async function setRange(mode){if(datasetMode===mode)return;datasetMode=mode;all=[];selected=null;manualLaunch=null;areaCache=null;$('cloud-only').checked=false;renderList();renderDetail();setView('map');const url=new URL(location.href);if(mode==='history')url.searchParams.set('range','history');else url.searchParams.delete('range');url.searchParams.delete('launch');history.replaceState({},'',url);await load();}
 async function downloadCalendar(url,name,state){try{const r=await fetch(url);if(!r.ok)throw Error(r.status===409?'日期未确定，不能导出':`HTTP ${r.status}`);const body=await r.text();if(!body.startsWith('BEGIN:VCALENDAR'))throw Error('日历格式错误');const u=URL.createObjectURL(new Blob([body],{type:'text/calendar'})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),10000);state.textContent='已下载日历文件；需在日历软件中导入。';}catch(e){state.textContent=`未导出：${e.message}`;}}
-$('close-utility').onclick=()=>$('utility').close();
-$('about').onclick=()=>{$('utility-body').innerHTML='<p class="eyebrow">星途·全球航天发射日历—火箭云预测</p><h2>读懂这张地图</h2><p>灰点为常驻场址，蓝色表示 30 天内有已收录任务，金色表示含可能出现火箭云。鼠标悬浮或点击查看场址及完整任务列表；手机点击即可。</p><p>拖动地图平移，滚轮或双指缩放，双击放大；＋／− 调整比例，◎ 恢复中国版世界地图（中央经线 150°E），横向可连续拖动。</p><p>同场多发射汇总在一处。屏幕上靠得近的场址会聚合，放大后分开；尚无坐标的任务保留在列表和日历。</p><p>非北京时间区并列显示当地时间与北京时间；同处北京时间区只显示北京时间。日出日落采用标准地平线近似。</p><p>选中任务即显示该时刻晨昏线。未来时刻待定的任务，可在右侧填写发射场当地日期和时间，参考当天晨光、日出、日落和暮光时间后演示；手动时间仅作用于模拟，不修改任务卡片或日历。优先使用本次任务资料；未来任务资料不足时显示通用预测轨迹，可调整航向，飞行时间与地面距离由参考动力学积分得到。历史任务固定使用资料方向；只有大致报道方向时注明代表角度，没有方向资料则等待核实。预测不等于官方航迹。动画可选1、2、4、10、20倍速，时间轴从发射前1分钟至本段轨迹终点，随任务与高度档自动调整；达到所选高度即停止播放，T0及本段终点分别标记；返回放大前或返回全图可退出演示，恢复T0。到达某高度不代表入轨。高度提供 100、150 公里两档，默认150公里作为观测分析截点，不代表实际可见高度上限。观看区始终显示当前模拟时刻，从起飞后逐时判断尾迹受光、观察地点明暗与视线仰角，不设50公里高度门槛，也不以报道时间控制显示。低空尾迹满足几何条件就纳入，这不等于能形成壮观的水母状云团。深蓝“水母云关注区”从参考上升模型的分离高度开始，突出受阳光照射且仰角≥5°的尾迹观看范围；资料轨迹缺少分级参数时暂以70公里作显示参考。分离高度仅用于划分关注区，不是物理形成门槛，也不代表任务实测分离高度；模型尚未计算云团形态。普通蓝色要求太阳低于−6°且仰角≥5°，中蓝为暮光中仰角≥5°，浅蓝为1–5°低仰角边缘；暂以尾迹留存5分钟、无漂移为情景，不代表实际寿命。过去 30 天可核对已完成任务；已证实火箭云表示收录了观测报道，可能观看区表示模拟计算范围，不逐城标注。</p><p>地图蓝色表示几何范围；天气在观测点采样评估，不保证实际可见。未计算高层大气扩散与散射亮度。</p><p>任务来源沿用日历 API；“全部”仅指数据源目前收录的所选 30 天任务，不保证全球计划完整性。日期未知的补充项另标待定，未冒充已确认 30 天内发射。</p>';$('utility').showModal();};
+$('close-utility-bottom').onclick=$('close-utility').onclick=()=>$('utility').close();
+$('about').onclick=()=>{$('utility-body').innerHTML=`<h2>使用说明</h2>
+<h3>1. 选一次发射</h3><p>在任务列表中选择发射，或点击地图上的发射场。可以切换“未来 30 天”和“回溯 30 天”；勾选“可能出现火箭云”可缩小列表。手机竖屏时，向下滑动查看任务和分析。</p>
+<h3>2. 播放，看范围怎样变化</h3><p>点击“模拟发射”，拖动时间条也能查看某一时刻。⏪ 回到发射前，T0 是发射时刻，2×、4×等表示播放速度。“在地图演示”会放大轨迹；地图上的“返回”回到之前的视角，没有之前的视角时返回世界地图。</p>
+<h3>3. 地图颜色怎么看</h3><p>发射场圆点越大，近期任务越多。灰点是常驻场址，蓝点有近期任务，金色点有值得关注的火箭云候选。地图亮暗底色表示白天和夜晚；橙色线表示模拟上升轨迹。</p><p>蓝色覆盖区域表示当前时刻可能看到受光尾迹的地方，具体分区见右侧色标。浅蓝边缘的尾迹更靠近地平线，容易被建筑和云层挡住；深蓝“水母云关注区”值得留意，但不代表一定出现水母形状。地图颜色不等于晴天，出发前还要看“模型与天气”。</p>
+<h3>4. 时间未定，也可以试一试</h3><p>选中时间待定的未来任务，在右侧填写发射地的当地日期和时间，参考旁边的晨昏时间，再点击“按此时间演示”。填写的时间只用于这次模拟，不会改动公布的发射计划。</p>
+<h3>5. 航警和其他设置</h3><p>右侧若有“航警方向参考”，展开后可选择候选用于模拟；点击“恢复建议”可撤销。它只提供可能的方向，需要核对是否对应这次任务。100 / 150 公里是演示的终点高度，不是距离你多远；通常保留默认值即可。</p>
+<h3>6. 提前准备观看</h3><p>结合任务时间、所在位置和天气决定是否留意，临近发射再刷新确认是否改期。“已证实火箭云”表示有公开观测报道；没有这一标记，不等于当时没有火箭云。点击“订阅日历”可将发射安排加入日历软件。</p><p>本工具提供观看参考，实际还会受到真实航迹、云层和遮挡影响。想了解计算方法，可查看页脚 GitHub 中的技术说明。</p>`;$('utility').showModal();};
 $('subscribe').onclick=()=>{
  const now=Date.now(),today=new Date(now+8*3600000).toISOString().slice(0,10);let since;try{since=localStorage.getItem('xingtu:calendar:since');}catch{}
  if(!/^\d{4}-\d{2}-\d{2}$/.test(since||'')||since>today||since<'1900-01-01'||!Number.isFinite(Date.parse(since))||new Date(since).toISOString().slice(0,10)!==since)since=new Date(now+8*3600000-30*86400000).toISOString().slice(0,10);
