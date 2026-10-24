@@ -94,7 +94,7 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 
 /* Compact map status; route details expand on demand without covering the map. */
 .trajectory-caption{pointer-events:auto;padding:0!important;max-width:min(310px,calc(100% - 82px))!important;overflow:hidden}
-.trajectory-caption summary{display:flex;align-items:center;gap:8px;padding:7px 9px;list-style:none;cursor:pointer;min-height:38px}
+.trajectory-caption .caption-status{display:flex;align-items:center;gap:8px;padding:7px 9px;min-height:38px}
 .trajectory-caption summary::-webkit-details-marker{display:none}
 .trajectory-caption .mode-pill{margin:0;font-size:12px;letter-spacing:0;white-space:nowrap;padding:1px 6px}
 .trajectory-caption .area-caption{font-size:12px;line-height:1.4;white-space:nowrap}
@@ -103,7 +103,7 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 .caption-detail{padding:7px 10px 9px;border-top:1px solid #dce6f2}
 .trajectory-caption .route-caption{font-size:13px}
 .trajectory-caption small{line-height:1.5}
-@media(max-width:850px){.trajectory-caption{top:9px;right:9px;max-width:calc(100% - 80px)!important}.trajectory-caption summary{gap:6px;padding:5px 8px;min-height:36px}.trajectory-caption .area-caption{font-size:12px}.caption-detail{max-width:235px}}
+@media(max-width:850px){.trajectory-caption{top:9px;right:9px;max-width:calc(100% - 80px)!important}.trajectory-caption .caption-status{gap:6px;padding:5px 8px;min-height:36px}.trajectory-caption .area-caption{font-size:12px}.caption-detail{max-width:235px}}
 
 /* Keep touch-opened site cards stable, with an independently scrolling body. */
 .site-popover{display:flex;flex-direction:column;overflow:hidden}
@@ -228,3 +228,5 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 #profile{scroll-margin-top:12px}#profile:focus{outline:none}
 
 .range-readout output{height:auto;min-height:30px;padding:3px 0;border:0;border-radius:0;background:transparent;font-size:18px;line-height:24px;font-weight:650;color:#294f77}
+
+.trajectory-caption{pointer-events:none}

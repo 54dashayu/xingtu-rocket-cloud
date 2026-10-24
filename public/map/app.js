@@ -326,14 +326,14 @@ function draw(){
  if(c){
   const profile=currentProfile(l,{elapsed:Math.max(0,offset*60)});renderProfile(profile);
   const style=trajectoryStyle(profile.kind,historyMode()),observed=Boolean(l.cloudEvidence?.observation);
-  $('trajectory-caption').innerHTML=`<summary aria-label="查看或收起地图说明"><b class="mode-pill ${historyMode()?'history':'future'}">${historyMode()?'回溯':manualLaunch?'试算':'预测'}</b><span class="area-caption">观看区待计算</span><span class="caption-chevron" aria-hidden="true">⌄</span></summary><div class="caption-detail"><strong class="route-caption" style="color:${style.color}">➜ ${esc(style.label)}</strong><small>${profile.kind==='predicted'?(historyMode()?(l.direction.kind==='reported_sector'?esc(l.direction.label)+' · 代表角度 '+azimuth+'°':'固定资料航向 '+azimuth+'°'):(warningConstraint?'航警模拟约束':manualDirection?'手动航向':headingEstimate(l).label)+' '+azimuth+'°'):profile.full.length?'采用本次任务资料':'航向／轨迹待核实'}${timed?'':' · 发射时刻待定'}</small></div>`;
-  if(!profile.full.length){document.querySelector('.route-caption').textContent='轨迹待核实';document.querySelector('.area-caption').textContent='观看区待计算';}
+  $('trajectory-caption').innerHTML=`<div class="caption-status"><b class="mode-pill ${historyMode()?'history':'future'}">${historyMode()?'回溯':manualLaunch?'试算':'预测'}</b><span class="area-caption">观看区待计算</span></div>`;
+  if(!profile.full.length){document.querySelector('.area-caption').textContent='观看区待计算';}
   $('route-legend').textContent=profile.full.length?style.label:'轨迹待核实';$('route-legend').previousElementSibling.style.borderColor=style.color;
   $('area-legend').textContent=(historyMode()?'可能观看区':'预测可能观看区');
   if($('trajectories').checked)renderRoute(profile,timed);
   renderWatchingArea(l,timed);
   $('simulation-note').textContent=profile.full.length?`${style.label} · ${profile.kind==='predicted'?'参考时长':'资料时长'} ${Math.round(profile.duration)} 秒 · 播放 ${playSpeed}×${profile.kind!=='predicted'&&!profile.reached?' · 仅已记录段':''}`:'晨昏线按任务时刻显示；轨迹与观看区等待该次任务数据。';
- }else{$('simulation-note').textContent='缺少场址坐标，无法绘制任务轨迹。';$('trajectory-caption').textContent='缺少场址坐标，轨迹待补充';}
+ }else{$('simulation-note').textContent='缺少场址坐标，无法绘制任务轨迹。';$('trajectory-caption').textContent='观看区待计算';}
 
 }
 function advancePlayback(now=performance.now()){
