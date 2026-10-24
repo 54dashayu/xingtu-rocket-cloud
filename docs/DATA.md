@@ -24,7 +24,7 @@
 
 ## HTTP API
 
-路径均相对于部署前缀，线上前缀为 `/launch/rocket-cloud/`。
+路径均相对于部署前缀，线上前缀为 `/rocket-cloud/`。
 
 | 路径 | 结果 |
 |---|---|

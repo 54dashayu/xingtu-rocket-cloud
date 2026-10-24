@@ -1,6 +1,6 @@
 # 使用指南
 
-[打开星途·火箭云预测](https://space.bh1jss.net/launch/rocket-cloud/)
+[打开星途·火箭云预测](https://space.bh1jss.net/rocket-cloud/)
 
 ## 先选一次发射
 

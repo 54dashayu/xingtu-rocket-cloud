@@ -1,13 +1,13 @@
 <p align="center"><img src="public/icons/rocket-cloud-180.png" width="112" alt="星途火箭云标志"></p>
 <h1 align="center">星途 · 火箭云预测</h1>
 <p align="center">全球航天发射日历与火箭云观测条件推演 · V0.01</p>
-<p align="center"><a href="https://space.bh1jss.net/launch/rocket-cloud/">在线使用</a> · <a href="docs/GUIDE.md">使用指南</a> · <a href="docs/MODEL.md">模型技术说明</a> · <a href="docs/DATA.md">数据与接口</a> · <a href="docs/ROADMAP.md">改进路线</a></p>
+<p align="center"><a href="https://space.bh1jss.net/rocket-cloud/">在线使用</a> · <a href="docs/GUIDE.md">使用指南</a> · <a href="docs/MODEL.md">模型技术说明</a> · <a href="docs/DATA.md">数据与接口</a> · <a href="docs/ROADMAP.md">改进路线</a></p>
 
 用一张地图查看近期发射，估算什么时候、哪些地方有机会看到火箭云。
 
 ## 怎么用
 
-1. [打开网页版](https://space.bh1jss.net/launch/rocket-cloud/)，选一次发射；也可以点击地图上的发射场。
+1. [打开网页版](https://space.bh1jss.net/rocket-cloud/)，选一次发射；也可以点击地图上的发射场。
 2. 点击“模拟发射”，观察蓝色观看区域怎样随时间变化。⏪ 回到最早，T0 是发射时刻，2×、4×等控制播放速度。
 3. 查看右侧“观看建议”，结合所在位置和天气决定是否留意。蓝色区域是观看参考，不保证一定可见。
 4. 手机使用底部“地图演示”“发射日历”“观测分析”切换页面。“返回”退出放大的地图视角。

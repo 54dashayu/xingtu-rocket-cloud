@@ -15,8 +15,8 @@ node src/server.js
 先创建 shared 目录并设置运行用户权限。反向代理示例（已有 HTTPS 站点的 server 段内）：
 
 ```nginx
-location = /launch/rocket-cloud { return 301 /launch/rocket-cloud/; }
-location ^~ /launch/rocket-cloud/ {
+location = /rocket-cloud { return 301 /rocket-cloud/; }
+location ^~ /rocket-cloud/ {
     proxy_pass http://127.0.0.1:4179/;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

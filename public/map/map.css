@@ -190,5 +190,41 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 
 .ascent-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
 .ascent-actions .focus-flight{margin-top:0}
-.chart-play{display:none;background:#e8f0fc;color:#356bb4;border:1px solid #c3d5ee}
-@media(max-width:850px){.chart-play:not([hidden]){display:inline-flex;align-items:center;justify-content:center}.ascent-actions button{padding:8px 12px;font-size:14px;min-height:40px}}
+@media(max-width:850px){.ascent-actions button{padding:8px 12px;font-size:14px;min-height:40px}}
+
+/* Landscape shares one header row; portrait keeps a separate controls row. */
+@media(orientation:landscape){
+ .header-shell{display:flex;align-items:center;background:linear-gradient(110deg,#19344f,#244f78);border-bottom:1px solid #86a9ca}
+ .header-shell .topbar{flex:1;min-width:0;flex-wrap:nowrap;border-bottom:0;background:transparent;gap:20px}
+ .header-shell .brand-slogan{margin:0}
+ .header-shell .global-toolbar{flex:0 0 auto;width:auto;height:auto;min-height:0;flex-wrap:nowrap;background:transparent;border:0;padding:0 16px 0 8px;gap:14px}
+ .header-shell .layers{color:#deebfa}
+ .header-shell .header-actions button{white-space:nowrap}
+}
+@media(orientation:landscape) and (min-width:851px){.workspace{height:calc(100dvh - 114px)}}
+@media(orientation:landscape) and (max-width:1100px){
+ .header-shell .topbar{padding:8px 10px;gap:12px;justify-content:flex-start;height:56px;min-height:56px}
+ .header-shell .brand{gap:6px}.header-shell .brand-logo{width:32px;height:32px}
+ .header-shell .brand .brand-title{font-size:20px;gap:4px}
+ .header-shell .brand .brand-feature{font-size:22px;gap:3px;letter-spacing:0}
+ .header-shell .brand .brand-predict{font-size:10px}
+ .header-shell .brand .brand-subtitle{font-size:10px;letter-spacing:.08em}
+ .header-shell .brand-slogan{font-size:12px;letter-spacing:0;align-self:center;padding:0}
+ .header-shell .global-toolbar{padding-right:10px;gap:8px}
+ .header-shell .layers{font-size:11px;gap:7px}
+ .header-shell .header-actions{gap:5px}.header-shell .header-actions button{font-size:11px;padding:3px 7px}
+}
+@media(orientation:landscape) and (max-width:680px){
+ .header-shell .topbar{padding-inline:6px;gap:6px}
+ .header-shell .brand-logo{width:24px;height:24px}.header-shell .brand{gap:4px}
+ .header-shell .brand .brand-title{font-size:16px;gap:2px}.header-shell .brand .brand-feature{font-size:18px;gap:2px}
+ .header-shell .brand .brand-subtitle{font-size:9px;letter-spacing:0}
+ .header-shell .brand-slogan{font-size:10px}
+ .header-shell .global-toolbar{padding:0 6px 0 0;gap:5px}
+ .header-shell .layers{font-size:10px;gap:4px}.header-shell .header-actions{gap:4px}
+ .header-shell .header-actions button{font-size:10px;padding:3px 4px}
+}
+
+#profile{scroll-margin-top:12px}#profile:focus{outline:none}
+
+.range-readout output{height:auto;min-height:30px;padding:3px 0;border:0;border-radius:0;background:transparent;font-size:18px;line-height:24px;font-weight:650;color:#294f77}

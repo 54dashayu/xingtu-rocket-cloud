@@ -101,7 +101,7 @@ async function staticFile(res, pathname) {
   const requested = pathname === '/' ? '/index.html' : pathname;
   const path = resolve(publicRoot, `.${decodeURIComponent(requested)}`);
   if (!(path === publicRoot || path.startsWith(publicRoot + sep))) return send(res, 403, 'Forbidden');
-  try { const body = await readFile(path); send(res, 200, body, { 'content-type': mime[extname(path)] || 'application/octet-stream', 'cache-control': 'public, max-age=300' }); }
+  try { const body = await readFile(path); send(res, 200, body, { 'content-type': mime[extname(path)] || 'application/octet-stream', 'cache-control': extname(path)==='.html'?'no-cache':'public, max-age=300' }); }
   catch { send(res, 404, 'Not found', { 'content-type': 'text/plain; charset=utf-8' }); }
 }
 
