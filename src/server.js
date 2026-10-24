@@ -26,6 +26,7 @@ function send(res, status, body, headers = {}) {
 function json(res, status, value) { send(res, status, JSON.stringify(value), { 'content-type': 'application/json; charset=utf-8' }); }
 
 async function api(req, res, url) {
+  if(url.pathname==='/api/map-config')return json(res,200,{provider:'tianditu',token:process.env.TIANDITU_TOKEN||'',projection:'c',labelMinZoom:4});
   const warningMatch=url.pathname.match(/^\/api\/launches\/([a-zA-Z0-9-]+)\/heading-constraints$/);
   if(warningMatch){
     const historical=url.searchParams.get('range')==='history';
