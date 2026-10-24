@@ -25,8 +25,9 @@ let warningConstraint=null;
 let manualLaunch=null,manualAssessmentTimer=null;
 const activeLaunch=()=>manualLaunch&&manualLaunch.id===selected?.id?manualLaunch:selected;
 let all=[],pool=[],visible=[],inventory=siteInventory([]),selected=null,requestId=0,offset=0,azimuth=90,target=DEFAULT_HEIGHT,manualDirection=false;
-let scale=1,frame=0,playTimer=null,playSpeed=20,playLastTick=0,popoverTimer=null,popoverPinned=false,popoverAnchor=null;
-let currentView='map',datasetMode=new URL(location.href).searchParams.get('range')==='history'?'history':'upcoming',requestedLaunchId=new URL(location.href).searchParams.get('launch'),areaCache=null;
+const mobileLayout=matchMedia('(max-width:850px)');
+let scale=1,frame=0,playTimer=null,playSpeed=20,playLastTick=0,popoverTimer=null,popoverPinned=false,popoverAnchor=null,lastSitePointerAt=-Infinity;
+let datasetMode=new URL(location.href).searchParams.get('range')==='history'?'history':'upcoming',requestedLaunchId=new URL(location.href).searchParams.get('launch'),areaCache=null;
 const currentProfile=(l,options={})=>simulationProfile(l===selected?activeLaunch():l,{target,azimuth,historical:historyMode(),...options});
 const period=()=>datasetMode==='history'?'过去 30 天':'未来 30 天';
 const historyMode=()=>datasetMode==='history';
@@ -48,22 +49,24 @@ function paintSky(date){
 function closePopover(){clearTimeout(popoverTimer);$('site-popover').hidden=true;popoverPinned=false;popoverAnchor=null;}
 function delayPopoverClose(){if(!popoverPinned)popoverTimer=setTimeout(closePopover,240);}
 function positionPopover(anchor){
- const box=$('site-popover');const r=anchor.getBoundingClientRect(),w=box.offsetWidth,h=box.offsetHeight;
+ const box=$('site-popover');
+ if(matchMedia('(max-width:850px)').matches){box.style.left='';box.style.top='';return;}
+ const r=anchor.getBoundingClientRect(),w=box.offsetWidth,h=box.offsetHeight;
  let left=r.right+12;if(left+w>innerWidth-12)left=r.left-w-12;
  box.style.left=`${Math.max(10,Math.min(innerWidth-w-10,left))}px`;box.style.top=`${Math.max(85,Math.min(innerHeight-h-12,r.top-18))}px`;
 }
 function showSitePopover(sites,anchor,pinned=false){
  if(navigation.isDragging())return;
- clearTimeout(popoverTimer);if(popoverPinned&&!pinned)return;
+ clearTimeout(popoverTimer);pinned=pinned||matchMedia('(hover:none)').matches;if(popoverPinned&&!pinned)return;
  popoverPinned=pinned;popoverAnchor=anchor;
  $('site-popover-body').innerHTML=sites.map(s=>`<section class="site-section"><p class="eyebrow">${esc(s.region || '公开任务场址')}</p><h3>${esc(s.name)}</h3><p class="site-description">${esc(s.description)}</p><small>${s.latitude.toFixed(2)}°, ${s.longitude.toFixed(2)}° · ${esc(s.timezone || '时区待补充')}</small><h4>${period()} · ${s.launches.length} 项已收录任务</h4>${s.launches.length?s.launches.map(l=>`<button class="popover-launch" data-launch="${esc(l.id)}"><strong>${cloudCandidate(l)?'☁ ':''}${esc(l.name)}</strong><span>${esc(statusLabel(l))} · ${esc(l.pad?.name || s.short)}</span><span class="time-pair">${timeHTML(launchTimePair(l))}</span><small>${esc(launchTimePair(l).note)}${cloudCandidate(l)?' · 可能出现火箭云':''}</small></button>`).join(''):'<p class="no-launches">当前时段未收录任务，不代表确定没有发射。</p>'}${s.source?safeLink(s.source,'场址资料来源'):''}</section>`).join('');
  for(const b of $('site-popover-body').querySelectorAll('[data-launch]'))b.onclick=()=>{const l=pool.find(l=>l.id===b.dataset.launch);$('cloud-only').checked=false;selectLaunch(l);closePopover();};
- $('site-popover').hidden=false;positionPopover(anchor);
+ $('site-popover').hidden=false;$('site-popover-body').scrollTop=0;positionPopover(anchor);
 }
 function renderSites(){
  $('sites').replaceChildren();
  // Merge visually colliding labels at global scale; separate again when zooming.
- const uiScale=Math.max(1,900/$('world').clientWidth);
+ const uiScale=Math.max(1,900/mapLayoutWidth());
  const clusters=[];for(const site of inventory.sites){const [x,y]=project(site);let c=clusters.find(c=>Math.hypot(c.x-x,c.y-y)<5*uiScale/scale);if(c)c.sites.push(site);else clusters.push({x,y,sites:[site]});}
  for(const copy of [-720,-360,0,360,720])for(const cluster of clusters){
  const {x,y,sites}=cluster,launches=sites.flatMap(s=>s.launches),clouds=launches.filter(cloudCandidate),chosen=launches.some(l=>l.id===selected?.id);
@@ -78,7 +81,9 @@ function renderSites(){
  g.append(svg('circle',{r:radius,fill:clouds.length?'#c48625':launches.length?'#3c78ba':'#7e99a4'}));
  if(launches.length || scale>1.3){const label=sites.length>1?`${sites.length}处场址`:sites[0].short;g.append(svg('text',{x:x>315?-radius-1.5:radius+1.5,y:-2,style:`font-size:${4.5*uiScale}px`,'text-anchor':x>315?'end':'start'},`${label}${launches.length?' · '+launches.length:''}`));}
  g.addEventListener('pointerenter',e=>{if(e.pointerType!=='touch')showSitePopover(sites,g);});g.addEventListener('pointerleave',delayPopoverClose);
- g.addEventListener('focus',()=>showSitePopover(sites,g));g.addEventListener('blur',delayPopoverClose);
+ // Pointer focus precedes click: opening here can cover the tapped marker and cancel its click.
+ g.addEventListener('pointerdown',()=>{lastSitePointerAt=performance.now();});
+ g.addEventListener('focus',()=>{if(performance.now()-lastSitePointerAt>500&&g.matches(':focus-visible'))showSitePopover(sites,g);});g.addEventListener('blur',delayPopoverClose);
  g.addEventListener('click',()=>showSitePopover(sites,g,true));g.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();showSitePopover(sites,g,true);}});$('sites').append(g);
  }
 
@@ -88,10 +93,6 @@ function renderCandidateTrails(){
  for(const l of pool.filter(l=>cloudCandidate(l)&&l.coordinates&&l.id!==selected?.id)){
   const p=flightProfile(l,{target});for(const seg of splitLine(p.full)){const path=svg('path',{d:linePath(seg),fill:'none',stroke:'#b98227','stroke-width':'.45','stroke-dasharray':'1 .8',opacity:'.6'});path.append(svg('title',{},`${l.name} · 任务资料轨迹至 ${target} km`));$('candidate-trails').append(path);}
  }
-}
-function renderAgenda(){
- $('agenda-list').innerHTML=pool.length?pool.map(l=>`<button class="agenda-row ${selected?.id===l.id?'selected':''}" data-launch="${esc(l.id)}"><span><strong>${cloudCandidate(l)?'☁ ':''}${esc(l.name)}</strong><small>${esc(l.pad?.location || '场址待补充')} · ${esc(statusLabel(l))}</small></span><span class="time-pair">${timeHTML(launchTimePair(l))}</span><span class="agenda-cloud ${cloudCandidate(l)?'candidate':''}">${esc(cloudStatus({...l,cloudEvidence:undefined}).label)}<small>${esc(launchTimePair(l).note)}</small></span></button>`).join(''):'<p class="empty">暂无已收录任务，请稍后刷新。</p>';
- for(const b of $('agenda-list').querySelectorAll('[data-launch]'))b.onclick=()=>{$('cloud-only').checked=false;selectLaunch(pool.find(l=>l.id===b.dataset.launch));};
 }
 function renderList(){
  pool=historyMode()?pastLaunches(all,Date.now(),30):upcoming(all,Date.now(),30);inventory=siteInventory(pool);
@@ -103,13 +104,14 @@ function renderList(){
  $('coverage').textContent=`${pool.filter(l=>cloudStatus(l).code==='observed').length} 项观测证实 · ${pool.filter(cloudCandidate).length} 项可能出现 · ${pool.filter(l=>!historyMode()&&cloudOpportunity(l)==='pending').length} 项时刻待定 · ${inventory.unknown.length} 项坐标待补充${undated?' · '+undated+' 项日期待定':''}${visible.length!==pool.length?' · 列表筛选 '+visible.length+' 项':''}。地图保留全部任务。`;
  $('missions').innerHTML=visible.length?visible.map(l=>`<button class="mission ${l.id===selected?.id?'selected':''}" data-id="${esc(l.id)}" aria-pressed="${l.id===selected?.id}"><span class="status">● ${esc(statusLabel(l))}${cloudBadge(l)}</span><strong>${esc(l.name)}</strong><small>${esc(l.pad?.location || '场址待补充')}${l.coordinates?'':' · 坐标待补充'}</small><span class="time-pair">${timeHTML(launchTimePair(l))}</span><small class="precision">${esc(launchTimePair(l).note)}</small><small class="countdown" data-count="${esc(l.id)}">${esc(countdown(l,clockNow()))}</small></button>`).join(''):'<p class="empty">没有匹配项；地图和日历仍保留全部已收录任务。</p>';
  for(const b of $('missions').querySelectorAll('[data-id]'))b.onclick=()=>selectLaunch(pool.find(l=>l.id===b.dataset.id));
- renderSites();renderAgenda();renderCandidateTrails();
+ renderSites();renderCandidateTrails();
 }
 function stopPlayback(){clearInterval(playTimer);playTimer=null;$('play-ascent').textContent='▶ 模拟发射';}
-function selectLaunch(l,{focus=true}={}){
+function selectLaunch(l,{focus=true,reveal=true}={}){
  clearTimeout(manualAssessmentTimer);
  stopPlayback();manualLaunch=null;selected=l||null;offset=0;manualDirection=false;warningConstraint=null;areaCache=null;$('offset').value=0;azimuth=headingEstimate(l||{}).azimuth;
- $('trajectories').checked=true;setView('map');
+ $('trajectories').checked=true;if(reveal)setView('map');
+ $('mobile-task-name').textContent=l?.name||'请先选择发射任务';
  renderList();renderDetail();document.querySelector('.detail').scrollTop=0;
  if(focus&&l?.coordinates){const p=currentProfile(l).full;navigation.focus(p[Math.floor(p.length/2)]||l.coordinates,6);}
  draw();
@@ -216,7 +218,7 @@ function renderProfile(profile){
  $('ascent-state').textContent=`${offset<0?'发射前':`T+${Math.round(offset*60)} 秒`} · 高度 ${last.height.toFixed(1)} km${profile.elapsed>=profile.duration-1e-7?(cutoff?' · 公开关车节点':predicted?' · 参考截点':' · 资料段结束'):(last.emitting===false?' · '+(predicted?'模型滑行':'关车滑行'):'')}`;
 }
 function mapLabel(group,point,text,color,{dx=0,dy=0,anchor='start',kind='label'}={}){
- const uiScale=Math.max(1,720/$('world').clientWidth),[x,y]=project(point),font=5.5*uiScale,w=Array.from(text).reduce((n,c)=>n+(/[\u0000-\u007f]/.test(c)?3:5.5)*uiScale,0)+5,h=10*uiScale;
+ const uiScale=Math.max(1,720/mapLayoutWidth()),[x,y]=project(point),font=5.5*uiScale,w=Array.from(text).reduce((n,c)=>n+(/[\u0000-\u007f]/.test(c)?3:5.5)*uiScale,0)+5,h=10*uiScale;
  const left=anchor==='end'?-w:0;
  const g=svg('g',{transform:`translate(${x} ${y}) scale(${1/scale})`,'data-map-label':kind,'pointer-events':'none'});
  if(dx||dy)g.append(svg('path',{d:`M0,0L${dx},${dy}`,stroke:color,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'}));
@@ -335,12 +337,28 @@ function togglePlayback(){
 }
 function seekTime(minutes){stopPlayback();offset=clampPlayback(minutes*60,playbackWindow(selected?.coordinates&&preciseTime(activeLaunch())?currentProfile(selected):null))/60;$('offset').value=offset;scheduleDraw();}
 
-function setView(view){currentView=view;$('map-content').hidden=view!=='map';$('agenda').hidden=view!=='agenda';$('center-title').textContent=view==='map'?'寻找下一场火箭云':period()+'发射日历';for(const v of ['map','agenda']){$('view-'+v).classList.toggle('active',v===view);$('view-'+v).setAttribute('aria-pressed',String(v===view));}closePopover();if(view!=='map')stopPlayback();}
+let mobilePage='map';
+const mobileScroll={map:0,calendar:0,analysis:0};
+function setMobilePage(page,{scroll=true}={}){
+ if(!['map','calendar','analysis'].includes(page))return;
+ if(mobileLayout.matches)mobileScroll[mobilePage]=window.scrollY;
+ const changed=page!==mobilePage;mobilePage=page;document.body.dataset.mobilePage=page;
+ for(const b of document.querySelectorAll('[data-mobile-view]')){if(b.dataset.mobileView===page)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}
+ closePopover();if(page!=='map')stopPlayback();
+ requestAnimationFrame(()=>{if(page==='map'){renderSites();scheduleDraw();}if(changed&&scroll&&mobileLayout.matches)window.scrollTo({top:mobileScroll[page],behavior:'instant'});});
+}
+function setView(){setMobilePage('map');}
+function updateMobileLayout(){
+ $('world').setAttribute('preserveAspectRatio',mobileLayout.matches?'xMidYMid slice':'xMidYMid meet');
+ document.documentElement.style.setProperty('--mobile-top-height',`${document.querySelector('.topbar').offsetHeight+document.querySelector('.global-toolbar').offsetHeight+document.querySelector('.mobile-task-context').offsetHeight}px`);
+ renderSites();scheduleDraw();
+}
+function mapLayoutWidth(){const w=$('world');return Math.max(1,w.clientWidth||innerWidth,mobileLayout.matches?w.clientHeight*2:0);}
 async function load(){
  const id=++requestId;stopPlayback();closePopover();$('data-state').textContent='正在读取'+period()+'任务…';$('refresh').disabled=true;
  try{const r=await fetch(historyMode()?'./api/launches/previous?days=30':'./api/launches?days=30',{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error(`HTTP ${r.status}`);const data=await r.json();if(!Array.isArray(data.results))throw Error('API 格式错误');if(id!==requestId)return;all=data.results.map(mapLaunch);
  $('data-state').className=`data-state ${data.meta?.stale?'warning':''}`;$('data-state').textContent=`${data.meta?.stale?'旧缓存 · 待刷新':'服务器数据'} · 更新 ${timePair(data.meta?.fetchedAt,{timezone:'Asia/Shanghai'}).beijing} 北京时间${data.meta?.warning?' · '+data.meta.warning:''}`;
- $('map-subtitle').textContent='主要发射场常驻 · 悬浮查看本期全部任务';const previous=selected?.id;selected=null;renderList();const chosen=pool.find(l=>l.id===requestedLaunchId)||pool.find(l=>l.id===previous)||(historyMode()?pool.find(l=>cloudStatus(l).code==='observed'):null)||pool[0]||null;selectLaunch(chosen,{focus:historyMode()});requestedLaunchId=null;
+ $('map-subtitle').textContent='主要发射场常驻 · 悬浮查看本期全部任务';const previous=selected?.id;selected=null;renderList();const chosen=pool.find(l=>l.id===requestedLaunchId)||pool.find(l=>l.id===previous)||(historyMode()?pool.find(l=>cloudStatus(l).code==='observed'):null)||pool[0]||null;selectLaunch(chosen,{focus:historyMode(),reveal:false});requestedLaunchId=null;
  void assessMissionList(all,historyMode(),(launch,result)=>{if(all.includes(launch)){launch.cloudAssessment=result;renderList();}});
  }catch(e){if(id!==requestId)return;all=[];selected=null;$('data-state').className='data-state warning';$('data-state').textContent=`任务数据暂不可用（${e.message}）；主要场址仍可查看。`;renderList();renderDetail();scheduleDraw();}finally{if(id===requestId)$('refresh').disabled=false;}
 }
@@ -348,21 +366,25 @@ const navigation=installMapNavigation({
  world:$('world'),viewport:$('viewport'),zoomIn:$('zoom-in'),zoomOut:$('zoom-out'),back:$('back-view'),onExitFocus:()=>{stopPlayback();offset=0;$('offset').value=0;scheduleDraw();},
  onInteract:closePopover,onChange:view=>{const changed=scale!==view.scale;scale=view.scale;if(changed){renderSites();scheduleDraw();}}
 });
-$('site-popover').onpointerenter=()=>clearTimeout(popoverTimer);$('site-popover').onpointerleave=delayPopoverClose;$('close-popover').onclick=closePopover;document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePopover();if(!$('back-view').hidden&&!$('utility').open)$('back-view').click();}});window.addEventListener('resize',()=>{renderSites();scheduleDraw();if(popoverAnchor&&!$('site-popover').hidden)positionPopover(popoverAnchor);});
+$('site-popover').onpointerdown=()=>{clearTimeout(popoverTimer);popoverPinned=true;};$('site-popover').onpointerenter=()=>clearTimeout(popoverTimer);$('site-popover').onpointerleave=delayPopoverClose;$('close-popover').onclick=closePopover;document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePopover();if(!$('back-view').hidden&&!$('utility').open)$('back-view').click();}});window.addEventListener('resize',()=>{renderSites();scheduleDraw();if(popoverAnchor&&!$('site-popover').hidden)positionPopover(popoverAnchor);});
 $('offset').oninput=e=>seekTime(Number(e.target.value));$('reset-time').onclick=()=>seekTime(0);$('reset-earliest').onclick=()=>seekTime(Number($('offset').min));$('play-ascent').onclick=togglePlayback;
 $('play-speed').onchange=e=>{const next=Number(e.target.value);if(![1,2,4,10,20].includes(next))return;advancePlayback();playSpeed=next;scheduleDraw();};
 $('sector').onchange=scheduleDraw;$('trajectories').onchange=()=>{renderCandidateTrails();scheduleDraw();};$('cloud-only').onchange=renderList;$('refresh').onclick=()=>void load();
 $('range-upcoming').onclick=()=>setRange('upcoming');$('range-history').onclick=()=>setRange('history');
-$('view-map').onclick=$('home').onclick=()=>setView('map');$('view-agenda').onclick=()=>setView('agenda');
-async function setRange(mode){if(datasetMode===mode)return;datasetMode=mode;all=[];selected=null;manualLaunch=null;areaCache=null;$('cloud-only').checked=false;renderList();renderDetail();setView('map');const url=new URL(location.href);if(mode==='history')url.searchParams.set('range','history');else url.searchParams.delete('range');url.searchParams.delete('launch');history.replaceState({},'',url);await load();}
+$('home').onclick=()=>setView('map');$('mobile-select-task').onclick=()=>setMobilePage('calendar');
+for(const button of document.querySelectorAll('[data-mobile-view]'))button.onclick=()=>setMobilePage(button.dataset.mobileView);
+mobileLayout.addEventListener('change',updateMobileLayout);
+const mobileHeaderObserver=new ResizeObserver(updateMobileLayout);mobileHeaderObserver.observe(document.querySelector('.topbar'));mobileHeaderObserver.observe(document.querySelector('.global-toolbar'));mobileHeaderObserver.observe(document.querySelector('.mobile-task-context'));
+updateMobileLayout();
+async function setRange(mode){if(datasetMode===mode)return;datasetMode=mode;all=[];selected=null;manualLaunch=null;areaCache=null;$('cloud-only').checked=false;renderList();renderDetail();closePopover();const url=new URL(location.href);if(mode==='history')url.searchParams.set('range','history');else url.searchParams.delete('range');url.searchParams.delete('launch');history.replaceState({},'',url);await load();}
 async function downloadCalendar(url,name,state){try{const r=await fetch(url);if(!r.ok)throw Error(r.status===409?'日期未确定，不能导出':`HTTP ${r.status}`);const body=await r.text();if(!body.startsWith('BEGIN:VCALENDAR'))throw Error('日历格式错误');const u=URL.createObjectURL(new Blob([body],{type:'text/calendar'})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),10000);state.textContent='已下载日历文件；需在日历软件中导入。';}catch(e){state.textContent=`未导出：${e.message}`;}}
 $('close-utility-bottom').onclick=$('close-utility').onclick=()=>$('utility').close();
 $('contact-author').onclick=()=>{const open=$('author-wechat').hidden;$('author-wechat').hidden=!open;$('contact-author').setAttribute('aria-expanded',String(open));if(open)$('author-wechat').scrollIntoView({block:'nearest',behavior:'smooth'});};
 $('about').onclick=()=>{$('contact-author').hidden=false;$('author-wechat').hidden=true;$('contact-author').setAttribute('aria-expanded','false');$('utility-body').innerHTML=`<h2>使用说明</h2>
-<h3>1. 选一次发射</h3><p>在任务列表中选择发射，或点击地图上的发射场。可以切换“未来 30 天”和“回溯 30 天”；勾选“可能出现火箭云”可缩小列表。手机竖屏时，向下滑动查看任务和分析。</p>
+<h3>1. 选一次发射</h3><p>在任务列表中选择发射，或点击地图上的发射场。可以切换“未来 30 天”和“回溯 30 天”；勾选“可能出现火箭云”可缩小列表。手机底部有“地图演示”“发射日历”“观测分析”三个入口；先在日历选任务，再切换查看地图和分析。</p>
 <h3>2. 播放，看范围怎样变化</h3><p>点击“模拟发射”，拖动时间条也能查看某一时刻。⏪ 回到发射前，T0 是发射时刻，2×、4×等表示播放速度。“在地图演示”会放大轨迹；地图上的“返回”回到之前的视角，没有之前的视角时返回世界地图。</p>
-<h3>3. 地图颜色怎么看</h3><p>发射场圆点越大，近期任务越多。灰点是常驻场址，蓝点有近期任务，金色点有值得关注的火箭云候选。地图亮暗底色表示白天和夜晚；橙色线表示模拟上升轨迹。</p><p>蓝色覆盖区域表示当前时刻可能看到受光尾迹的地方，具体分区见右侧色标。浅蓝边缘的尾迹更靠近地平线，容易被建筑和云层挡住；深蓝“水母云关注区”值得留意，但不代表一定出现水母形状。地图颜色不等于晴天，出发前还要看“观看建议”。</p>
-<h3>4. 时间未定，也可以试一试</h3><p>选中时间待定的未来任务，在右侧填写发射地的当地日期和时间，参考旁边的晨昏时间，再点击“按此时间演示”。填写的时间只用于这次模拟，不会改动公布的发射计划。</p>
+<h3>3. 地图颜色怎么看</h3><p>发射场圆点越大，近期任务越多。灰点是常驻场址，蓝点有近期任务，金色点有值得关注的火箭云候选。地图亮暗底色表示白天和夜晚；橙色线表示模拟上升轨迹。</p><p>蓝色覆盖区域表示当前时刻可能看到受光尾迹的地方，具体分区见“观测分析”中的色标。浅蓝边缘的尾迹更靠近地平线，容易被建筑和云层挡住；深蓝“水母云关注区”值得留意，但不代表一定出现水母形状。地图颜色不等于晴天，出发前还要看“观看建议”。</p>
+<h3>4. 时间未定，也可以试一试</h3><p>选中时间待定的未来任务，在“观测分析”中填写发射地的当地日期和时间，参考旁边的晨昏时间，再点击“按此时间演示”。填写的时间只用于这次模拟，不会改动公布的发射计划。</p>
 <h3>5. 航警和其他设置</h3><p>右侧若有“航警方向参考”，展开后可选择候选用于模拟；点击“恢复建议”可撤销。它只提供可能的方向，需要核对是否对应这次任务。100 / 150 公里是演示的终点高度，不是距离你多远；通常保留默认值即可。</p>
 <h3>6. 提前准备观看</h3><p>结合任务时间、所在位置和天气决定是否留意，临近发射再刷新确认是否改期。“已证实火箭云”表示有公开观测报道；没有这一标记，不等于当时没有火箭云。点击“订阅日历”可将发射安排加入日历软件。</p><p>本工具提供观看参考，实际还会受到真实航迹、云层和遮挡影响。想了解计算方法，可查看页脚 GitHub 中的技术说明。</p>`;$('utility').showModal();};
 $('subscribe').onclick=()=>{$('contact-author').hidden=true;$('author-wechat').hidden=true;
