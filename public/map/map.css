@@ -89,3 +89,5 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 .utility-footer{flex-wrap:wrap;gap:10px 14px}.utility-footer #contact-author{font-size:14px;line-height:1.4;width:auto;height:38px;margin-left:auto;padding:6px 10px}.utility-footer #close-utility-bottom{margin-left:0}.author-wechat{text-align:center;margin-top:18px;padding-top:6px;border-top:1px solid #d5e0ee}.author-wechat img{display:block;width:min(100%,260px);height:auto;margin:14px auto;background:white;border-radius:8px}.author-wechat a{text-decoration:underline;font-size:13px}
 
 .utility-footer #contact-author[hidden]+#close-utility-bottom{margin-left:auto}
+
+.assessment-body .assessment-context{font-size:12px;color:#657b96;margin-top:-3px}.assessment-body>p{line-height:1.65}.assessment-body>small{font-size:11px;line-height:1.6;color:#667e9a}
