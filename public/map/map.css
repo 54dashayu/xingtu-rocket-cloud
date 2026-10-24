@@ -155,3 +155,11 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 .map-tools{--map-tool-width:40px}.map-tools button{width:var(--map-tool-width);min-width:var(--map-tool-width)}
 .map-tools #back-view{width:var(--map-tool-width);min-width:var(--map-tool-width);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:4px 0;line-height:1.2}
 #back-view span:first-child{font-size:22px}#back-view span:last-child{font-size:11px;margin-top:1px}
+
+@media(max-width:850px){
+ .mobile-task-context{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:7px;row-gap:2px;padding:6px 12px}
+ .mobile-task-time{grid-column:1/-1;display:flex;align-items:baseline;flex-wrap:wrap;column-gap:10px;row-gap:0;font-size:12px;color:#24496c;line-height:1.6}
+ .mobile-task-time>span{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
+ .mobile-task-time .task-time-label,.mobile-task-time small{font-size:11px;color:#7187a1}
+ .mobile-task-time b{font-size:12px;font-weight:650;font-variant-numeric:tabular-nums}
+}

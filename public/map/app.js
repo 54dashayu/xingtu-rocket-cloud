@@ -111,7 +111,7 @@ function selectLaunch(l,{focus=true,reveal=true}={}){
  clearTimeout(manualAssessmentTimer);
  stopPlayback();manualLaunch=null;selected=l||null;offset=0;manualDirection=false;warningConstraint=null;areaCache=null;$('offset').value=0;azimuth=headingEstimate(l||{}).azimuth;
  $('trajectories').checked=true;if(reveal)setView('map');
- $('mobile-task-name').textContent=l?.name||'请先选择发射任务';
+ renderTaskContext();
  renderList();renderDetail();document.querySelector('.detail').scrollTop=0;
  if(focus&&l?.coordinates){const p=currentProfile(l).full;navigation.focus(p[Math.floor(p.length/2)]||l.coordinates,6);}
  draw();
@@ -297,7 +297,15 @@ function updateTimeline(profile){
 }
 
 function scheduleDraw(){cancelAnimationFrame(frame);frame=requestAnimationFrame(draw);}
+function renderTaskContext(){
+ const l=activeLaunch();
+ $('mobile-task-name').textContent=l?.name||'请先选择发射任务';
+ const label=l?(manualLaunch?'模拟发射':!preciseTime(l)?'发射时刻待定':historyMode()?'实际发射':'计划发射'):'发射时间待定';
+ const content=`<span class="task-time-label">${label}</span>${l?timeHTML(launchTimePair(l)):''}`;
+ if($('mobile-task-time').innerHTML!==content)$('mobile-task-time').innerHTML=content;
+}
 function draw(){
+ renderTaskContext();
  const activeProfile=selected?.coordinates&&preciseTime(activeLaunch())?currentProfile(selected):null;updateTimeline(activeProfile);
  const timed=selected&&preciseTime(activeLaunch()),base=timed?Date.parse(activeLaunch().timing.net):clockNow(),date=base+offset*60000;
  if(!selected||timed)paintSky(date);else{$('shade').replaceChildren();$('terminator').replaceChildren();$('sun').replaceChildren();}
@@ -371,7 +379,7 @@ $('offset').oninput=e=>seekTime(Number(e.target.value));$('reset-time').onclick=
 $('play-speed').onchange=e=>{const next=Number(e.target.value);if(![1,2,4,10,20].includes(next))return;advancePlayback();playSpeed=next;scheduleDraw();};
 $('sector').onchange=scheduleDraw;$('trajectories').onchange=()=>{renderCandidateTrails();scheduleDraw();};$('cloud-only').onchange=renderList;$('refresh').onclick=()=>void load();
 $('range-upcoming').onclick=()=>setRange('upcoming');$('range-history').onclick=()=>setRange('history');
-$('home').onclick=()=>setView('map');$('mobile-select-task').onclick=()=>setMobilePage('calendar');
+$('home').onclick=()=>setView('map');
 for(const button of document.querySelectorAll('[data-mobile-view]'))button.onclick=()=>setMobilePage(button.dataset.mobileView);
 mobileLayout.addEventListener('change',updateMobileLayout);
 const mobileHeaderObserver=new ResizeObserver(updateMobileLayout);mobileHeaderObserver.observe(document.querySelector('.topbar'));mobileHeaderObserver.observe(document.querySelector('.global-toolbar'));mobileHeaderObserver.observe(document.querySelector('.mobile-task-context'));
