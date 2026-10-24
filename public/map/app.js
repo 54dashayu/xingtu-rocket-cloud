@@ -106,7 +106,11 @@ function renderList(){
  for(const b of $('missions').querySelectorAll('[data-id]'))b.onclick=()=>selectLaunch(pool.find(l=>l.id===b.dataset.id));
  renderSites();renderCandidateTrails();
 }
-function stopPlayback(){clearInterval(playTimer);playTimer=null;$('play-ascent').textContent='▶ 模拟发射';}
+function updatePlayButtons(){
+ $('play-ascent').textContent=playTimer?'Ⅱ 暂停模拟':'▶ 模拟发射';
+ if($('play-chart')){$('play-chart').textContent=playTimer?'Ⅱ 暂停图表':'▶ 演示图表';$('play-chart').setAttribute('aria-pressed',String(Boolean(playTimer)));}
+}
+function stopPlayback(){clearInterval(playTimer);playTimer=null;updatePlayButtons();}
 function selectLaunch(l,{focus=true,reveal=true}={}){
  clearTimeout(manualAssessmentTimer);
  stopPlayback();manualLaunch=null;selected=l||null;offset=0;manualDirection=false;warningConstraint=null;areaCache=null;$('offset').value=0;azimuth=headingEstimate(l||{}).azimuth;
@@ -167,11 +171,12 @@ function renderDetail(){
  $('offset').disabled=!selected||!preciseTime(activeLaunch());$('reset-earliest').disabled=$('offset').disabled;$('reset-time').disabled=$('offset').disabled;$('play-speed').disabled=$('offset').disabled;$('play-ascent').hidden=!selected||!preciseTime(activeLaunch())||!selected.coordinates;
  if(!selected){$('detail').innerHTML='<p class="eyebrow">MISSION INSIGHT</p><h2>选择任务或发射场</h2><p>悬浮场址查看资料和 30 天任务；点击任务查看详情。</p>';return;}
  const l=activeLaunch(),c=l.coordinates;
- $('detail').innerHTML=`<div class="analysis-heading"><h2>轨迹与观测分析</h2><span>${historyMode()?'发射回溯':manualLaunch?'手动时间模拟':'发射预报'}</span></div>${manualTimeForm()}${c?`<section class="ascent-card"><div class="ascent-heading"><h3>上升段模拟</h3><select id="target" aria-label="轨迹终点高度">${HEIGHT_PRESETS.map(p=>`<option value="${p.height}" ${target===p.height?'selected':''}>${p.label}</option>`).join('')}</select></div><p id="profile-provenance"></p><div class="prediction-controls" id="prediction-controls"><label id="bearing-label">航向 °<input id="prediction-bearing" type="number" min="0" max="359" step="1" value="${azimuth}"></label><div class="range-readout" title="到达所选高度时的地面投影距离；模拟估算，不是当前飞行距离"><span id="range-readout-label">终点地面距离</span><output id="prediction-range" aria-labelledby="range-readout-label" aria-live="polite">—</output></div></div><div id="heading-hint" class="heading-hint"><span id="heading-basis"></span><button id="restore-heading" type="button">恢复建议</button></div><div id="warning-heading" class="warning-heading"></div><p id="historical-heading" class="historical-heading" hidden></p><svg id="profile" viewBox="0 0 260 145" role="img" aria-label="上升段高度与地面距离曲线"></svg><p id="ascent-state"></p><small><span id="profile-limit">预测参数可调，非官方飞行轨迹。</span></small><button id="focus-flight" class="focus-flight">▶ 在地图演示</button></section>`:'<div class="info-block"><h3>上升段模拟</h3><p>缺少发射场坐标，无法绘制轨迹。</p></div>'}<div class="cloud-card" id="recommendation"></div><div id="area-evaluation" class="area-evaluation"></div><button id="export-event">下载该任务日历</button><p id="export-state" role="status"></p>`;
+ $('detail').innerHTML=`<div class="analysis-heading"><h2>轨迹与观测分析</h2><span>${historyMode()?'发射回溯':manualLaunch?'手动时间模拟':'发射预报'}</span></div>${manualTimeForm()}${c?`<section class="ascent-card"><div class="ascent-heading"><h3>上升段模拟</h3><select id="target" aria-label="轨迹终点高度">${HEIGHT_PRESETS.map(p=>`<option value="${p.height}" ${target===p.height?'selected':''}>${p.label}</option>`).join('')}</select></div><p id="profile-provenance"></p><div class="prediction-controls" id="prediction-controls"><label id="bearing-label">航向 °<input id="prediction-bearing" type="number" min="0" max="359" step="1" value="${azimuth}"></label><div class="range-readout" title="到达所选高度时的地面投影距离；模拟估算，不是当前飞行距离"><span id="range-readout-label">终点地面距离</span><output id="prediction-range" aria-labelledby="range-readout-label" aria-live="polite">—</output></div></div><div id="heading-hint" class="heading-hint"><span id="heading-basis"></span><button id="restore-heading" type="button">恢复建议</button></div><div id="warning-heading" class="warning-heading"></div><p id="historical-heading" class="historical-heading" hidden></p><svg id="profile" viewBox="0 0 260 145" role="img" aria-label="上升段高度与地面距离曲线"></svg><p id="ascent-state"></p><small><span id="profile-limit">预测参数可调，非官方飞行轨迹。</span></small><div class="ascent-actions"><button id="play-chart" type="button" class="chart-play" aria-pressed="false">▶ 演示图表</button><button id="focus-flight" class="focus-flight">▶ 在地图演示</button></div></section>`:'<div class="info-block"><h3>上升段模拟</h3><p>缺少发射场坐标，无法绘制轨迹。</p></div>'}<div class="cloud-card" id="recommendation"></div><div id="area-evaluation" class="area-evaluation"></div><button id="export-event">下载该任务日历</button><p id="export-state" role="status"></p>`;
  if($('target'))$('target').onchange=e=>{target=Number(e.target.value);areaCache=null;stopPlayback();offset=0;$('offset').value=0;renderCandidateTrails();renderRating();scheduleDraw();};
  if($('prediction-bearing'))$('prediction-bearing').onchange=e=>{if(historyMode())return;const n=e.target.valueAsNumber;if(!Number.isFinite(n)||!e.target.checkValidity()){e.target.value=azimuth;return;}if(warningConstraint&&!inBearingArc(n,warningConstraint)){e.target.value=azimuth;return;}azimuth=n;manualDirection=true;renderRating();areaCache=null;stopPlayback();offset=0;$('offset').value=0;scheduleDraw();};
  if($('restore-heading'))$('restore-heading').onclick=()=>{if(historyMode())return;azimuth=headingEstimate(l).azimuth;manualDirection=false;warningConstraint=null;renderRating();$('prediction-bearing').value=azimuth;areaCache=null;stopPlayback();offset=0;$('offset').value=0;scheduleDraw();};
- if($('focus-flight'))$('focus-flight').onclick=()=>{setView('map');const p=currentProfile(l);navigation.focus(p.full[Math.floor(p.full.length/2)]||l.coordinates,6);stopPlayback();offset=0;togglePlayback();$('world').scrollIntoView({block:'nearest',behavior:'smooth'});};
+ if($('play-chart'))$('play-chart').onclick=()=>togglePlayback({inPlace:true});
+ if($('focus-flight'))$('focus-flight').onclick=()=>{setView('map');const p=currentProfile(activeLaunch());navigation.focus(p.full[Math.floor(p.full.length/2)]||l.coordinates,6);if(!playTimer)togglePlayback();$('world').scrollIntoView({block:'nearest',behavior:'smooth'});};
  bindManualTime();renderRating();
  if($('warning-heading'))renderHeadingConstraints($('warning-heading'),{launch:l,historical:historyMode()||currentProfile(l).kind!=='predicted',onApply:constraint=>{
   warningConstraint=constraint;azimuth=Math.round(constraint.center*10)/10;manualDirection=true;
@@ -204,6 +209,7 @@ function renderProfile(profile){
  $('historical-heading').hidden=!historyMode();
  $('historical-heading').textContent=profile.kind!=='predicted'&&profile.full.length?'航向已固定 · 采用本次任务轨迹资料':suggestion.kind==='reported_sector'?`🔒 ${selected.direction.label} · 精确角度未公开` :suggestion.kind==='sourced_heading'?`🔒 资料航向 ${suggestion.azimuth}° · 已固定`:'航向待核实 · 不以预估替代历史实际方向';
  $('focus-flight').hidden=!profile.full.length||!preciseTime(activeLaunch());
+ $('play-chart').hidden=$('focus-flight').hidden;updatePlayButtons();
  if(!profile.full.length){$('profile-provenance').textContent='历史轨迹待核实';$('ascent-state').textContent=profile.reason;$('profile-limit').textContent='补充本次任务的方向或轨迹资料后进行回算。';return;}
  $('profile-limit').textContent=predicted?(historyMode()&&suggestion.kind==='reported_sector'?`模拟说明：航向取报道代表角度 ${azimuth}°，参考演示：高度与时序非本次实测。`:'模拟说明：推力、耗燃料、重力与阻力积分；采用参考火箭参数。'):(cutoff?'终点采用本次任务公开关车节点；关车滑行段不生成新尾迹。':'采用本次任务资料，未覆盖的高度不外推。');
  $('profile-provenance').textContent=predicted?(historyMode()?'上升轨迹参考演示':`预测上升轨迹 · ${warningConstraint?'航警模拟约束':manualDirection?'手动航向':suggestion.label} ${azimuth}°`):profile.label+(profile.reached?'':' · 仅已记录段');
@@ -333,15 +339,15 @@ function advancePlayback(now=performance.now()){
  offset=clampPlayback(offset*60+(now-playLastTick)/1000*playSpeed,w)/60;playLastTick=now;
  $('offset').value=offset;scheduleDraw();if(offset*60>=w.end-1e-7)stopPlayback();
 }
-function togglePlayback(){
+function togglePlayback({inPlace=false}={}){
  if(playTimer){advancePlayback();stopPlayback();return;}
  if(!selected||!preciseTime(activeLaunch())||!selected.coordinates)return;
- setView('map');const profile=currentProfile(selected);if(!profile.full.length)return;const w=playbackWindow(profile);updateTimeline(profile);
+ if(!inPlace)setView('map');const profile=currentProfile(selected);if(!profile.full.length)return;const w=playbackWindow(profile);updateTimeline(profile);
  // Resume from the selected preparation or ascent time; stop at the profile endpoint.
  if(offset*60>=w.end-1e-7)offset=0;
  offset=Math.max(Number($('offset').min),offset);$('offset').value=offset;
- playLastTick=performance.now();$('play-ascent').textContent='Ⅱ 暂停模拟';
- playTimer=setInterval(advancePlayback,160);scheduleDraw();
+ playLastTick=performance.now();
+ playTimer=setInterval(advancePlayback,160);updatePlayButtons();scheduleDraw();
 }
 function seekTime(minutes){stopPlayback();offset=clampPlayback(minutes*60,playbackWindow(selected?.coordinates&&preciseTime(activeLaunch())?currentProfile(selected):null))/60;$('offset').value=offset;scheduleDraw();}
 
@@ -390,7 +396,7 @@ $('close-utility-bottom').onclick=$('close-utility').onclick=()=>$('utility').cl
 $('contact-author').onclick=()=>{const open=$('author-wechat').hidden;$('author-wechat').hidden=!open;$('contact-author').setAttribute('aria-expanded',String(open));if(open)$('author-wechat').scrollIntoView({block:'nearest',behavior:'smooth'});};
 $('about').onclick=()=>{$('contact-author').hidden=false;$('author-wechat').hidden=true;$('contact-author').setAttribute('aria-expanded','false');$('utility-body').innerHTML=`<h2>使用说明</h2>
 <h3>1. 选一次发射</h3><p>在任务列表中选择发射，或点击地图上的发射场。可以切换“未来 30 天”和“回溯 30 天”；勾选“可能出现火箭云”可缩小列表。手机底部有“地图演示”“发射日历”“观测分析”三个入口；先在日历选任务，再切换查看地图和分析。</p>
-<h3>2. 播放，看范围怎样变化</h3><p>点击“模拟发射”，拖动时间条也能查看某一时刻。双左箭头按钮回到发射前，T0 是发射时刻，2×、4×等表示播放速度。“在地图演示”会放大轨迹；地图上的“返回”回到之前的视角，没有之前的视角时返回世界地图。</p>
+<h3>2. 播放，看范围怎样变化</h3><p>点击“模拟发射”，拖动时间条也能查看某一时刻。双左箭头按钮回到发射前，T0 是发射时刻，2×、4×等表示播放速度。手机观测分析页的“演示图表”会在当前页播放高度曲线，再点一次暂停；“在地图演示”会切换到地图、放大轨迹并继续播放，播放结束后可再次点击重播；地图上的“返回”回到之前的视角，没有之前的视角时返回世界地图。</p>
 <h3>3. 地图颜色怎么看</h3><p>发射场圆点越大，近期任务越多。灰点是常驻场址，蓝点有近期任务，金色点有值得关注的火箭云候选。地图亮暗底色表示白天和夜晚；橙色线表示模拟上升轨迹。</p><p>蓝色覆盖区域表示当前时刻可能看到受光尾迹的地方，具体分区见“观测分析”中的色标。浅蓝边缘的尾迹更靠近地平线，容易被建筑和云层挡住；深蓝“水母云关注区”值得留意，但不代表一定出现水母形状。地图颜色不等于晴天，出发前还要看“观看建议”。</p>
 <h3>4. 时间未定，也可以试一试</h3><p>选中时间待定的未来任务，在“观测分析”中填写发射地的当地日期和时间，参考旁边的晨昏时间，再点击“按此时间演示”。填写的时间只用于这次模拟，不会改动公布的发射计划。</p>
 <h3>5. 航警和其他设置</h3><p>右侧若有“航警方向参考”，展开后可选择候选用于模拟；点击“恢复建议”可撤销。它只提供可能的方向，需要核对是否对应这次任务。100 / 150 公里是演示的终点高度，不是距离你多远；通常保留默认值即可。</p>

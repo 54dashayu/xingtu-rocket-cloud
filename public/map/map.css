@@ -187,3 +187,8 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
  .topbar .brand .brand-feature{font-size:20px}
  .brand-slogan{font-size:11px}
 }
+
+.ascent-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ascent-actions .focus-flight{margin-top:0}
+.chart-play{display:none;background:#e8f0fc;color:#356bb4;border:1px solid #c3d5ee}
+@media(max-width:850px){.chart-play:not([hidden]){display:inline-flex;align-items:center;justify-content:center}.ascent-actions button{padding:8px 12px;font-size:14px;min-height:40px}}
