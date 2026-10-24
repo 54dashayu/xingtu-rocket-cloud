@@ -1,4 +1,4 @@
-import { installTianditu } from './tianditu.js?v=0.01.21';
+import { installTianditu } from './tianditu.js?v=0.01.22';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.01.2';
 import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.01.6';
 import { areaFill, groundLightTone, AREA_OPACITY, areaLegend } from './area-colors.js?v=20261024ax';

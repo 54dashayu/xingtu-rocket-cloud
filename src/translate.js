@@ -31,6 +31,21 @@ export function translateRocket(name = '') {
     .replace(/^Spectrum\b/i, '光谱号').replace(/^Pallas-1\b/i, '智神星一号').replace(/^Themis Demonstrator\b/i, '忒弥斯可重复使用验证火箭');
   return translated || '未知火箭';
 }
+// Translate the Yaogan series without changing satellite/group identifiers.
+function yaoganSeries(value) {
+  const n=Number(value), digits='零一二三四五六七八九';
+  if(n<10)return digits[n];
+  if(n<100)return (n<20?'':digits[Math.floor(n/10)])+'十'+(n%10?digits[n%10]:'');
+  return value;
+}
+function translateYaogan(value) {
+  return value.replace(/\bYaogan[\s-]*(\d+)(?:\s+Group\s+(\d+)|[-\s]+(\d+)(?:\s+to\s+(\d+))?(?:\s*\/\s*(\d+)-(\d+)(?:\s+to\s+(\d+))?)?)?/gi,
+    (_,series,group,first,last,series2,first2,last2)=>{
+      const satellite=(s,a,b)=>'遥感'+yaoganSeries(s)+'号'+(a?a+'星'+(b?'至'+b+'星':''):'');
+      if(group)return '遥感'+yaoganSeries(series)+'号'+group+'组卫星';
+      return satellite(series,first,last)+(series2?'、'+satellite(series2,first2,last2):'');
+    }).replace(/\bYaogan\b/gi,'遥感');
+}
 export function translateMissionName(name = '', launchId = '') {
   // 国家航天局 2026-10-14 公告；按任务 ID 限定，不能把所有“10 satellites”都改成同一批载荷。
   // https://www.cnsa.gov.cn/n6758823/n6758838/c10780180/content.html
@@ -60,7 +75,7 @@ export function translateMissionName(name = '', launchId = '') {
     .replace(/SDA Tranche 1 Transport Layer A/gi, '太空发展局第1批运输层卫星').replace(/6x HawkEye 360/gi, '6 颗鹰眼360卫星')
     .replace(/\s+\|\s+/g, '｜').replace(/\(([^)]+)\)/g, '（$1）');
   // 尚无可靠中文译名时保留原文，不能用核验状态遮蔽任务名称。
-  return translated;
+  return translateYaogan(translated);
 }
 
 export function translateDescription(value, missionName = '') {

@@ -40,7 +40,7 @@ export function installTianditu({world,viewport,base,labels,credit,error}){
    }
   }
   for(const group of [base,labels])for(const n of [...group.children])if(!needed.has(n.dataset.tile))n.remove();
-  credit.replaceChildren();const link=document.createElement('a');link.href='https://www.tianditu.gov.cn/';link.target='_blank';link.rel='noopener noreferrer';link.textContent='地图来源：天地图';credit.append(link,document.createTextNode(plan.labels?' · 中文地名随缩放显示':' · 放大后显示地名'));
+  credit.replaceChildren();const link=document.createElement('a');link.href='https://www.tianditu.gov.cn/';link.target='_blank';link.rel='noopener noreferrer';link.textContent='地图来源：天地图';credit.append(link,document.createTextNode(' · 底图审图号：GS（2026）4921号')); 
  }
  async function start(){
   try{const r=await fetch('./api/map-config');if(!r.ok)throw Error();const cfg=await r.json();if(!cfg.token)return;token=cfg.token;enabled=true;world.dataset.basemap='tianditu';paint();}
