@@ -2,7 +2,9 @@
 // dragging and zoom anchors also work in the letterboxed parts of the map.
 export function installMapNavigation({world, viewport, zoomIn, zoomOut, reset, back, onExitFocus, onChange, onInteract}) {
  const minScale=.75,maxScale=48;
- const home={scale:1,x:-150,y:0};
+ const portrait=window.matchMedia('(max-width:850px) and (orientation:portrait)');
+ const defaultView=()=>{const scale=portrait.matches?1.4**2:1;return {scale,x:180-330*scale,y:90-90*scale};};
+ let home=defaultView();
  let previousView=null,focusMode=false;
  let view={...home},gesture=null,moved=false,suppressClickUntil=0;
  const pointers=new Map();
@@ -76,6 +78,11 @@ export function installMapNavigation({world, viewport, zoomIn, zoomOut, reset, b
   if(e.key==='+'||e.key==='=')zoom(1.4);else if(e.key==='-')zoom(1/1.4);
   else if(e.key==='0'||e.key==='Home')resetHome();
   else {onInteract();paint({...view,x:view.x+({ArrowLeft:18,ArrowRight:-18}[e.key]||0),y:view.y+({ArrowUp:18,ArrowDown:-18}[e.key]||0)});}
+ });
+ portrait.addEventListener('change',()=>{
+  const isHome=v=>v&&Math.abs(v.scale-home.scale)<1e-8&&Math.abs(v.x-home.x)<1e-8&&Math.abs(v.y-home.y)<1e-8;
+  const restore=isHome(view),savedHome=isHome(previousView);home=defaultView();
+  if(savedHome)previousView={...home};if(restore)paint(home);
  });
  paint(view);
  return {isDragging:()=>pointers.size>0&&moved,focus:(location,scale=4)=>{if(!focusMode)previousView={...view};focusMode=true;onInteract();paint({scale,x:180-(location.longitude+180)*scale,y:90-(90-location.latitude)*scale});}};
