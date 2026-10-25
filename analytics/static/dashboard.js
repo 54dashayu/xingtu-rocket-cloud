@@ -31,8 +31,8 @@ async function load() {
       el.querySelector('.launch').style.flex = a;
     });
     $('products').innerHTML = Object.entries(names).filter(([key]) => !$('site').value || $('site').value === key).map(([key, name]) => { const p = d.products.find(x => x.site === key) || {}; return `<div class="product"><strong>${name}</strong><div><span>${fmt(p.pv)} 次访问</span><span>${fmt(p.ips)} 个 IP</span><span>${history ? '停留未采集' : `平均 ${duration(p.avg_seconds || 0)}`}</span></div></div>`; }).join('');
-    $('ips').innerHTML = d.ips.length ? d.ips.map(x => `<div class="ip-row"><button data-ip="${esc(x.ip)}">${esc(x.ip)}</button><span>${fmt(x.pv)} 次</span></div>`).join('') : '<p class="empty">所选时间内暂无访问</p>';
-    $('rows').innerHTML = d.recent.length ? d.recent.map(r => `<tr><td>${clock(r.started)}</td><td>${names[r.site]}</td><td>${esc(r.ip)}</td><td>${duration(r.active_ms == null ? null : r.active_ms / 1000)}</td><td>${esc(r.device)} / ${esc(r.browser)}</td><td>${esc(r.referrer || '直接访问 / 未提供')}</td><td>${clock(r.updated)}</td></tr>`).join('') : '<tr><td colspan="7" class="empty">这个时间范围内没有记录。新访问产生后点击“刷新统计”。</td></tr>';
+    $('ips').innerHTML = d.ips.length ? d.ips.map(x => `<div class="ip-row"><div class="ip-identity"><button data-ip="${esc(x.ip)}">${esc(x.ip)}</button><small>${esc(x.region || '暂未识别')}</small></div><span>${fmt(x.pv)} 次</span></div>`).join('') : '<p class="empty">所选时间内暂无访问</p>';
+    $('rows').innerHTML = d.recent.length ? d.recent.map(r => `<tr><td>${clock(r.started)}</td><td>${names[r.site]}</td><td>${esc(r.ip)}</td><td>${esc(r.region || '暂未识别')}</td><td>${duration(r.active_ms == null ? null : r.active_ms / 1000)}</td><td>${esc(r.device)} / ${esc(r.browser)}</td><td>${esc(r.referrer || '直接访问 / 未提供')}</td><td>${clock(r.updated)}</td></tr>`).join('') : '<tr><td colspan="8" class="empty">这个时间范围内没有记录。新访问产生后点击“刷新统计”。</td></tr>';
     $('record-note').textContent = history ? '日志请求不代表独立用户；历史停留时间未采集。' : '每行代表一次页面打开，心跳不会增加访问次数。';
     $('page').textContent = `${d.page} / ${d.pages} 页 · ${fmt(t.pv)} 条`;
     $('prev').disabled = page <= 1; $('next').disabled = page >= d.pages;

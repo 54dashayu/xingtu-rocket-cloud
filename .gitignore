@@ -15,3 +15,5 @@ data/calendar-archive.json
 *.sqlite3*
 __pycache__/
 *.pyc
+# Offline IP geography database (download with analytics/fetch_geoip.py)
+*.xdb

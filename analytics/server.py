@@ -13,11 +13,15 @@ from pathlib import Path
 import re
 import sqlite3
 import time
+import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit, parse_qs
 
 TZ = dt.timezone(dt.timedelta(hours=8))
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+from geolocation import locator
+
 DB = os.getenv('ANALYTICS_DB', '/var/lib/xingtu-analytics/visits.sqlite3')
 ORIGIN = os.getenv('ANALYTICS_ORIGIN', 'https://space.bh1jss.net')
 RETENTION_DAYS = 90
@@ -154,6 +158,8 @@ def stats(query):
         meta = dict(c.execute('SELECT key,value FROM metadata'))
         retained_live = c.execute('SELECT COUNT(*) FROM visits').fetchone()[0]
         historical_total = c.execute('SELECT COUNT(*) FROM historical').fetchone()[0]
+    for row in top_ips + recent:
+        row['region'] = locator.lookup(row['ip'])
     return dict(total=total, products=by_site, daily=daily, ips=top_ips, recent=recent,
                 page=page, pages=max(1, math.ceil(total['pv'] / 30)), start=str(start), end=str(end),
                 kind=kind, metadata=meta, retained_live=retained_live, historical_total=historical_total,

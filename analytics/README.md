@@ -4,7 +4,7 @@
 
 ## 部署与认证
 
-Python 3.10+ 标准库，无第三方依赖。`server.py` 仅监听 `127.0.0.1:8792`。部署在 `/opt/xingtu-analytics/current`，数据库 `/var/lib/xingtu-analytics/visits.sqlite3`，服务见 `xingtu-analytics.service`。持久目录由 www-data 拥有、权限 0700，数据文件 0600。不要把数据库和日志提交到仓库。
+Python 3.10+，IP 地区查询使用仓库内附的 ip2region 读取器，无需 pip 安装。`server.py` 仅监听 `127.0.0.1:8792`。部署在 `/opt/xingtu-analytics/current`，数据库 `/var/lib/xingtu-analytics/visits.sqlite3`，服务见 `xingtu-analytics.service`。持久目录由 www-data 拥有、权限 0700，数据文件 0600。不要把数据库和日志提交到仓库。
 
 `nginx-space.inc` 加入 space 域名 TLS server，另在 http 上下文加入：
 
@@ -50,3 +50,15 @@ node --test analytics/tests/tracker.test.cjs
 ```
 
 上线还需检查：未登录后台 HTML/API 均401；公开路径不能绕过认证；两个产品真实浏览器上报成功；隐藏页面期间停留不增长；重启后数据仍在；管理首页入口可用。上线后的维护者验收访问也会计入统计。
+
+## IP 大致地区
+
+排行和明细均在读取时补充地区，支持历史记录和 IPv4 / IPv6。使用本地 ip2region xdb，访客 IP 不发送到外部 API。只缓存两份向量索引（约 1 MiB），文件读取加锁避免并发 seek 错位，结果缓存最多 8192 个 IP。数据库缺失时显示“暂未识别”，不阻塞统计。
+
+部署时下载固定版本并校验 SHA-256（约 48 MB，数据不进入 Git）：
+
+```sh
+python3 analytics/fetch_geoip.py /opt/xingtu-analytics/shared/geoip
+```
+
+可用环境变量 `ANALYTICS_GEOIP_DIR` 指定其他目录。数据保持 root 所有、目录 0755 / 文件 0644，服务仅读取。更换数据后重启统计服务清除缓存。固定来源版本、许可证见 `vendor/README.md`；数据更新不定期，不将安装日期当成归属记录日期。地区是 IP 网络出口的大致归属，可能与实际位置不同；历史访问使用当前库解析，不能还原当时 IP 归属。不进行反向 DNS 或第三方查询。
