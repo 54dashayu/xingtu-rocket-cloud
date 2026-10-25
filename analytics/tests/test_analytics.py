@@ -61,6 +61,21 @@ class AnalyticsTest(unittest.TestCase):
         self.assertEqual(d['total']['pv'],2)
         self.assertIsNone(d['total']['avg_seconds'])
         self.assertEqual(s.stats({})['total']['pv'],0)
+    def test_dashboard_product_options(self):
+        from html.parser import HTMLParser
+        class Options(HTMLParser):
+            def __init__(self):
+                super().__init__(); self.in_site=False; self.values=[]
+            def handle_starttag(self,tag,attrs):
+                a=dict(attrs)
+                if tag=='select': self.in_site=a.get('id')=='site'
+                if tag=='option' and self.in_site: self.values.append(a.get('value'))
+            def handle_endtag(self,tag):
+                if tag=='select': self.in_site=False
+        parser=Options()
+        parser.feed((s.ROOT / 'static/index.html').read_text())
+        self.assertEqual(parser.values,['','launch','rocket-cloud'])
+
     def test_dates_and_pagination(self):
         with self.assertRaises(ValueError): s.stats({'start':'2026-10-20','end':'2026-10-01'})
         for i in range(32): self.emit(page=f'{i:032d}')

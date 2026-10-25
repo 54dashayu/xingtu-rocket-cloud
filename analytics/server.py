@@ -22,8 +22,8 @@ DB = os.getenv('ANALYTICS_DB', '/var/lib/xingtu-analytics/visits.sqlite3')
 ORIGIN = os.getenv('ANALYTICS_ORIGIN', 'https://space.bh1jss.net')
 RETENTION_DAYS = 90
 SITES = {'launch': '全球发射日历', 'rocket-cloud': '火箭云预测'}
-PAGES = {'/launch/': 'launch', '/launch/index.html': 'launch',
-         '/rocket-cloud/': 'rocket-cloud', '/rocket-cloud/index.html': 'rocket-cloud',
+PAGES = {'/launch/': 'launch', '/launch/index.html': 'launch', '/launch/calendar.html': 'launch',
+         '/rocket-cloud/': 'rocket-cloud', '/rocket-cloud/index.html': 'rocket-cloud', '/rocket-cloud/calendar.html': 'rocket-cloud',
          '/rocket-cloud/map.html': 'rocket-cloud', '/launch/map.html': 'rocket-cloud'}
 BOT = re.compile(r'bot|spider|crawler|headless|curl|wget|python|httpclient|monitor|uptime|preview|facebookexternalhit', re.I)
 ID = re.compile(r'^[A-Za-z0-9_-]{16,80}$')

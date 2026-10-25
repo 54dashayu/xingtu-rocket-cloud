@@ -1,8 +1,11 @@
 /* First-party page counts and foreground duration. No fingerprint or persistent visitor ID. */
 (() => {
-  const pages = { '/launch/': 'launch', '/launch/index.html': 'launch', '/launch/map.html': 'rocket-cloud', '/rocket-cloud/': 'rocket-cloud', '/rocket-cloud/index.html': 'rocket-cloud', '/rocket-cloud/map.html': 'rocket-cloud' };
+  const pages = { '/launch/': 'launch', '/launch/index.html': 'launch', '/launch/calendar.html': 'launch', '/launch/map.html': 'rocket-cloud', '/rocket-cloud/': 'rocket-cloud', '/rocket-cloud/index.html': 'rocket-cloud', '/rocket-cloud/calendar.html': 'rocket-cloud', '/rocket-cloud/map.html': 'rocket-cloud' };
   const site = pages[location.pathname];
-  if (!site || window.__xingtuTracked || navigator.doNotTrack === '1') return;
+  const script = document.currentScript;
+  if (navigator.doNotTrack === '1') { if (script) script.dataset.analytics = 'do-not-track'; return; }
+  if (!site || window.__xingtuTracked) return;
+  if (script) script.dataset.analytics = 'active';
   window.__xingtuTracked = true;
   const uid = () => crypto.randomUUID().replaceAll('-', '');
   let session;

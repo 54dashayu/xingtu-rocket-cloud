@@ -22,3 +22,10 @@ test('visible duration excludes background, beacons keep same page ID', async ()
   const last=JSON.parse(await blobs.at(-1).text());
   assert.equal(last.active_ms,40000);
 });
+
+test('Do Not Track stops all events without changing browser settings', () => {
+  let sent=0; const script={dataset:{}};
+  const context={document:{currentScript:script},window:{},location:{pathname:'/launch/'},navigator:{doNotTrack:'1',sendBeacon:()=>sent++}};
+  vm.runInNewContext(code,context);
+  assert.equal(sent,0); assert.equal(script.dataset.analytics,'do-not-track');
+});
