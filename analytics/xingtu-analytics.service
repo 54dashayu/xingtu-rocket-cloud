@@ -1,0 +1,26 @@
+[Unit]
+Description=Xingtu private visit analytics
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/xingtu-analytics/current
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=ANALYTICS_DB=/var/lib/xingtu-analytics/visits.sqlite3
+Environment=ANALYTICS_ORIGIN=https://space.bh1jss.net
+ExecStart=/usr/bin/python3 /opt/xingtu-analytics/current/server.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/xingtu-analytics
+UMask=0077
+MemoryMax=256M
+TasksMax=80
+
+[Install]
+WantedBy=multi-user.target

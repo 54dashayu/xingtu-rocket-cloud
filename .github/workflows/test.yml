@@ -11,3 +11,5 @@ jobs:
         with:
           node-version: '22'
       - run: npm run verify
+      - run: python3 -m unittest discover -s analytics/tests -v
+      - run: node --test analytics/tests/tracker.test.cjs

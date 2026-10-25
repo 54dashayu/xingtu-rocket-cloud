@@ -10,3 +10,8 @@ data/cache.json
 data/history-cache.json
 data/calendar-archive.json
 *.log
+
+# Private analytics data
+*.sqlite3*
+__pycache__/
+*.pyc
