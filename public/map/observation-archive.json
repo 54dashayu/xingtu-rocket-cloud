@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "scope": "首批七个参考案例，不代表完整年度资料库；逐字稿地区不是实测覆盖边界。",
+  "records": [
+    {
+      "id": "sd3-20260411",
+      "launchId": "34fbbb9b-2a86-42cc-af02-6cfe1f4236f7",
+      "evidence": {
+        "status": "transcript",
+        "sources": []
+      },
+      "name": "捷龙三号｜卫星互联网技术试验卫星",
+      "time": "2026-04-11T11:32:00Z",
+      "timeZone": "Asia/Shanghai",
+      "transcriptClaim": "水母状尾迹；未提供观看地点或拍摄时刻",
+      "transcriptRegions": [],
+      "reportedRegions": [],
+      "observation": null,
+      "sources": [
+        {
+          "title": "航天科技集团发射通告",
+          "url": "https://www.spacechina.com/n25/n2014789/n2014804/c4585941/content.html",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        }
+      ],
+      "notes": [
+        "中国交通报另一稿写19:31；采用研制方19:32，保留分钟级差异。"
+      ],
+      "sourceBasis": "用户提供的视频逐字稿及逐项整理的公开资料",
+      "trajectoryStatus": "no_verified_time_height_position_series",
+      "reviewedOn": "2026-10-24"
+    },
+    {
+      "id": "cz6a-20260512",
+      "launchId": "d50ae620-be2f-4690-9f86-fbc2a194bf29",
+      "evidence": {
+        "status": "confirmed",
+        "sources": [
+          {
+            "title": "青岛早报采访及受访者影像",
+            "url": "https://epaper.qingdaonews.com/qdzb/h5/html5/2026-05/14/content_144792_3430601.htm",
+            "kind": "reporter_interview",
+            "checkedOn": "2026-10-24"
+          }
+        ]
+      },
+      "name": "长征六号甲｜千帆极轨09组",
+      "time": "2026-05-12T11:59:00Z",
+      "timeZone": "Asia/Shanghai",
+      "transcriptClaim": "上述地区有人拍摄火箭云",
+      "transcriptRegions": [
+        "山西",
+        "河南",
+        "湖北",
+        "广东",
+        "海南"
+      ],
+      "reportedRegions": [
+        "山东",
+        "山西",
+        "河南",
+        "湖北",
+        "安徽",
+        "广东",
+        "海南"
+      ],
+      "observation": {
+        "nominalUtc": "2026-05-12T12:02:00Z",
+        "precision": "采访所述分钟，不是相机校时",
+        "region": "山东",
+        "association": "reported",
+        "sourceIndex": 1
+      },
+      "sources": [
+        {
+          "title": "国家航天局发射通告",
+          "url": "https://www.cnsa.gov.cn/n6758823/n6758838/c10747820/content.html",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "青岛早报采访及受访者影像",
+          "url": "https://epaper.qingdaonews.com/qdzb/h5/html5/2026-05/14/content_144792_3430601.htm",
+          "kind": "reporter_interview",
+          "checkedOn": "2026-10-24"
+        }
+      ],
+      "notes": [
+        "原候选日期5月16日已由逐字稿及官方通告更正为5月12日。",
+        "报道的过境/上空措辞不当成真实地面航迹。"
+      ],
+      "sourceBasis": "用户提供的视频逐字稿及逐项整理的公开资料",
+      "trajectoryStatus": "no_verified_time_height_position_series",
+      "reviewedOn": "2026-10-24"
+    },
+    {
+      "id": "cz6a-20260604",
+      "launchId": "5db6b0f1-446d-4209-824f-1187e1b6d212",
+      "evidence": {
+        "status": "probable",
+        "sources": [
+          {
+            "title": "菲律宾航天局观测通告",
+            "url": "https://philsa.gov.ph/news/advisory-on-space-jellyfish-sighting-on-june-04/",
+            "kind": "official",
+            "checkedOn": "2026-10-24"
+          }
+        ]
+      },
+      "name": "长征六号甲｜千帆极轨11组",
+      "time": "2026-06-04T11:39:00Z",
+      "timeZone": "Asia/Shanghai",
+      "transcriptClaim": "菲律宾有民众拍摄巨大光影",
+      "transcriptRegions": [
+        "菲律宾"
+      ],
+      "reportedRegions": [
+        "菲律宾部分地区"
+      ],
+      "observation": {
+        "nominalUtc": "2026-06-04T12:00:00Z",
+        "precision": "约20:00；来源未给误差范围",
+        "region": "菲律宾部分地区",
+        "association": "highly_likely",
+        "sourceIndex": 1
+      },
+      "sources": [
+        {
+          "title": "航天科技集团转载新华社发射报道",
+          "url": "https://m.spacechina.com/n2014789/n2014824/c4626101/content.html",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "菲律宾航天局观测通告",
+          "url": "https://philsa.gov.ph/news/advisory-on-space-jellyfish-sighting-on-june-04/",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        }
+      ],
+      "notes": [
+        "PhilSA 原文为 highly likely，保留关联不确定性；没有相机坐标或精确空间边界。"
+      ],
+      "sourceBasis": "用户提供的视频逐字稿及逐项整理的公开资料",
+      "trajectoryStatus": "no_verified_time_height_position_series",
+      "reviewedOn": "2026-10-24"
+    },
+    {
+      "id": "cz6a-20250606",
+      "launchId": null,
+      "evidence": {
+        "status": "transcript",
+        "sources": []
+      },
+      "name": "长征六号甲｜卫星互联网低轨04组",
+      "time": "2025-06-05T20:45:00Z",
+      "timeZone": "Asia/Shanghai",
+      "transcriptClaim": "凌晨发光云带",
+      "transcriptRegions": [
+        "陕西",
+        "山西",
+        "河南"
+      ],
+      "reportedRegions": [
+        "陕西",
+        "山西",
+        "河南"
+      ],
+      "observation": null,
+      "sources": [
+        {
+          "title": "航天科技集团发射通告",
+          "url": "https://www.spacechina.com/n25/n2014789/n2014804/c4354781/content.html",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "上海航天科普原稿（上海经信委转载）",
+          "url": "https://sheitc.sh.gov.cn/djjcdt/20250623/fca4cd30c89f40cdafa1ae7e7f365d65.html",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        }
+      ],
+      "notes": [],
+      "sourceBasis": "用户提供的视频逐字稿及逐项整理的公开资料",
+      "trajectoryStatus": "no_verified_time_height_position_series",
+      "reviewedOn": "2026-10-24"
+    },
+    {
+      "id": "cz7-tz9-20250715",
+      "launchId": null,
+      "evidence": {
+        "status": "transcript",
+        "sources": []
+      },
+      "name": "长征七号｜天舟九号",
+      "time": "2025-07-14T21:34:00Z",
+      "timeZone": "Asia/Shanghai",
+      "transcriptClaim": "爬升时光云铺展；未提供观看地点或拍摄时刻",
+      "transcriptRegions": [],
+      "reportedRegions": [],
+      "observation": null,
+      "sources": [
+        {
+          "title": "国家航天局发射通告",
+          "url": "https://www.cnsa.gov.cn/n6758823/n6758838/c10688700/content.html",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        }
+      ],
+      "notes": [],
+      "sourceBasis": "用户提供的视频逐字稿及逐项整理的公开资料",
+      "trajectoryStatus": "no_verified_time_height_position_series",
+      "reviewedOn": "2026-10-24"
+    },
+    {
+      "id": "f9-sl1040-20260304",
+      "launchId": "5d5e17f4-292b-45f6-ab53-05437cf63ce0",
+      "evidence": {
+        "status": "confirmed",
+        "sources": [
+          {
+            "title": "NASA APOD：Launch Plume: SpaceX Jellyfish",
+            "url": "https://science.nasa.gov/image-article/apod-2026-march-19-launch-plume-spacex-jellyfish/",
+            "kind": "official",
+            "checkedOn": "2026-10-24"
+          }
+        ]
+      },
+      "name": "猎鹰9号｜Starlink 10-40",
+      "time": "2026-03-04T10:52:00Z",
+      "timeZone": "America/New_York",
+      "transcriptClaim": "日出前52分钟，二级发光水母",
+      "transcriptRegions": [],
+      "reportedRegions": [],
+      "observation": null,
+      "sources": [
+        {
+          "title": "SpaceX任务页存档（第三方保存）",
+          "url": "https://sky-brokers.com/wp-content/uploads/2026/03/Starlink-365-Group-10-40-Press-Kit.pdf",
+          "kind": "operator_document_mirror",
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "NASA APOD：Launch Plume: SpaceX Jellyfish",
+          "url": "https://science.nasa.gov/image-article/apod-2026-march-19-launch-plume-spacex-jellyfish/",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        }
+      ],
+      "notes": [
+        "03月04日为 EST（UTC−5），不是夏令时。",
+        "NASA文章独立确认距日出52分钟；没有拿该数值拟合太阳算法。"
+      ],
+      "sourceBasis": "用户提供的视频逐字稿及逐项整理的公开资料",
+      "trajectoryStatus": "no_verified_time_height_position_series",
+      "reviewedOn": "2026-10-24"
+    },
+    {
+      "id": "f9-crs35-20261013",
+      "launchId": "bf2c3027-a314-403e-a416-2bfd5d165ad1",
+      "evidence": {
+        "status": "confirmed",
+        "sources": [
+          {
+            "title": "NASA 发射照片：阳光照亮的水母状尾迹",
+            "url": "https://images.nasa.gov/details/KSC-20261013-PH-BWW01_0001",
+            "kind": "official_observation",
+            "checkedOn": "2026-10-27"
+          }
+        ]
+      },
+      "name": "猎鹰9号｜CRS-35货运龙飞船",
+      "time": "2026-10-13T10:33:00Z",
+      "timeZone": "America/New_York",
+      "transcriptClaim": "早晨6:33发射，巨大太空水母",
+      "transcriptRegions": [],
+      "reportedRegions": [],
+      "observation": null,
+      "sources": [
+        {
+          "title": "NASA发射成功通告",
+          "url": "https://www.nasa.gov/news-release/nasa-science-cargo-launch-on-35th-spacex-resupply-mission-to-station/",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "SpaceX CRS-35任务记录",
+          "url": "https://www.spacex.com/launches/crs35",
+          "kind": "official",
+          "checkedOn": "2026-10-24"
+        },
+        {
+          "title": "NASA 发射照片：阳光照亮的水母状尾迹",
+          "url": "https://images.nasa.gov/details/KSC-20261013-PH-BWW01_0001",
+          "kind": "official_observation",
+          "checkedOn": "2026-10-27"
+        }
+      ],
+      "notes": [
+        "10月13日为 EDT（UTC−4）。",
+        "部分媒体写06:35；采用NASA和SpaceX一致的06:33。"
+      ],
+      "sourceBasis": "用户提供的视频逐字稿及逐项整理的公开资料",
+      "trajectoryStatus": "no_verified_time_height_position_series",
+      "reviewedOn": "2026-10-24"
+    }
+  ]
+}

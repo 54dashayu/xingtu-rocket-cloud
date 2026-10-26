@@ -1,6 +1,6 @@
 {
   "name": "xingtu-rocket-cloud",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "description": "星途火箭云：全球航天发射日历与观测条件推演",
   "type": "module",

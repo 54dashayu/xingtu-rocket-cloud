@@ -230,3 +230,58 @@ body{background:var(--bg)}button,select{background:#f5f8f9;color:var(--text)}but
 .range-readout output{height:auto;min-height:30px;padding:3px 0;border:0;border-radius:0;background:transparent;font-size:18px;line-height:24px;font-weight:650;color:#294f77}
 
 .trajectory-caption{pointer-events:none}
+/* Private observation reports, usable even without a historical flight profile. */
+.observation-entry{padding:14px 16px;background:#eef5ff;border:1px solid #c7d9f1;border-radius:12px;margin:0 0 16px}.observation-entry p{font-size:13px;color:#637f9e;margin-top:6px}.observation-entry button{background:#366fb7;color:white;border:0;padding:9px 14px}
+.observation-report{color-scheme:light;width:min(620px,calc(100vw - 24px));max-height:90dvh;margin:auto;padding:22px;border:1px solid #c4d6eb;border-radius:16px;background:#fff;color:#294564;overflow:auto;box-shadow:0 16px 70px #13365344}.observation-report::backdrop{background:#102c4b88}.report-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.report-heading button{font-size:24px;line-height:1;background:#f1f6fc;color:#315f91;padding:8px 13px}.report-mission{font-weight:600;margin:8px 0!important}.report-intro,.report-privacy,.report-coordinates p{color:#687f97;font-size:13px;line-height:1.6}.observation-report form>label,.report-grid label,.report-coordinates>label{display:grid;gap:5px;margin-top:14px;font-size:15px}.observation-report input:not([type=checkbox]),.observation-report select,.observation-report textarea{width:100%;min-width:0;border:1px solid #bdd0e5;border-radius:7px;padding:9px;background:#f7faff;color:#294564;font:inherit}.observation-report textarea{resize:vertical}.observation-report .report-check{display:flex;gap:8px;align-items:flex-start}.report-check input{accent-color:#366fb7;margin-top:6px;flex-shrink:0}.report-coordinates{border:1px solid #dce6f2;border-radius:9px;padding:12px;margin-top:14px}.report-coordinates summary{cursor:pointer;color:#366fb7}.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.report-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.report-footer button{background:#f3f7fc;color:#315f91;padding:10px 15px}.report-footer .report-submit,.report-thanks button{background:#366fb7;color:#fff}.report-privacy{margin-top:10px!important}#report-message{color:#9b5514;font-size:14px;margin-top:12px}.report-thanks{padding-top:15px}.report-thanks p{margin:12px 0;overflow-wrap:anywhere}.report-reference{font-size:12px;color:#687f97}@media(max-width:480px){.observation-report{padding:16px}.observation-report input,.observation-report select{font-size:16px}.caption-status{gap:7px}.trajectory-caption .mode-pill{white-space:nowrap}}
+/* Independent report/gallery page; retain drafts when switching main views. */
+.desktop-report-entry{white-space:nowrap;background:#e8f2ff;color:#285b94;border:1px solid #a8c8ec;padding:7px 12px;font-size:14px}
+.report-page{display:none;grid-column:1/-1;overflow:auto;background:#eff5fc;padding:20px;min-width:0}
+body[data-mobile-page="reports"] .workspace{display:block}
+body[data-mobile-page="reports"] .workspace>:not(.report-page){display:none}
+body[data-mobile-page="reports"] .report-page{display:block;height:100%}
+body[data-mobile-page="reports"] .mobile-task-context{display:none}
+.report-page-top,.report-content{max-width:760px;margin:0 auto}
+.report-page-top{margin-bottom:12px}.report-content{padding:24px;border:1px solid #c8daef;border-radius:16px;background:white;color:#294564}
+.report-content h1{font-size:25px}.report-content h2{font-size:19px}.report-future{font-size:12px;color:#7891aa;white-space:nowrap}
+.report-content .report-intro{font-size:15px;margin:12px 0 20px}.report-content .report-basics{gap:12px}.report-basics label{display:block;font-size:14px;margin-bottom:6px}
+.report-content input:not([type=checkbox]),.report-content textarea{box-sizing:border-box;width:100%;min-width:0;border:1px solid #bfd3e9;background:#f7faff;border-radius:8px;padding:10px;font:inherit;color:#294564}
+.report-basics>div{min-width:0}.report-basics button{font-size:13px;margin-top:7px;color:#2d65a5;background:#edf5ff;padding:5px 9px}
+.report-content form>label{display:grid;gap:6px;font-size:14px;margin-top:14px}.report-content .report-check{display:flex;align-items:flex-start;gap:8px}.report-hint{font-size:12px;color:#6c829a;margin-top:9px;line-height:1.6}
+.report-result>p{font-size:14px;color:#647f99;margin:10px 0}.report-candidate{padding:15px;background:#f0f6ff;border:1px solid #d3e1f1;border-radius:10px;margin:12px 0}.report-candidate p{font-size:13px;margin:8px 0}.report-candidate button{color:#fff;background:#366fb7}.report-result>button{margin-top:10px}
+.observation-archive{margin-top:28px;border-top:1px solid #d3e1f1;padding-top:22px;line-height:1.65}.archive-intro{font-size:14px;color:#607b96;margin:8px 0 18px}.archive-source-card{padding:16px;margin:12px 0;background:#f5f8fe;border:1px solid #d3e1f1;border-radius:12px}.archive-source-card h3{font-size:17px;margin:0 0 8px}.archive-source-card p{font-size:14px;margin:8px 0}.archive-source-time{color:#356ba9;font-variant-numeric:tabular-nums}.archive-source-card summary{font-size:14px;color:#356ba9;cursor:pointer}.archive-source-card a{display:block;color:#356ba9;margin:10px 0;overflow-wrap:anywhere}.observation-archive>details{margin-top:20px}.observation-archive>details>summary{cursor:pointer}
+@media(max-width:850px){.desktop-report-entry{display:none}.mobile-nav{grid-template-columns:repeat(4,minmax(0,1fr));padding-inline:5px}.mobile-nav button{font-size:12px;white-space:nowrap}.report-page{padding:14px 12px;min-height:calc(100dvh - 150px)}.report-content{padding:16px}.report-content h1{font-size:22px}.report-content input:not([type=checkbox]),.report-content textarea{font-size:16px}.report-page-top{display:none}.report-content .report-grid{gap:10px}}
+.archive-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:0 16px 10px}.archive-filters[hidden]{display:none}.archive-filters label{font-size:12px;color:#607d9e;display:grid;gap:4px}.archive-filters select{min-width:0;width:100%;padding:7px 5px;border:1px solid #c6d8ec;border-radius:7px;background:white;color:#2d527b;font-size:13px}#archive-coverage{font-size:11px;line-height:1.5;margin-bottom:8px}
+
+/* Desktop: scroll filters and tasks together, so long archive notes cannot
+   squeeze the mission list into a small, separately scrolling strip. */
+@media(min-width:851px){
+ .workspace>.missions{min-height:0;max-height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable}
+ .workspace>.missions>*{flex-shrink:0}
+ .workspace>.missions>.mission-list{flex:none;min-height:0;max-height:none;overflow:visible}
+}
+.mission-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.mission-badges:empty{display:none}
+.mission .mission-badges .cloud-badge{margin:0}
+.mission .mission-report{font-size:12px;line-height:1.4;padding:4px 9px;min-height:28px;border:1px solid #b7cde8;border-radius:6px;background:#f5f9ff;color:#3267a9;white-space:nowrap}
+.mission .mission-report:hover{background:#dceafd;border-color:#628cc0}
+.mission .mission-select{display:block;width:100%;padding:0;text-align:left;color:inherit;border:0;border-radius:3px;background:transparent;box-shadow:none}
+.mission .mission-select:hover{background:transparent;color:inherit}
+.evidence-filters{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:8px 0 4px;font-size:14px;color:#56708d}
+.evidence-filters label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.filters .evidence-filters input{width:auto;padding:0;accent-color:#366eb4}
+
+/* Keep the archive exit reachable throughout desktop scrolling. */
+@media(min-width:851px){
+ .report-page-top{position:sticky;top:0;z-index:10;display:flex;justify-content:flex-end;pointer-events:none;margin-bottom:12px}
+ #report-back{pointer-events:auto;background:#366fb7;color:#fff;border:1px solid #245994;box-shadow:0 3px 14px #193c6330;padding:10px 18px;border-radius:10px}
+ .report-page{scroll-padding-top:72px}
+}
+.archive-replay{margin-top:12px;background:#366fb7;color:#fff;padding:8px 14px}
+
+.analysis-task-summary{margin:0 0 16px;padding:12px 14px;border:1px solid #c8d9ed;border-radius:10px;background:#eaf2ff;color:#294f77}.analysis-task-summary>strong{display:block;font-size:17px;line-height:1.45;margin-bottom:8px}.analysis-task-summary .time-pair{font-size:14px}
+@media(max-width:850px){.analysis-task-summary{display:none}}
+/* Keep each timezone label and timestamp together on one compact line. */
+.analysis-task-summary .time-pair{display:flex;align-items:baseline;justify-content:space-between;gap:8px;white-space:nowrap}
+.analysis-task-summary .time-pair>span{display:inline-flex;align-items:baseline;gap:4px;min-width:0;white-space:nowrap}
+.analysis-task-summary .time-pair small{display:inline;font-size:10px!important;white-space:nowrap}
+.analysis-task-summary .time-pair b{display:inline;font-size:12px;white-space:nowrap}

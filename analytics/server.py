@@ -21,6 +21,7 @@ TZ = dt.timezone(dt.timedelta(hours=8))
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 from geolocation import locator
+import observations
 
 DB = os.getenv('ANALYTICS_DB', '/var/lib/xingtu-analytics/visits.sqlite3')
 ORIGIN = os.getenv('ANALYTICS_ORIGIN', 'https://space.bh1jss.net')
@@ -63,12 +64,14 @@ def init():
         CREATE INDEX IF NOT EXISTS historical_started ON historical(started);
         CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY, value TEXT NOT NULL);
         ''')
+        observations.init(c)
         c.execute('INSERT OR IGNORE INTO metadata VALUES (?,?)', ('started', str(time.time())))
     cleanup()
 
 
 def cleanup():
     with connect() as c:
+        observations.clean(c, time.time())
         cutoff = time.time() - RETENTION_DAYS * 86400
         c.execute('DELETE FROM visits WHERE started < ?', (cutoff,))
         c.execute('DELETE FROM historical WHERE started < ?', (cutoff,))
@@ -220,6 +223,24 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        if self.path in ('/report', '/api/reports/status'):
+            admin = self.path == '/api/reports/status'
+            origins = (ORIGIN, 'https://app.bh1jss.net') if admin else (ORIGIN,)
+            if self.headers.get('Origin') not in origins or (admin and self.headers.get('X-Xingtu-Admin') != '1'):
+                return self.respond(403)
+            try:
+                size = int(self.headers.get('Content-Length', 0))
+                if not 0 < size <= 12000:
+                    return self.respond(413)
+                if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
+                    return self.respond(415)
+                data = json.loads(self.rfile.read(size))
+                result = observations.review(connect, data) if admin else observations.submit(connect, data, self.headers.get('X-Real-IP',''))
+                return self.respond(200 if admin else 201, json.dumps(result, ensure_ascii=False).encode())
+            except observations.ReportError as error:
+                return self.respond(error.status, json.dumps({'error': str(error)}, ensure_ascii=False).encode())
+            except (ValueError, TypeError, OverflowError):
+                return self.respond(400, b'{"error":"invalid report"}')
         if self.path != '/event':
             return self.respond(404)
         if self.headers.get('Origin') != ORIGIN:
@@ -236,18 +257,26 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = urlsplit(self.path).path
+        if path == '/report-summary':
+            return self.respond(200,json.dumps(observations.report_summary(connect)).encode())
         if path == '/health':
             return self.respond(200, b'{"ok":true}')
         # A trusted, authenticated Nginx location supplies this flag; public routes explicitly clear it.
         if path not in ('/tracker.js', '/privacy') and self.headers.get('X-Xingtu-Admin') != '1':
             return self.respond(403)
+        if path == '/api/reports':
+            try:
+                query = {k: v[-1] for k, v in parse_qs(urlsplit(self.path).query).items()}
+                return self.respond(200, json.dumps(observations.listing(connect, query), ensure_ascii=False).encode())
+            except ValueError:
+                return self.respond(400)
         if path == '/api/stats':
             try:
                 q = {k: v[-1] for k, v in parse_qs(urlsplit(self.path).query).items()}
                 return self.respond(200, json.dumps(stats(q), ensure_ascii=False).encode())
             except (ValueError, TypeError):
                 return self.respond(400, b'{"error":"invalid filter"}')
-        files = {'/privacy': ('privacy.html', 'text/html'), '/': ('index.html', 'text/html'), '/dashboard.js': ('dashboard.js', 'text/javascript'),
+        files = {'/reports.html': ('reports.html', 'text/html'), '/reports.js': ('reports.js', 'text/javascript'), '/privacy': ('privacy.html', 'text/html'), '/': ('index.html', 'text/html'), '/dashboard.js': ('dashboard.js', 'text/javascript'),
                  '/style.css': ('style.css', 'text/css'), '/tracker.js': ('tracker.js', 'text/javascript')}
         if path not in files:
             return self.respond(404)

@@ -1,4 +1,4 @@
-import { assessmentCopy } from './assessment-copy.js?v=0.01.6';
+import { assessmentCopy } from './assessment-copy.js?v=0.02';
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const requests=new Map();let sequence=0,queueGeneration=0;
 const assessmentURL=(launch,target,historical,scenario=false,azimuth)=>`./api/launches/${encodeURIComponent(launch.id)}/cloud-assessment?range=${historical?'history':'upcoming'}&target=${target}&net=${encodeURIComponent(launch.timing?.net||'')}${scenario&&launch.manualTime?'&simulationTime='+encodeURIComponent(launch.timing.net):''}${scenario&&Number.isFinite(azimuth)?'&azimuth='+azimuth:''}`;

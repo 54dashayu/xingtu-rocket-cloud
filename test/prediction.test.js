@@ -44,3 +44,10 @@ test('historical heading is fixed to task evidence; unknown headings cannot beco
  const sourced={...unknown,flightProfile:testProfile(unknown)};
  assert.equal(simulationProfile(sourced,{historical:true}).kind,'planned');
 });
+test('user-report candidate unlocks a reference scenario, never overrides sourced flight data',()=>{
+ const unknown={...l,direction:{kind:'unconfirmed'},observationReportCount:1};
+ const p=simulationProfile(unknown,{historical:true,azimuth:120});
+ assert.equal(p.kind,'predicted');assert.equal(p.azimuth,120);assert.equal(p.source,null);assert.ok(p.full.length>0);
+ assert.equal(simulationProfile({...unknown,observationReportCount:0},{historical:true}).full.length,0);
+ const sourced={...unknown,flightProfile:testProfile(unknown)};assert.equal(simulationProfile(sourced,{historical:true}).kind,'planned');
+});

@@ -1,6 +1,6 @@
 // Generic two-stage reference scenario, NOT a vehicle specification or telemetry.
 // ECEF Cartesian integration (SI): thrust + gravity + drag - Coriolis - centrifugal.
-// See docs/MODEL.md for equations, parameters and limitations.
+// See docs/发射轨迹与火箭云数据依据.md for equations, parameters and limitations.
 export const EARTH_RADIUS=6371000, MU=3.986004418e14, OMEGA=7.292115e-5, G0=9.80665;
 export const REFERENCE_VEHICLE=Object.freeze({
  mass:500000,stage1Propellant:350000,stage1Dry:25000,

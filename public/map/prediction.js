@@ -1,3 +1,4 @@
+import { hasReplayEvidence } from './archive-evidence.js?v=0.02';
 import { heightPreset } from './height-presets.js?v=20261024am';
 import { headingEstimate } from './heading-estimate.js?v=20261024ad';
 import { flightProfile } from './flight-path.js?v=20261024ay';
@@ -9,8 +10,8 @@ export function simulationProfile(launch,{target=100,elapsed=Infinity,azimuth=he
  if(sourced.full.length||!launch.coordinates)return sourced;
  if(historical){
   const direction=headingEstimate(launch);
-  if(!['sourced_heading','reported_sector'].includes(direction.kind))return {...sourced,reason:'历史任务航向待核实，不使用任务类型猜测实际方向'};
-  azimuth=direction.azimuth;
+  if(!['sourced_heading','reported_sector'].includes(direction.kind)&&!hasReplayEvidence(launch))return {...sourced,reason:'历史任务航向待核实，不使用任务类型猜测实际方向'};
+  if(['sourced_heading','reported_sector'].includes(direction.kind))azimuth=direction.azimuth;
  }
  if(!Number.isFinite(azimuth)||azimuth<0||azimuth>=360||!Number.isFinite(rangeFactor)||rangeFactor<=0||rangeFactor>10)throw new RangeError('Invalid prediction parameters');
  const solution=ascentToHeight(launch.coordinates,azimuth,target);

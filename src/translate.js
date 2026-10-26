@@ -1,3 +1,4 @@
+import { chineseMissionLabel } from '../public/mission-labels.js';
 const AGENCIES = new Map([
   ['SpaceX', '太空探索技术公司'], ['Rocket Lab', '火箭实验室'],
   ['Indian Space Research Organization', '印度空间研究组织'], ['Russian Federal Space Agency (ROSCOSMOS)', '俄罗斯国家航天集团'],
@@ -21,7 +22,7 @@ export const translateCountry = (code, fallback) => COUNTRIES.get(code) || fallb
 
 export function translateRocket(name = '') {
   // 火箭名称优先采用中文航天新闻和企业公告中的常用称谓；型号细节保留在原始字段中供检索。
-  const translated = name.replace(/^Ceres-1S\b/i, '谷神星一号海射型').replace(/^Ceres-1\b/i, '谷神星一号').replace(/^Kinetica\s*-?\s*1\b/i, '力箭一号').replace(/^KSLV-2\s+Nuri\b/i, '世界号').replace(/^Nuri\b/i, '世界号').replace(/^SR75\b/i, 'SR75试验火箭').replace(/^Gravity-1\b/i, '引力一号').replace(/^Zhuque-3\b/i, '朱雀三号').replace(/^Zhuque-2E(?:\s+Block\s*2)?\b/i, '朱雀二号E型')
+  const translated = chineseMissionLabel(name).replace(/^Ceres-1S\b/i, '谷神星一号海射型').replace(/^Ceres-1\b/i, '谷神星一号').replace(/^Kinetica\s*-?\s*1\b/i, '力箭一号').replace(/^KSLV-2\s+Nuri\b/i, '世界号').replace(/^Nuri\b/i, '世界号').replace(/^SR75\b/i, 'SR75试验火箭').replace(/^Gravity-1\b/i, '引力一号').replace(/^Zhuque-3\b/i, '朱雀三号').replace(/^Zhuque-2E(?:\s+Block\s*2)?\b/i, '朱雀二号E型')
     .replace(/^Zhuque-2\b/i, '朱雀二号').replace(/^Long March\s*/i, '长征').replace(/^Falcon 9(?: Block 5)?/i, (match) => match.includes('Block') ? '猎鹰9号 Block 5型' : '猎鹰9号')
     .replace(/^Falcon Heavy/i, '猎鹰重型').replace(/^Electron\b/i, '电子号').replace(/^Soyuz\s*/i, '联盟')
     .replace(/\/?Fregat(?:-M)?\b/gi, (match) => match.startsWith('/') ? '／弗雷加特' : '弗雷加特')
@@ -55,7 +56,7 @@ export function translateMissionName(name = '', launchId = '') {
   }
   // 新华社 2026-10-21：谷神星一号海射型、西光肆号01星。
   // https://finance.people.com.cn/n1/2026/1021/c1004-40818960.html
-  const translated = name.replace(/Ceres-1S\b/gi, '谷神星一号海射型').replace(/Ceres-1\b/gi, '谷神星一号')
+  const translated = chineseMissionLabel(name).replace(/Ceres-1S\b/gi, '谷神星一号海射型').replace(/Ceres-1\b/gi, '谷神星一号')
     .replace(/Xiguang-4\s+01\b/gi, '西光肆号01星')
     .replace(/Yaogan 40 Group\s+04\b/gi, '遥感四十号04组卫星')
     .replace(/SpaceSail Polar Group\s*#?16\b/gi, '千帆极轨26组卫星及欧洲高通量技术试验卫星')
