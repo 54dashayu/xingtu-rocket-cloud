@@ -1,0 +1,3 @@
+NSCameraUsageDescription = "Take a rocket cloud observation photo as an optional report attachment.";
+NSPhotoLibraryUsageDescription = "Choose a rocket cloud observation photo as an optional report attachment.";
+NSLocationWhenInUseUsageDescription = "Use your location to fill in the observation point and calculate rocket cloud visibility, only when you request your current location.";

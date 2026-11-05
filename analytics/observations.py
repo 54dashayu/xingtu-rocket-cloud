@@ -1,4 +1,9 @@
 """Private, moderated observer reports. Never modifies mission or model evidence."""
+import base64
+import binascii
+import io
+import warnings
+from PIL import Image, ImageOps, UnidentifiedImageError
 import datetime as dt
 from functools import lru_cache
 import hashlib
@@ -12,8 +17,9 @@ import time
 import uuid
 from urllib.request import urlopen
 
+Image.MAX_IMAGE_PIXELS = 16000000
 SALT = secrets.token_bytes(32)
-STATUSES = ('pending', 'reviewed', 'invalid')
+STATUSES = ('pending', 'reviewed', 'invalid', 'published')
 
 class ReportError(ValueError):
     def __init__(self, message, status=400):
@@ -34,13 +40,15 @@ def init(c):
     CREATE TABLE IF NOT EXISTS observation_limits(key TEXT PRIMARY KEY, count INTEGER NOT NULL, expires REAL NOT NULL);
     ''')
 
+    c.execute('CREATE TABLE IF NOT EXISTS observation_images(report_id TEXT PRIMARY KEY, image BLOB NOT NULL)')
     columns={r[1] for r in c.execute('PRAGMA table_info(observations)')}
-    for name,definition in [('time_text', "TEXT NOT NULL DEFAULT ''"),('candidates', "TEXT NOT NULL DEFAULT '[]'"),('match_note', "TEXT NOT NULL DEFAULT ''")]:
+    for name,definition in [('publish_consent', 'INTEGER NOT NULL DEFAULT 0'),('public_caption', "TEXT NOT NULL DEFAULT ''"),('time_text', "TEXT NOT NULL DEFAULT ''"),('candidates', "TEXT NOT NULL DEFAULT '[]'"),('match_note', "TEXT NOT NULL DEFAULT ''")]:
         if name not in columns:c.execute(f'ALTER TABLE observations ADD COLUMN {name} {definition}')
 
 
 def clean(c, now):
     c.execute('DELETE FROM observations WHERE created < ?', (now - 365 * 86400,))
+    c.execute('DELETE FROM observation_images WHERE report_id NOT IN (SELECT id FROM observations)')
     c.execute('DELETE FROM observation_limits WHERE expires < ?', (now,))
 
 
@@ -111,9 +119,46 @@ def validate(data, now):
     return rid, payload, digest
 
 
+def photo_bytes(value):
+    if value is None or value == '': return None
+    if not isinstance(value, str) or not value.startswith('data:image/jpeg;base64,') or len(value) > 1400000:
+        raise ReportError('图片格式无效或过大，请重新选择一张照片。')
+    try:
+        raw = base64.b64decode(value.split(',', 1)[1], validate=True)
+        if len(raw) > 1048576: raise ValueError()
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', Image.DecompressionBombWarning)
+            with Image.open(io.BytesIO(raw)) as image:
+                if image.format != 'JPEG' or image.width * image.height > 16000000: raise ValueError()
+                image.load()
+                clean_image = ImageOps.exif_transpose(image).convert('RGB')
+                clean_image.info.clear()
+                clean_image.thumbnail((1280,1280))
+                output = io.BytesIO()
+                clean_image.save(output, format='JPEG', quality=85)
+                return output.getvalue()
+    except (ValueError, OSError, binascii.Error, UnidentifiedImageError, Image.DecompressionBombError, Image.DecompressionBombWarning):
+        raise ReportError('图片无法读取，请重新选择一张照片。')
+
+
+def image_for_report(connect, rid):
+    with connect() as c:
+        row=c.execute('SELECT image FROM observation_images WHERE report_id=?',(rid,)).fetchone()
+    if not row: raise ReportError('图片不存在。',404)
+    return row['image']
+
+
 def submit(connect, data, ip, now=None, find_mission=mission):
     now = time.time() if now is None else now
     rid, p, digest = validate(data, now)
+    image = photo_bytes(data.get('photo'))
+    consent = data.get('publishConsent', False)
+    if type(consent) is not bool: raise ReportError('请确认照片公开选项。')
+    if consent and image is None: raise ReportError('公开照片需先选择一张图片。')
+    p['publish_consent'] = int(consent)
+    if consent: digest = hashlib.sha256((digest + '|publish-photo-v1').encode()).hexdigest()
+    if image is not None:
+        digest = hashlib.sha256((digest + hashlib.sha256(image).hexdigest()).encode()).hexdigest()
     try:
         address = str(ipaddress.ip_address(ip))
     except ValueError:
@@ -150,6 +195,7 @@ def submit(connect, data, ip, now=None, find_mission=mission):
         cols=['id','fingerprint','created','launch_name','launch_time',*p.keys(),'updated']
         c.execute(f'INSERT INTO observations ({",".join(cols)}) VALUES ({",".join("?" for _ in cols)})',
                   [rid,digest,now,str(launch.get('nameZh') or launch.get('name') or '待匹配任务')[:240],launch_time,*p.values(),now])
+        if image is not None: c.execute('INSERT INTO observation_images(report_id,image) VALUES (?,?)',(rid,image))
         for key,_,expiry in keys:
             c.execute('INSERT INTO observation_limits VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1',(key,expiry))
     return receipt(connect,rid)
@@ -163,7 +209,7 @@ def listing(connect, query):
     where,args=('1=1',[]) if status=='all' else ('status=?',[status])
     with connect() as c:
         counts={r['status']:r['n'] for r in c.execute('SELECT status,count(*) n FROM observations GROUP BY status')}
-        rows=[dict(r) for r in c.execute(f'SELECT * FROM observations WHERE {where} ORDER BY created DESC LIMIT 20 OFFSET ?',args+[(page-1)*20])]
+        rows=[dict(r) for r in c.execute(f'SELECT observations.*, EXISTS(SELECT 1 FROM observation_images WHERE report_id=observations.id) AS has_photo FROM observations WHERE {where} ORDER BY created DESC LIMIT 20 OFFSET ?',args+[(page-1)*20])]
     for r in rows:
         r.pop('fingerprint')
         r['candidates']=json.loads(r['candidates'])
@@ -174,11 +220,33 @@ def listing(connect, query):
 def review(connect, data):
     if not isinstance(data,dict) or data.get('status') not in STATUSES:
         raise ReportError('未知状态。')
+    rid = text(data,'id',40,True)
     with connect() as c:
-        changed=c.execute('UPDATE observations SET status=?,updated=? WHERE id=?',(data['status'],time.time(),text(data,'id',40,True))).rowcount
-        if not changed:
-            raise ReportError('报告不存在。',404)
+        c.execute('BEGIN IMMEDIATE')
+        row=c.execute('SELECT publish_consent,created FROM observations WHERE id=?',(rid,)).fetchone()
+        if not row: raise ReportError('报告不存在。',404)
+        caption=''
+        if data['status']=='published':
+            if not row['publish_consent']: raise ReportError('提交者未授权公开照片，不能发布。')
+            if row['created'] < time.time()-365*86400: raise ReportError('报告已超过保留期限。')
+            if not c.execute('SELECT 1 FROM observation_images WHERE report_id=?',(rid,)).fetchone(): raise ReportError('报告没有照片。')
+            caption=text(data,'publicCaption',500,True)
+        c.execute('UPDATE observations SET status=?,public_caption=?,updated=? WHERE id=?',(data['status'],caption,time.time(),rid))
     return dict(ok=True)
+
+
+def public_reports(connect, page=1):
+    page=max(1,int(page))
+    with connect() as c:
+        rows=c.execute("SELECT id,public_caption FROM observations WHERE status='published' AND publish_consent=1 AND created>=? AND EXISTS(SELECT 1 FROM observation_images WHERE report_id=observations.id) ORDER BY updated DESC,id LIMIT 21 OFFSET ?",(time.time()-365*86400,(page-1)*20)).fetchall()
+    return dict(results=[dict(id=r['id'],caption=r['public_caption']) for r in rows[:20]],page=page,hasMore=len(rows)>20)
+
+
+def public_image(connect, rid):
+    with connect() as c:
+        row=c.execute("SELECT image FROM observation_images JOIN observations ON id=report_id WHERE id=? AND status='published' AND publish_consent=1 AND created>=?",(rid,time.time()-365*86400)).fetchone()
+    if not row: raise ReportError('图片不存在或已撤下。',404)
+    return row['image']
 
 
 TZ=dt.timezone(dt.timedelta(hours=8))

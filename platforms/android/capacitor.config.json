@@ -1,0 +1,8 @@
+{
+  "appId": "net.bh1jss.xingtu.dev",
+  "appName": "星途日历·火箭云",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

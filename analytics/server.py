@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 from geolocation import locator
 import observations
+import app_metrics
 
 DB = os.getenv('ANALYTICS_DB', '/var/lib/xingtu-analytics/visits.sqlite3')
 ORIGIN = os.getenv('ANALYTICS_ORIGIN', 'https://space.bh1jss.net')
@@ -65,6 +66,7 @@ def init():
         CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY, value TEXT NOT NULL);
         ''')
         observations.init(c)
+        app_metrics.init(c)
         c.execute('INSERT OR IGNORE INTO metadata VALUES (?,?)', ('started', str(time.time())))
     cleanup()
 
@@ -72,6 +74,7 @@ def init():
 def cleanup():
     with connect() as c:
         observations.clean(c, time.time())
+        app_metrics.clean(c, time.time())
         cutoff = time.time() - RETENTION_DAYS * 86400
         c.execute('DELETE FROM visits WHERE started < ?', (cutoff,))
         c.execute('DELETE FROM historical WHERE started < ?', (cutoff,))
@@ -223,6 +226,15 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        if self.path == '/app-event':
+            if self.headers.get('Origin') != ORIGIN: return self.respond(403)
+            try:
+                size=int(self.headers.get('Content-Length',0))
+                if not 0<size<=2048:return self.respond(413)
+                app_metrics.ingest(connect,json.loads(self.rfile.read(size)))
+                return self.respond(204)
+            except (ValueError,TypeError,OverflowError):return self.respond(400)
+
         if self.path in ('/report', '/api/reports/status'):
             admin = self.path == '/api/reports/status'
             origins = (ORIGIN, 'https://app.bh1jss.net') if admin else (ORIGIN,)
@@ -230,7 +242,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(403)
             try:
                 size = int(self.headers.get('Content-Length', 0))
-                if not 0 < size <= 12000:
+                if not 0 < size <= (12000 if admin else 1450000):
                     return self.respond(413)
                 if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                     return self.respond(415)
@@ -255,8 +267,30 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, TypeError, OverflowError):
             self.respond(400)
 
+    def do_HEAD(self):
+        if urlsplit(self.path).path == '/download/android': return self.download_redirect(False)
+        return self.respond(405)
+
+    def download_redirect(self, count=True):
+        if count and not BOT.search(self.headers.get('User-Agent','')):
+            app_metrics.download(connect,os.getenv('ANDROID_RELEASE','0.03-0010'))
+        self.send_response(302)
+        self.send_header('Location',os.getenv('ANDROID_DOWNLOAD_URL','https://space.bh1jss.net/rocket-cloud/downloads/xingtu-v0.03-0010.apk'))
+        self.send_header('Cache-Control','no-store')
+        self.send_header('Content-Length','0')
+        self.end_headers()
+
     def do_GET(self):
         path = urlsplit(self.path).path
+        if path == '/download/android': return self.download_redirect()
+        if path == '/public-reports':
+            try:
+                page=parse_qs(urlsplit(self.path).query).get('page',['1'])[-1]
+                return self.respond(200,json.dumps(observations.public_reports(connect,page),ensure_ascii=False).encode())
+            except (ValueError,OverflowError): return self.respond(400)
+        if path.startswith('/public-report-images/'):
+            try: return self.respond(200,observations.public_image(connect,path.removeprefix('/public-report-images/')), 'image/jpeg')
+            except observations.ReportError as error: return self.respond(error.status)
         if path == '/report-summary':
             return self.respond(200,json.dumps(observations.report_summary(connect)).encode())
         if path == '/health':
@@ -264,19 +298,31 @@ class Handler(BaseHTTPRequestHandler):
         # A trusted, authenticated Nginx location supplies this flag; public routes explicitly clear it.
         if path not in ('/tracker.js', '/privacy') and self.headers.get('X-Xingtu-Admin') != '1':
             return self.respond(403)
+        if path.startswith('/api/report-images/'):
+            try:
+                rid = path.removeprefix('/api/report-images/')
+                return self.respond(200, observations.image_for_report(connect, rid), 'image/jpeg')
+            except observations.ReportError as error:
+                return self.respond(error.status)
         if path == '/api/reports':
             try:
                 query = {k: v[-1] for k, v in parse_qs(urlsplit(self.path).query).items()}
                 return self.respond(200, json.dumps(observations.listing(connect, query), ensure_ascii=False).encode())
             except ValueError:
                 return self.respond(400)
+        if path == '/api/app-stats':
+            try:
+                q={k:v[-1] for k,v in parse_qs(urlsplit(self.path).query).items()}
+                _,_,lo,hi=dates(q)
+                return self.respond(200,json.dumps(app_metrics.stats(connect,lo,hi)).encode())
+            except ValueError:return self.respond(400)
         if path == '/api/stats':
             try:
                 q = {k: v[-1] for k, v in parse_qs(urlsplit(self.path).query).items()}
                 return self.respond(200, json.dumps(stats(q), ensure_ascii=False).encode())
             except (ValueError, TypeError):
                 return self.respond(400, b'{"error":"invalid filter"}')
-        files = {'/reports.html': ('reports.html', 'text/html'), '/reports.js': ('reports.js', 'text/javascript'), '/privacy': ('privacy.html', 'text/html'), '/': ('index.html', 'text/html'), '/dashboard.js': ('dashboard.js', 'text/javascript'),
+        files = {'/apps.html': ('apps.html','text/html'), '/apps.js': ('apps.js','text/javascript'), '/reports.html': ('reports.html', 'text/html'), '/reports.js': ('reports.js', 'text/javascript'), '/privacy': ('privacy.html', 'text/html'), '/': ('index.html', 'text/html'), '/dashboard.js': ('dashboard.js', 'text/javascript'),
                  '/style.css': ('style.css', 'text/css'), '/tracker.js': ('tracker.js', 'text/javascript')}
         if path not in files:
             return self.respond(404)

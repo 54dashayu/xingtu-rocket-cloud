@@ -1,3 +1,41 @@
+# 星途日历·火箭云
+
+全球航天发射日历、火箭云观测分析与任务级 3D 参考模型。
+
+- [打开网页版](https://space.bh1jss.net/rocket-cloud/)
+- [打开火箭云 3D](https://space.bh1jss.net/rocket-cloud/3d/)
+- [应用与 Android 下载](https://app.bh1jss.net/)
+
+## v0.03 预发布
+
+新增任务级三维地球、太阳照明与地影、尾迹播放、分离事件标记，以及全球/近发射场视角。统一网页、Android 与 iOS 的界面和应用名称。报告支持可选的一张照片，经用户同意及管理员审核后才能公开；定位失败时可选择城市或手动填写经纬度。
+
+后台支持网页访问、报告审核、Android 下载入口计数及匿名 App 前台会话统计。心跳不包含坐标、报告内容或持久设备标识，用户可在页脚关闭使用统计。下载入口请求数不等于安装量。
+
+版本映射：网页 `v0.03 0009`，Android 预发布 `v0.03 0010`；iOS 使用独立递增构建号，上传、审核与正式发布状态以 App Store Connect 为准。
+
+Android APK 是直接测试分发的 debug 签名预发布包，不是 Google Play 正式包。iOS 源码包含独立测试和商店 Bundle ID；自行构建时需配置自己的 Apple 开发者团队。
+
+## 开发
+
+```sh
+npm run verify
+npm run test:3d
+npm ci --prefix prototypes/rocket-cloud-3d
+npm run build:3d
+npm start
+```
+
+`platforms/android` 与 `platforms/ios` 包含原生容器源码；原生包、签名凭证和构建目录不入库。服务部署与私有统计见 `deploy/`、`analytics/`。
+
+## 模型边界
+
+参考轨迹和火箭云预测不保证实际可见；缺少公开飞行数据时，事件节点标注估计。发射几何、太阳照明与天气判断，与新闻/观测证据分开。照片不会因为提交报告而自动公开。
+
+---
+
+以下保留此前模型与部署说明：
+
 <p align="center"><img src="public/icons/rocket-cloud-180.png" width="112" alt="星途火箭云标志"></p>
 <h1 align="center">星途 · 火箭云预测</h1>
 <p align="center">全球航天发射日历与火箭云观测条件推演 · V0.02</p>

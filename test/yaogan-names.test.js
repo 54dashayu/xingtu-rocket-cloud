@@ -8,5 +8,5 @@ test('Yaogan names preserve satellite and group identifiers in Chinese',()=>{
  assert.equal(translateMissionName('YAOGAN-42 02'),'遥感四十二号02星');
  assert.equal(translateMissionName('Yaogan 50'),'遥感五十号');
  assert.equal(translateMissionName('遥感五十号03星'),'遥感五十号03星');
- assert.equal(translateMissionName('Yaogan 50-03 & Yaogan 51-01'),'遥感五十号03星 & 遥感五十一号01星');
+ assert.equal(translateMissionName('Yaogan 50-03 & Yaogan 51-01'),'遥感五十号03星及遥感五十一号01星');
 });

@@ -2,3 +2,7 @@
 
 .ip-identity{min-width:0}.ip-identity button{overflow-wrap:anywhere;text-align:left}.ip-identity small{display:block;color:var(--muted);font-size:12px;line-height:1.5;padding-bottom:5px}.ip-row{gap:15px}.ip-row>span{white-space:nowrap}
 .report-item{margin-top:18px;overflow-wrap:anywhere}.report-notes{white-space:pre-wrap;background:#f5f8fc;padding:12px;border-radius:8px}.report-actions{display:flex;gap:10px;margin-top:14px}.report-item small{color:var(--muted)}
+
+.report-photo{display:block;max-width:100%;max-height:360px;object-fit:contain;border-radius:8px}
+
+.public-caption{display:block;box-sizing:border-box;width:100%;margin:8px 0;padding:10px;font:inherit}

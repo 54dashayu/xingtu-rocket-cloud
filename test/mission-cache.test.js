@@ -16,7 +16,7 @@ test('failed preloads can retry',async()=>{
  await assert.rejects(read('/history'));await read('/history');assert.equal(count,2);
 });
 test('calendar and map use the same Smart Dragon and SatNet Chinese names',()=>{
- assert.equal(chineseMissionLabel('Smart Dragon 3 | SatNet test satellite'),'捷龙三号 | 卫星互联网技术试验卫星');
+ assert.equal(chineseMissionLabel('Smart Dragon 3 | SatNet test satellite'),'捷龙三号｜卫星互联网技术试验卫星');
  assert.equal(translateMissionName('Smart Dragon 3 | SatNet test satellite'),'捷龙三号｜卫星互联网技术试验卫星');
  assert.equal(translateRocket('Smart Dragon 3'),'捷龙三号');
  assert.equal(chineseMissionLabel('Unknown test name'),'Unknown test name');

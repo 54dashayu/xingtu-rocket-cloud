@@ -1,5 +1,6 @@
+import { localizeName, hasReferenceTranslation } from './launch-localization.js';
 // 网页显示层词典；通用描述直接翻译，专有名称参考译法单独标记。
-// 不改变 API 原文、计划状态或小程序显示。
+// 与小程序共用显示规则；保留原文与计划状态。
 const descriptiveRules = [
   [/Bandwagon\s+(\d+)/gi, '拼车任务 $1'],
   [/Dedicated Mid-Inclination Rideshare/gi, '中倾角轨道专用拼车发射'],
@@ -19,9 +20,9 @@ const referenceRules = [
   [/HawkEye 360/gi, '鹰眼360']
 ];
 export function displayName(value = '') {
-  let text = value;
+  let text = localizeName(value);
   for (const [pattern, replacement] of descriptiveRules) text = text.replace(pattern, replacement);
-  let provisional = false;
+  let provisional = hasReferenceTranslation(value);
   for (const [pattern, replacement] of referenceRules) {
     text = text.replace(pattern, () => { provisional = true; return replacement; });
   }

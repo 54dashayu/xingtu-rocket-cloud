@@ -1,5 +1,6 @@
 /* First-party page counts and foreground duration. No fingerprint or persistent visitor ID. */
 (() => {
+  if (/Xingtu\/(android|ios)\//.test(navigator.userAgent)) return;
   const pages = { '/launch/': 'launch', '/launch/index.html': 'launch', '/launch/calendar.html': 'launch', '/launch/map.html': 'rocket-cloud', '/rocket-cloud/': 'rocket-cloud', '/rocket-cloud/index.html': 'rocket-cloud', '/rocket-cloud/calendar.html': 'rocket-cloud', '/rocket-cloud/map.html': 'rocket-cloud' };
   const site = pages[location.pathname];
   const script = document.currentScript;

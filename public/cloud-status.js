@@ -5,6 +5,9 @@ export function cloudOpportunity(launch){
  if(['cancelled','postponed'].includes(status))return 'none';
  const precise=Number.isFinite(Date.parse(launch.timing?.net))&&/分钟|秒|小时|minute|second|hour/i.test(launch.timing?.precision||'');
  if(!precise||['tbd','approximate'].includes(status))return 'pending';
+ const assessment=launch.cloudAssessment;
+ if(assessment?.net===launch.timing?.net&&assessment.model?.code==='possible')return 'possible';
+ if(assessment?.net===launch.timing?.net&&assessment.model?.code==='no_geometry')return 'none';
  const forecast=launch.rocketCloud;
  if(['favorable','possible'].includes(forecast?.code))return 'possible';
  const minutes=forecast?.localSun?.nearest?.minutes;

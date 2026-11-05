@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="report_photo_chooser">選擇一張觀測照片</string>
+    <string name="load_error">暫時無法開啟星途，請檢查網路後重試。</string>
+    <string name="reload">重新載入</string>
+</resources>

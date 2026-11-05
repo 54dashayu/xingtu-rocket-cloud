@@ -1,0 +1,20 @@
+{
+  "name": "xingtu-android",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "snapshot": "node scripts/snapshot.mjs",
+    "preview": "node scripts/preview.mjs",
+    "check": "node --check scripts/snapshot.mjs && node --check scripts/preview.mjs",
+    "sync": "cap sync android",
+    "build:android": "bash scripts/build-android.sh"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.6.0",
+    "@capacitor/android": "8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0"
+  }
+}

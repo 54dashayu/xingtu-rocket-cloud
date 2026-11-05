@@ -11,7 +11,7 @@ test('reference names are marked, identifiers and unknown names preserved', () =
   assert.deepEqual(displayName('电子号｜The Sea God Surveys (iQPS Launch 9)'), {
     text: '电子号｜海神巡测 (iQPS 第 9 次发射)', provisional: true
   });
-  assert.deepEqual(displayName('AayulSAT-1A & others'), {text: 'AayulSAT-1A & 其他载荷', provisional: false});
+  assert.deepEqual(displayName('AayulSAT-1A & others'), {text: 'AayulSAT-1A及其他载荷', provisional: false});
   assert.deepEqual(displayName('长征12A｜第 2 次飞行'), {text: '长征12A｜第 2 次飞行', provisional: false});
 });
 

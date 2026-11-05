@@ -17,3 +17,19 @@ __pycache__/
 *.pyc
 # Offline IP geography database (download with analytics/fetch_geoip.py)
 *.xdb
+
+# Native build and signing artifacts
+.gradle/
+build/
+DerivedData/
+xcuserdata/
+local.properties
+platforms/android/www/
+platforms/android/snapshot/
+*.keystore
+*.jks
+*.mobileprovision
+*.p12
+*.ipa
+*.apk
+*.xcarchive/

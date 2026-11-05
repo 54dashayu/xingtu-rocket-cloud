@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">星途日历·火箭云</string>
+    <string name="title_activity_main">星途日历·火箭云</string>
+    <string name="package_name">net.bh1jss.xingtu.dev</string>
+    <string name="custom_url_scheme">net.bh1jss.xingtu.dev</string>
+    <string name="report_photo_chooser">Choose one observation photo</string>
+    <string name="load_error">Unable to open Xingtu. Check your connection and try again.</string>
+    <string name="reload">Reload</string>
+</resources>

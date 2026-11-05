@@ -47,3 +47,6 @@ footer { align-items: flex-start; gap: 24px; }
 @media (max-width: 800px) { .back-to-top { right: 16px; width: 48px; height: 48px; } }
 
 .card-cloud-status{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}.rocket-cloud-observed{background:#e8eefc;color:#345fa0}.rocket-cloud-reminder{background:#fff0d8;color:#94621e}.rocket-cloud-detail.observed{border-color:#becfe8;background:#f0f5ff}.rocket-cloud-detail.observed a{display:block;font-size:.85rem;margin:6px 0;color:#315f9c}.rocket-cloud-detail.observed p{font-size:.9rem}
+
+/* Local 3D task entry: portrait gets a separate link, landscape uses card click. */
+.launch-3d{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:32px;padding:4px 9px;border:1px solid #789eb0;border-radius:6px;color:#235975;background:#e8f4f8;font-size:12px;font-weight:600;text-decoration:none}

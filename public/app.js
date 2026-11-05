@@ -1,3 +1,6 @@
+const model3DEnabled=['http:','https:'].includes(location.protocol);
+const task3DUrl=(id,history)=>`./3d/index.html?launch=${encodeURIComponent(id)}&range=${history?'history':'upcoming'}`;
+import { localizeLaunch } from './launch-localization.js';
 import { cloudStatus } from './cloud-status.js?v=20261024r';
 import { displayName } from './name-display.js?v=20261016';
 const $ = (selector) => document.querySelector(selector);
@@ -35,7 +38,7 @@ function historyResourcesFor(launch) {
 }
 function rocketCloudHint(launch) {
   const cloud=cloudStatus(launch);
-  if(!['observed','reminder'].includes(cloud.code))return '';
+  if(cloud.code!=='observed')return '';
   return `<span class="rocket-cloud rocket-cloud-${cloud.code}" title="${escapeHtml(cloud.description)}">☁ ${escapeHtml(cloud.label)}</span>`;
 }
 
@@ -57,7 +60,7 @@ function card(launch) {
     <div class="card-top"><span class="flag">${flag(launch.country.code)} ${escapeHtml(launch.country.name)}</span><span class="${history ? 'result' : 'status'} ${history ? launch.result.code : launch.scheduleStatus.code}">${escapeHtml(history ? launch.result.label : launch.scheduleStatus.label)}</span></div>
     <h3>${nameHtml(launch.name)}</h3><div class="meta">${nameHtml(launch.rocket)}${launch.crewed ? ' · 👨‍🚀 载人任务' : ''}${launch.livestream.available ? ' · ◉ 有直播' : ''}</div><div class="location">◎ ${escapeHtml(launch.pad.location || launch.pad.name || '发射地点待定')}</div>
     ${history ? time.replace(/<div class="countdown"[^>]*>.*?<\/div>/, '<div class="countdown">实际发射记录</div>') : time}
-    <div class="card-foot"><span class="agency">${escapeHtml(launch.agency.name)} · ${escapeHtml(launch.agency.ownership === 'private' ? '民营/商业' : launch.agency.ownership === 'state' ? '国营/政府' : '未分类')}</span><span class="card-cloud-status">${rocketCloudHint(launch)}${history ? historyResourceHint : ''}</span></div>${historyResourceLinks}
+    <div class="card-foot"><span class="agency">${escapeHtml(launch.agency.name)} · ${escapeHtml(launch.agency.ownership === 'private' ? '民营/商业' : launch.agency.ownership === 'state' ? '国营/政府' : '未分类')}</span><span class="card-cloud-status">${rocketCloudHint(launch)}${model3DEnabled&&cloudStatus(launch).code===(history?'observed':'reminder')?`<a class="launch-3d" data-resource href="${task3DUrl(launch.id,history)}" aria-label="3D模型：${escapeHtml(launch.name)}">3D模型</a>`:''}${history ? historyResourceHint : ''}</span></div>${historyResourceLinks}
   </article>`;
 }
 
@@ -75,6 +78,7 @@ function writeSnapshot(data) {
   try { localStorage.setItem(cacheKey(), JSON.stringify({ ...data, cachedAt: Date.now() })); } catch { /* 存储不可用时仍正常联网加载 */ }
 }
 function render(data, cached = false) {
+  data = {...data, results: data.results.map(localizeLaunch)};
   state.launches = data.results;
   const next = data.results.find((launch) => launch.timing.net);
   $('#count').textContent = data.meta.count; $('#next-time').textContent = state.view === 'history' ? '已完成' : (next ? countdown(next.timing.net) : '--');
@@ -151,7 +155,7 @@ function setView(view) {
 $('#view-upcoming').addEventListener('click', () => setView('upcoming'));
 $('#view-history').addEventListener('click', () => setView('history'));
 let searchTimer; $('#q').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(load, 250); });
-$('#launches').addEventListener('click', (event) => { if (event.target.closest('[data-resource]')) return; const item = event.target.closest('[data-id]'); if (item) showDetail(state.launches.find((launch) => launch.id === item.dataset.id)); });
+$('#launches').addEventListener('click', (event) => { if (event.target.closest('[data-resource]')) return; const item = event.target.closest('[data-id]'); if(item){showDetail(state.launches.find((launch)=>launch.id===item.dataset.id));} });
 $('#launches').addEventListener('keydown', (event) => { if (event.key === 'Enter') event.target.click(); });
 $('#detail .close').addEventListener('click', () => $('#detail').close());
 $('#calendar-all').addEventListener('click', () => { location.href = `${basePath}/calendar.html`; });

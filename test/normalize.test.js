@@ -122,5 +122,5 @@ test('verified Chinese rocket and payload names survive upstream English and cac
   assert.equal(translateMissionName('Yaogan 40 Group 04'), '遥感四十号04组卫星');
   const id = 'dfcabb3c-078b-4f5b-a47c-0161f248cee9';
   assert.match(translateMissionName('Zhuque-2E Block 2 | 10 satellites', id), /国星宇航星时代-39、44至50星及光传-03、04星/);
-  assert.equal(translateMissionName('10 satellites', 'another-launch'), '10 satellites');
+  assert.equal(translateMissionName('10 satellites', 'another-launch'), '10颗卫星');
 });

@@ -70,6 +70,59 @@ class ObservationTest(unittest.TestCase):
         lo,hi=o.time_window({'observed_at':'','time_text':'10月23日晚上6点20'},now)
         self.assertEqual(o.dt.datetime.fromtimestamp((lo+hi)/2,o.TZ).hour,18)
         self.assertIsNone(o.time_window({'observed_at':'','time_text':'之前'},now))
+    def test_optional_photo_storage_idempotency_privacy_and_retention(self):
+        import base64, io
+        from PIL import Image
+        raw=io.BytesIO();image=Image.new('RGB',(20,20),'blue');image.save(raw,format='JPEG',comment=b'private metadata')
+        photo='data:image/jpeg;base64,'+base64.b64encode(raw.getvalue()).decode()
+        result=self.submit(dict(self.data,photo=photo))
+        self.assertEqual(self.submit(dict(self.data,photo=photo)),result)
+        row=o.listing(s.connect,{})['results'][0]
+        self.assertTrue(row['has_photo']);self.assertNotIn('image',row)
+        stored=o.image_for_report(s.connect,result['id'])
+        self.assertNotIn(b'private metadata',stored)
+        self.assertEqual(Image.open(io.BytesIO(stored)).format,'JPEG')
+        with self.assertRaises(o.ReportError):self.submit(self.data)
+        self.assertNotIn('photo',json.dumps(o.report_summary(s.connect)))
+        with s.connect() as c:o.clean(c,self.now+366*86400)
+        with self.assertRaises(o.ReportError):o.image_for_report(s.connect,result['id'])
+    def test_reject_invalid_multiple_or_oversized_photo(self):
+        for photo in [[],{},['one','two'],'data:image/svg+xml;base64,PHN2Zz4=', 'data:image/jpeg;base64,invalid', 'data:image/jpeg;base64,'+'A'*1400001]:
+            with self.subTest(photo=type(photo)),self.assertRaises(o.ReportError):self.submit(dict(self.data,photo=photo))
+    def test_publication_requires_consent_photo_review_and_withdrawal(self):
+        import base64,io
+        from PIL import Image
+        raw=io.BytesIO();Image.new('RGB',(10,10),'blue').save(raw,format='JPEG')
+        photo='data:image/jpeg;base64,'+base64.b64encode(raw.getvalue()).decode()
+        private=self.submit(dict(self.data,photo=photo))['id']
+        with self.assertRaises(o.ReportError):o.review(s.connect,dict(id=private,status='published',publicCaption='公开说明'))
+        with self.assertRaises(o.ReportError):self.submit(dict(self.data,id=str(uuid.uuid4()),publishConsent=True))
+        rid=str(uuid.uuid4());data=dict(self.data,id=rid,photo=photo,publishConsent=True,latitude=30,longitude=120)
+        self.submit(data)
+        self.assertEqual(o.public_reports(s.connect)['results'],[])
+        with self.assertRaises(o.ReportError):o.public_image(s.connect,rid)
+        with self.assertRaises(o.ReportError):o.review(s.connect,dict(id=rid,status='published',publicCaption=''))
+        with self.assertRaises(o.ReportError):self.submit(dict(data,publishConsent=False))
+        o.review(s.connect,dict(id=rid,status='published',publicCaption='经过审核的照片'))
+        public=o.public_reports(s.connect)['results']
+        self.assertEqual(public,[dict(id=rid,caption='经过审核的照片')])
+        self.assertTrue(o.public_image(s.connect,rid).startswith(b'\xff\xd8'))
+        o.review(s.connect,dict(id=rid,status='reviewed'))
+        self.assertEqual(o.public_reports(s.connect)['results'],[])
+        with self.assertRaises(o.ReportError):o.public_image(s.connect,rid)
+        o.review(s.connect,dict(id=rid,status='published',publicCaption='重新展示'))
+        with s.connect() as c:c.execute('UPDATE observations SET created=? WHERE id=?',(time.time()-366*86400,rid))
+        self.assertEqual(o.public_reports(s.connect)['results'],[])
+        with self.assertRaises(o.ReportError):o.public_image(s.connect,rid)
+        with self.assertRaises(o.ReportError):o.review(s.connect,dict(id=rid,status='published',publicCaption='过期'))
+    def test_old_reports_migrate_without_publication_consent(self):
+        self.submit()
+        with s.connect() as c:
+            o.init(c)
+            row=c.execute('SELECT publish_consent,public_caption FROM observations').fetchone()
+        self.assertEqual(tuple(row),(0,''))
+        self.assertEqual(o.public_reports(s.connect)['results'],[])
+
     def test_http_auth_origin_and_public_no_read(self):
         http=s.ThreadingHTTPServer(('127.0.0.1',0),s.Handler);thread=threading.Thread(target=http.serve_forever,daemon=True);thread.start()
         base=f'http://127.0.0.1:{http.server_port}'
@@ -82,6 +135,9 @@ class ObservationTest(unittest.TestCase):
         try:
             self.assertEqual(request('/api/reports')[0],403)
             self.assertEqual(request('/report')[0],403)
+            self.assertEqual(request('/public-reports')[1]['results'],[])
+            self.assertEqual(request('/public-report-images/'+self.data['id'])[0],404)
+            self.assertEqual(request('/api/report-images/'+self.data['id'])[0],403)
             self.assertEqual(request('/report',self.data)[0],403)
             self.assertEqual(request('/api/reports/status',{'id':'x','status':'reviewed'},{'Origin':s.ORIGIN,'Content-Type':'application/json'})[0],403)
             self.assertEqual(request('/api/reports/status',{}, {'Origin':'https://evil.example','X-Xingtu-Admin':'1','Content-Type':'application/json'})[0],403)

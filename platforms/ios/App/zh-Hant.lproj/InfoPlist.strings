@@ -1,0 +1,3 @@
+NSCameraUsageDescription = "拍攝一張火箭雲觀測照片，作為選填的報告附件。";
+NSPhotoLibraryUsageDescription = "選擇一張火箭雲觀測照片，作為選填的報告附件。";
+NSLocationWhenInUseUsageDescription = "用於填寫觀測地點及計算火箭雲可見情況，僅在點選取得目前位置時請求。";

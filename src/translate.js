@@ -1,3 +1,4 @@
+import { localizeAgency } from '../public/launch-localization.js';
 import { chineseMissionLabel } from '../public/mission-labels.js';
 const AGENCIES = new Map([
   ['SpaceX', '太空探索技术公司'], ['Rocket Lab', '火箭实验室'],
@@ -14,7 +15,7 @@ const PRECISION = new Map([['Second', '精确到秒'], ['Minute', '精确到分�
 const COUNTRIES = new Map([['CN', '中国'], ['US', '美国'], ['RU', '俄罗斯'], ['JP', '日本'], ['IN', '印度'], ['NZ', '新西兰'], ['NO', '挪威'], ['KZ', '哈萨克斯坦'], ['GF', '法属圭亚那'], ['SE', '瑞典'], ['KR', '韩国'], ['KP', '朝鲜'], ['FR', '法国'], ['DE', '德国'], ['IT', '意大利'], ['GB', '英国'], ['AU', '澳大利亚'], ['CA', '加拿大']]);
 const hasChinese = (value) => /[\u3400-\u9fff]/.test(value || '');
 export const translateAgency = (name) => {
-  const translated = AGENCIES.get(name) || name || '未知机构';
+  const translated = AGENCIES.get(name) || localizeAgency(name) || '未知机构';
   return !hasChinese(translated) && /[A-Za-z]/.test(translated) ? '机构中文名称待核验' : translated;
 };
 export const translatePrecision = (value) => PRECISION.get(value) || value || '未知';
@@ -22,7 +23,7 @@ export const translateCountry = (code, fallback) => COUNTRIES.get(code) || fallb
 
 export function translateRocket(name = '') {
   // 火箭名称优先采用中文航天新闻和企业公告中的常用称谓；型号细节保留在原始字段中供检索。
-  const translated = chineseMissionLabel(name).replace(/^Ceres-1S\b/i, '谷神星一号海射型').replace(/^Ceres-1\b/i, '谷神星一号').replace(/^Kinetica\s*-?\s*1\b/i, '力箭一号').replace(/^KSLV-2\s+Nuri\b/i, '世界号').replace(/^Nuri\b/i, '世界号').replace(/^SR75\b/i, 'SR75试验火箭').replace(/^Gravity-1\b/i, '引力一号').replace(/^Zhuque-3\b/i, '朱雀三号').replace(/^Zhuque-2E(?:\s+Block\s*2)?\b/i, '朱雀二号E型')
+  const translated = name.replace(/^Ceres-1S\b/i, '谷神星一号海射型').replace(/^Ceres-1\b/i, '谷神星一号').replace(/^Kinetica\s*-?\s*1\b/i, '力箭一号').replace(/^KSLV-2\s+Nuri\b/i, '世界号').replace(/^Nuri\b/i, '世界号').replace(/^SR75\b/i, 'SR75试验火箭').replace(/^Gravity-1\b/i, '引力一号').replace(/^Zhuque-3\b/i, '朱雀三号').replace(/^Zhuque-2E(?:\s+Block\s*2)?\b/i, '朱雀二号E型')
     .replace(/^Zhuque-2\b/i, '朱雀二号').replace(/^Long March\s*/i, '长征').replace(/^Falcon 9(?: Block 5)?/i, (match) => match.includes('Block') ? '猎鹰9号 Block 5型' : '猎鹰9号')
     .replace(/^Falcon Heavy/i, '猎鹰重型').replace(/^Electron\b/i, '电子号').replace(/^Soyuz\s*/i, '联盟')
     .replace(/\/?Fregat(?:-M)?\b/gi, (match) => match.startsWith('/') ? '／弗雷加特' : '弗雷加特')
@@ -30,7 +31,7 @@ export function translateRocket(name = '') {
     .replace(/^Vulcan\b/i, '火神').replace(/^New Glenn\b/i, '新格伦').replace(/^H3\b/i, 'H3运载火箭')
     .replace(/^GSLV Mk\. II\b/i, '印度地球同步轨道运载火箭 Mk II').replace(/^PSLV\b/i, '印度极轨卫星运载火箭')
     .replace(/^Spectrum\b/i, '光谱号').replace(/^Pallas-1\b/i, '智神星一号').replace(/^Themis Demonstrator\b/i, '忒弥斯可重复使用验证火箭');
-  return translated || '未知火箭';
+  return chineseMissionLabel(translated) || '未知火箭';
 }
 // Translate the Yaogan series without changing satellite/group identifiers.
 function yaoganSeries(value) {
@@ -56,7 +57,7 @@ export function translateMissionName(name = '', launchId = '') {
   }
   // 新华社 2026-10-21：谷神星一号海射型、西光肆号01星。
   // https://finance.people.com.cn/n1/2026/1021/c1004-40818960.html
-  const translated = chineseMissionLabel(name).replace(/Ceres-1S\b/gi, '谷神星一号海射型').replace(/Ceres-1\b/gi, '谷神星一号')
+  const translated = name.replace(/Ceres-1S\b/gi, '谷神星一号海射型').replace(/Ceres-1\b/gi, '谷神星一号')
     .replace(/Xiguang-4\s+01\b/gi, '西光肆号01星')
     .replace(/Yaogan 40 Group\s+04\b/gi, '遥感四十号04组卫星')
     .replace(/SpaceSail Polar Group\s*#?16\b/gi, '千帆极轨26组卫星及欧洲高通量技术试验卫星')
@@ -76,7 +77,7 @@ export function translateMissionName(name = '', launchId = '') {
     .replace(/SDA Tranche 1 Transport Layer A/gi, '太空发展局第1批运输层卫星').replace(/6x HawkEye 360/gi, '6 颗鹰眼360卫星')
     .replace(/\s+\|\s+/g, '｜').replace(/\(([^)]+)\)/g, '（$1）');
   // 尚无可靠中文译名时保留原文，不能用核验状态遮蔽任务名称。
-  return translateYaogan(translated);
+  return chineseMissionLabel(translateYaogan(translated));
 }
 
 export function translateDescription(value, missionName = '') {

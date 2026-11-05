@@ -18,7 +18,7 @@ export function modelAssessment(raw,{target=150,observer=null,azimuth,now=Date.n
  let result;
  if(!profile.full.length)result={...base,code:'preliminary',label:'晨昏初筛 · 轨迹参数待补',candidate:['possible','favorable'].includes(l.rocketCloud.code),reason:profile.reason,points:[]};
  else {
-  const options={profile,untilSeconds:profile.duration,persistenceSeconds:300,minElevation:1};
+  const options={profile,untilSeconds:profile.duration+(history?0:300),persistenceSeconds:300,minElevation:1};
   let points;
   if(observer){const hit=observerVisibility(visibilitySamples(l,options),observer,1);points=hit.possible?[{...observer,...hit}]:[];}
   else points=sampleCells(visibilityFootprint(l,options).cells).map(p=>({...p,...observerVisibility(visibilitySamples(l,options),p,1)})).filter(p=>p.possible&&Number.isFinite(p.firstTime));
@@ -35,6 +35,6 @@ export async function assessCloud(launch,options={}){
  const weather={status:!model.points.length?'not_requested':batches.some(b=>b.status==='available')?'available':batches[0]?.status||'unavailable',
  label:!model.points.length?'待确定观测区域':batches[0]?.label||'天气暂不可用',samples:evaluated,sources:batches.map(({points,...b})=>b),counts:{clearer:available.filter(p=>p.code==='clearer').length,mixed:available.filter(p=>p.code==='mixed').length,obstructed:available.filter(p=>p.code==='obstructed').length,missing:model.points.length-available.length}};
  const conclusion=model.code!=='possible'?model.label:!available.length?'几何条件符合 · 天气待更新':weather.counts.clearer?'存在遮挡较少的观测采样点':weather.counts.mixed?'几何条件符合 · 天气条件一般':'采样点遮挡风险较高';
- return {version:'geometry-weather-1',launchId:launch.id,net:launch.timing?.net,generatedAt:new Date(options.now??Date.now()).toISOString(),launchSource:launch.sources||[],model,weather,conclusion,
+ return {version:'geometry-weather-2',launchId:launch.id,net:launch.timing?.net,generatedAt:new Date(options.now??Date.now()).toISOString(),launchSource:launch.sources||[],model,weather,conclusion,
  limits:'天气只评估观测点遮挡；不代表尾迹一定形成或可见。未计算高层大气扩散、散射亮度和视线沿途云层。区域采用最多9个采样点，不是整片区域天气结论。'};
 }

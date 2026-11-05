@@ -11,5 +11,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm run verify
+      - run: python3 -m pip install -r analytics/requirements.txt
+      - run: npm run test:3d
       - run: python3 -m unittest discover -s analytics/tests -v
       - run: node --test analytics/tests/tracker.test.cjs

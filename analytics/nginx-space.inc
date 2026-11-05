@@ -19,8 +19,8 @@ location = /xingtu-analytics/report-summary {
 location = /xingtu-analytics/report {
     limit_req zone=xingtu_events burst=5 nodelay;
     limit_req_status 429;
-    client_max_body_size 12k;
-    client_body_timeout 10s;
+    client_max_body_size 2m;
+    client_body_timeout 30s;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Xingtu-Admin "";
     proxy_pass http://127.0.0.1:8792/report;
@@ -47,3 +47,28 @@ location = /xingtu-analytics/privacy {
     access_log off;
 }
 location ^~ /xingtu-analytics/ { return 404; }
+
+# Only explicitly consented and administrator-published photos are public.
+location = /xingtu-analytics/public-reports {
+    proxy_set_header X-Xingtu-Admin "";
+    proxy_pass http://127.0.0.1:8792/public-reports;
+    access_log off;
+}
+location ^~ /xingtu-analytics/public-report-images/ {
+    proxy_set_header X-Xingtu-Admin "";
+    proxy_pass http://127.0.0.1:8792/public-report-images/;
+    access_log off;
+}
+
+location = /xingtu-analytics/app-event {
+    limit_req zone=xingtu_events burst=20 nodelay;
+    client_max_body_size 2k;
+    proxy_set_header X-Xingtu-Admin "";
+    proxy_pass http://127.0.0.1:8792/app-event;
+    access_log off;
+}
+location = /xingtu-analytics/download/android {
+    proxy_set_header X-Xingtu-Admin "";
+    proxy_pass http://127.0.0.1:8792/download/android;
+    access_log off;
+}

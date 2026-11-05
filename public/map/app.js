@@ -1,9 +1,14 @@
+const model3DEnabled=['http:','https:'].includes(location.protocol);
+const task3DUrl=(id,history)=>`./3d/index.html?launch=${encodeURIComponent(id)}&range=${history?'history':'upcoming'}`;
+import { indexBadge } from './cloud-index.js';
+import { localizeLaunch } from '../launch-localization.js';
 import { chineseMissionLabel } from '../mission-labels.js?v=0.02';
 import { createMissionCache } from './mission-cache.js?v=0.02';
 const readMissions=createMissionCache();
 import { attachArchiveEvidence, hasReplayEvidence, loadArchiveRecords } from './archive-evidence.js?v=0.02';
 import { HISTORY_RANGES, archiveMatches, observationMatches } from './archive-filters.js?v=0.02';
-import { mountObservationReport } from './observation-report.js?v=0.02';
+import { mountPublicReports } from './public-reports.js?v=20261105-publish';
+import { mountObservationReport } from './observation-report.js?v=20261105-publish';
 import { mountObservationArchive } from './observation-archive.js?v=0.02';
 import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
@@ -44,7 +49,7 @@ const period=()=>datasetMode==='history'?`过去${HISTORY_RANGES.find(r=>r.days=
 const historyMode=()=>datasetMode==='history';
 const statusLabel=l=>historyMode()?(l.result?.label||'已发射'):(l.scheduleStatus?.label||'待确认');
 const cloudLabel=l=>!historyMode()&&$('cloud-only').checked&&cloudOpportunity(l)==='pending'?'时刻待定 · 保留关注':cloudStatus(l).code==='none'?'':cloudStatus(l).label;
-const cloudBadge=l=>cloudLabel(l)?`<span class="cloud-badge ${cloudStatus(l).code}">☁ ${esc(cloudLabel(l))}</span>`:'';
+const cloudBadge=l=>cloudStatus(l).code!=='reminder'&&cloudLabel(l)?`<span class="cloud-badge ${cloudStatus(l).code}">☁ ${esc(cloudLabel(l))}</span>`:'';
 const clockNow=()=>Date.now();
 const linePath=points=>points.map((p,i)=>`${i?'L':'M'}${project(p).join(',')}`).join('');
 for(let x=0;x<=360;x+=30)$('grid').append(svg('path',{d:`M${x},0V180`,stroke:'#9db6c2','stroke-width':'.2',opacity:'.6'}));
@@ -109,14 +114,15 @@ function renderList(){
  pool=historyMode()?pastLaunches(all,Date.now(),historyDays):upcoming(all,Date.now(),30);inventory=siteInventory(pool);
  visible=pool.filter(l=>(!historyMode()||archiveMatches(l,{country:$('history-country').value,crewed:$('history-crewed').value,ownership:$('history-ownership').value}))&&observationMatches({possible:cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0||(!historyMode()&&cloudOpportunity(l)==='pending'),reported:l.observationReportCount>0,media:cloudStatus(l).code==='observed'},{possible:$('cloud-only').checked,reported:historyMode()&&$('report-only').checked,media:historyMode()&&$('media-only').checked}));
  $('cloud-filter-note').hidden=true;$('evidence-filters').hidden=!historyMode();
- $('cloud-only').parentElement.title='日出或日落前后90分钟的宽松筛选，并保留观测记录；多选满足其一。';$('evidence-filters').title='有报告：关联了用户报告。媒体证实：有公开报道证据。多选满足其一。';
+ $('cloud-only').parentElement.title='优先使用逐时轨迹与尾迹受光评估；计算完成前使用晨昏初筛，时刻待定任务保留关注。';$('evidence-filters').title='有报告：关联了用户报告。媒体证实：有公开报道证据。多选满足其一。';
  $('archive-filters').hidden=!historyMode();$('archive-coverage').hidden=!historyMode();
  $('total').textContent=pool.length;$('range-title').textContent=period()+'发射';
  $('range-upcoming').classList.toggle('active',!historyMode());$('range-history').classList.toggle('active',historyMode());$('range-upcoming').setAttribute('aria-pressed',String(!historyMode()));$('range-history').setAttribute('aria-pressed',String(historyMode()));
- $('coverage').textContent=`显示 ${visible.length} / ${pool.length} 项 · 媒体证实 ${pool.filter(l=>cloudStatus(l).code==='observed').length} · 有报告 ${pool.filter(l=>l.observationReportCount>0).length}`;
+ $('coverage').textContent=`显示 ${visible.length} / ${pool.length} 项`+(historyMode()?` · 媒体证实 ${pool.filter(l=>cloudStatus(l).code==='observed').length} · 有报告 ${pool.filter(l=>l.observationReportCount>0).length}`:' · 指数为几何关注度，非概率');
  $('coverage').title='地图仍显示所选时段的全部任务；列表按当前条件筛选。';
- $('missions').innerHTML=visible.length?visible.map(l=>`<article class="mission ${l.id===selected?.id?'selected':''}" data-id="${esc(l.id)}"><span class="status">● ${esc(statusLabel(l))}</span><div class="mission-badges">${cloudBadge(l)}${l.observationReportCount?'<span class="cloud-badge">用户报告候选 · 可回溯</span>':''}${cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0?'<button type="button" class="mission-report" data-report title="前往报告 / 档案填写观测">报告</button>':''}</div><button type="button" class="mission-select" aria-pressed="${l.id===selected?.id}" aria-label="选择任务：${esc(l.name)}"><strong>${esc(l.name)}</strong><small>${esc(l.pad?.location || '场址待补充')}${l.coordinates?'':' · 坐标待补充'}</small><span class="time-pair">${timeHTML(launchTimePair(l))}</span><small class="precision">${esc(launchTimePair(l).note)}</small><small class="countdown" data-count="${esc(l.id)}">${esc(countdown(l,clockNow()))}</small></button></article>`).join(''):'<p class="empty">没有匹配项；地图和日历仍保留全部已收录任务。</p>';
+ $('missions').innerHTML=visible.length?visible.map(l=>`<article class="mission ${l.id===selected?.id?'selected':''}" data-id="${esc(l.id)}"><span class="status">● ${esc(statusLabel(l))}</span><div class="mission-badges">${cloudBadge(l)}${historyMode()&&l.observationReportCount?'<span class="cloud-badge">用户报告候选 · 可回溯</span>':''}${!historyMode()?indexBadge(l):(cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0)?'<button type="button" class="mission-report" data-report title="前往报告 / 档案填写观测">报告</button>':''}${model3DEnabled&&cloudStatus(l).code===(historyMode()?'observed':'reminder')?`<a class="mission-3d" data-3d href="${task3DUrl(l.id,historyMode())}" aria-label="3D模型：${esc(l.name)}">3D模型</a>`:''}</div><button type="button" class="mission-select" aria-pressed="${l.id===selected?.id}" aria-label="选择任务：${esc(l.name)}"><strong>${esc(l.name)}</strong><small>${esc(l.pad?.location || '场址待补充')}${l.coordinates?'':' · 坐标待补充'}</small><span class="time-pair">${timeHTML(launchTimePair(l))}</span><small class="precision">${esc(launchTimePair(l).note)}</small><small class="countdown" data-count="${esc(l.id)}">${esc(countdown(l,clockNow()))}</small></button></article>`).join(''):'<p class="empty">没有匹配项；地图和日历仍保留全部已收录任务。</p>';
  for(const card of $('missions').querySelectorAll('[data-id]'))card.onclick=e=>{
+  if(e.target.closest('[data-3d]'))return;
   if(e.target.closest('[data-report]')){
    e.stopPropagation();setMobilePage('reports');
    requestAnimationFrame(()=>{$('report-panel').scrollTop=0;if(mobileLayout.matches)window.scrollTo({top:0,behavior:'instant'});const heading=$('report-content').querySelector('h1');heading.tabIndex=-1;heading.focus({preventScroll:true});});
@@ -274,7 +280,7 @@ function renderWatchingArea(l,timed){
  if(timed&&l.coordinates&&profile.full.length){
   const key=JSON.stringify([l.id,l.timing.net,target,azimuth,atSeconds]);
   if(!areaCache||areaCache.key!==key){
-   const options={target,persistenceSeconds:TAIL_SECONDS,untilSeconds:profile.duration,atSeconds,profile};
+   const options={target,persistenceSeconds:TAIL_SECONDS,untilSeconds:playbackWindow(profile).end,atSeconds,profile};
    areaCache={key,...visibilityFootprint(l,{...options,minElevation:1,coreElevation:5}),jellyfish:visibilityFootprint(l,{...options,minEmissionHeight:plumeStartHeight,minElevation:5}).cells};
   }
   const {cells,coreCells,twilightCells,jellyfish}=areaCache;
@@ -307,7 +313,7 @@ function renderWatchingArea(l,timed){
   }
   const scope=`当前时刻 · T${atSeconds<0?'−':'+'}${Math.abs(Math.round(atSeconds))} 秒`;
   const caption=document.querySelector('.area-caption');if(caption)caption.textContent=cells.length?'当前有观看区':'当前暂无观看区';
-  box.innerHTML=`<h3>${historyMode()?'可能观看区':'预测可能观看区'}</h3><p class="visibility-scope">${scope}</p>${areaLegend()}<small>从起飞起逐时计算受光尾迹的地面可视范围，包含较低高度的尾迹。普通蓝色区域要求当地太阳低于 −6°，中／浅蓝仅要求低于 −1°；颜色表示几何与天空明暗条件，不是可见概率。分析至 ${Math.round(profile.target)} km，尾迹留存最多 5 分钟、无漂移；未计天气、散射亮度与扩散。高仰角不自动排除；可见尾迹不等于能辨认水母形态。</small>`;
+  box.innerHTML=`<h3>${historyMode()?'可能观看区':'预测可能观看区'}</h3><p class="visibility-scope">${scope}</p>${areaLegend()}<small>从起飞起逐时计算受光尾迹的地面可视范围，包含较低高度的尾迹。普通蓝色区域要求当地太阳低于 −6°，中／浅蓝仅要求低于 −1°；颜色表示几何与天空明暗条件，不是可见概率。分析至 ${Math.round(profile.target)} km，预测观测继续至本段结束后 5 分钟，尾迹各自留存最多 5 分钟、无漂移；未计天气、散射亮度与扩散。高仰角不自动排除；可见尾迹不等于能辨认水母形态。</small>`;
  }else box.innerHTML='<h3>观看区域待计算</h3><p>缺少已核实的方向、轨迹或精确时刻，暂不绘制回算范围。</p>';
 }
 
@@ -392,7 +398,7 @@ function updateMobileLayout(){
 function mapLayoutWidth(){const w=$('world');return Math.max(1,w.clientWidth||innerWidth,mobileLayout.matches?w.clientHeight*2:0);}
 async function load({force=false}={}){
  const id=++requestId;stopPlayback();closePopover();$('data-state').textContent='正在读取'+period()+'任务…';$('refresh').disabled=true;
- try{const data=await readMissions(historyMode()?`./api/launches/previous?days=${historyDays}`:'./api/launches?days=30',{force});if(id!==requestId)return;all=data.results.map(l=>mapLaunch(attachArchiveEvidence({...l,name:chineseMissionLabel(l.name),rocket:chineseMissionLabel(l.rocket),observationReportCount:reportCounts[l.id]||0},archiveRecords)));
+ try{const data=await readMissions(historyMode()?`./api/launches/previous?days=${historyDays}`:'./api/launches?days=30',{force});if(id!==requestId)return;all=data.results.map(localizeLaunch).map(l=>mapLaunch(attachArchiveEvidence({...l,name:chineseMissionLabel(l.name),rocket:chineseMissionLabel(l.rocket),observationReportCount:reportCounts[l.id]||0},archiveRecords)));
  const countries=new Map(all.map(l=>[l.country?.code||'unknown',l.country?.name||'未注明']));const chosenCountry=$('history-country').value;
  $('history-country').innerHTML='<option value="">全部国家 / 地区</option>'+[...countries].sort((a,b)=>a[1].localeCompare(b[1],'zh-CN')).map(([code,name])=>`<option value="${esc(code)}">${esc(name)}</option>`).join('');$('history-country').value=countries.has(chosenCountry)?chosenCountry:'';
  const dates=all.map(l=>Date.parse(l.timing?.net)).filter(Number.isFinite),oldest=dates.length?Math.min(...dates):null;
@@ -418,6 +424,7 @@ $('home').onclick=()=>setView('map');
 $('history-days').onchange=()=>{historyDays=Number($('history-days').value);load();};
 for(const id of ['history-country','history-crewed','history-ownership'])$(id).onchange=renderList;
 for(const button of document.querySelectorAll('[data-mobile-view]'))button.onclick=()=>setMobilePage(button.dataset.mobileView);
+if($('mobile-3d'))$('mobile-3d').onclick=()=>{location.assign(selected?task3DUrl(selected.id,historyMode()):'./3d/index.html');};
 mobileLayout.addEventListener('change',updateMobileLayout);
 const mobileHeaderObserver=new ResizeObserver(updateMobileLayout);mobileHeaderObserver.observe(document.querySelector('.topbar'));mobileHeaderObserver.observe(document.querySelector('.global-toolbar'));mobileHeaderObserver.observe(document.querySelector('.mobile-task-context'));
 updateMobileLayout();
@@ -468,6 +475,7 @@ const replayArchiveMission=async id=>{
  });
 };
 mountObservationReport($('report-content'),{onSubmitted:refreshReports,onReplay:replayArchiveMission});
+const publicReports=document.createElement('section');$('report-content').append(publicReports);mountPublicReports(publicReports);
 const referenceArchive=document.createElement('section');referenceArchive.className='observation-archive';referenceArchive.setAttribute('aria-label','火箭云参考档案');$('report-content').append(referenceArchive);mountObservationArchive(referenceArchive,{onReplay:replayArchiveMission});
 $('report-back').onclick=()=>setMobilePage('map');
 void loadLand();renderSites();void Promise.allSettled([refreshReports(),loadArchiveRecords().then(records=>{archiveRecords=records;})]).then(load);scheduleDraw();

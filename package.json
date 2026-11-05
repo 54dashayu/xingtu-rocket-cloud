@@ -1,15 +1,17 @@
 {
   "name": "xingtu-rocket-cloud",
-  "version": "0.0.2",
+  "version": "0.3.0-rc.1",
   "private": false,
-  "description": "星途火箭云：全球航天发射日历与观测条件推演",
+  "description": "星途日历·火箭云：全球发射日历、观测分析与3D模型",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "test": "node --test test/*.test.js",
     "check": "node --check src/server.js && node --check public/app.js && node --check public/map/app.js && node --check public/map/model.js && node --check public/map/solar.js",
-    "verify": "npm run check && npm test"
+    "verify": "npm run check && npm test",
+    "build:3d": "node scripts/build-rocket-cloud-3d.mjs",
+    "test:3d": "node --test prototypes/rocket-cloud-3d/*.test.mjs"
   },
   "engines": {
     "node": ">=20"
