@@ -33,3 +33,6 @@ platforms/android/snapshot/
 *.ipa
 *.apk
 *.xcarchive/
+
+!public/3d/vendor/build/
+!public/3d/vendor/build/**
