@@ -12,7 +12,7 @@ import { mountObservationReport } from './observation-report.js?v=20261105-publi
 import { mountObservationArchive } from './observation-archive.js?v=0.02';
 import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
-import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.02';
+import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0014';
 import { areaFill, groundLightTone, AREA_OPACITY, areaLegend } from './area-colors.js?v=20261024ax';
 import { localDateTime, localTimeCandidates, simulationLaunch } from './manual-time.js?v=20261024aq';
 import { playbackWindow, clampPlayback, TAIL_SECONDS } from './timeline.js?v=20261024ao';
@@ -168,7 +168,7 @@ function bindManualTime(){
   $('manual-fold').innerHTML=choices.map((utc,i)=>`<option value="${utc}">${i===0?'第一次':'第二次'} · UTC ${utc.slice(11,16)}</option>`).join('');
   if(choices.includes(old))$('manual-fold').value=old;
   $('manual-demo').disabled=!choices.length||!selected.coordinates;
-  $('manual-time-message').textContent=date&&time&&!choices.length&&known?'该当地时间不存在或格式无效，请调整（可能处于夏令时跳时）。':manualLaunch?'当前为手动时间模拟；修改后自动更新模型与天气。':'';
+  $('manual-time-message').textContent=date&&time&&!choices.length&&known?'该当地时间不存在或格式无效，请调整（可能处于夏令时跳时）。':manualLaunch?'当前为手动时间模拟；修改后自动更新分析。':'';
  };
  const apply=(play=false)=>{
   update();if($('manual-demo').disabled)return;

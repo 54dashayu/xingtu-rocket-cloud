@@ -273,9 +273,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def download_redirect(self, count=True):
         if count and not BOT.search(self.headers.get('User-Agent','')):
-            app_metrics.download(connect,os.getenv('ANDROID_RELEASE','0.03-0010'))
+            app_metrics.download(connect,os.getenv('ANDROID_RELEASE','0.03-0014'))
         self.send_response(302)
-        self.send_header('Location',os.getenv('ANDROID_DOWNLOAD_URL','https://space.bh1jss.net/rocket-cloud/downloads/xingtu-v0.03-0010.apk'))
+        self.send_header('Location',os.getenv('ANDROID_DOWNLOAD_URL','https://space.bh1jss.net/rocket-cloud/downloads/xingtu-v0.03-0014.apk'))
         self.send_header('Cache-Control','no-store')
         self.send_header('Content-Length','0')
         self.end_headers()

@@ -55,7 +55,7 @@ async function api(req, res, url) {
     const launch=attachFlightProfile(attachCloudEvidence(raw));
     let scenario;
     try{scenario=assessmentScenario(launch,{time:url.searchParams.get('simulationTime'),azimuth:url.searchParams.get('azimuth'),historical:history});}catch(error){return json(res,400,{error:error.message});}
-    const result=await assessCloud(scenario.launch,{target,observer,...scenario.options});
+    const result=await assessCloud(scenario.launch,{target,observer,...scenario.options,weatherEnabled:!(/Xingtu\/ios\//.test(req.headers['user-agent']||'')||url.searchParams.get('weather')==='off')});
     return json(res,200,{...result,launchData:{source:data.source,fetchedAt:data.fetchedAt,stale:Boolean(data.stale)}});
   }
   if (url.pathname === '/api/calendar/subscription.ics') {

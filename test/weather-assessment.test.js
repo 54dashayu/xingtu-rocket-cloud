@@ -63,3 +63,13 @@ test('manual scenario changes only evaluation time, not published task',async()=
  assert.throws(()=>assessmentScenario(raw,{time:'bad'}),/无效/);
  assert.throws(()=>assessmentScenario(raw,{time:'2026-10-28T11:00:00Z',historical:true}),/历史/);
 });
+
+test('iOS geometry-only mode retains geometry and never invokes weather',async()=>{
+ const {assessmentScenario}=await import('../src/assessment-scenario.js');
+ const raw={id:'geometry-only',timing:{net:null,precision:'仅确定日期'},scheduleStatus:{code:'tbd'},result:{code:'pending'},pad:{latitude:28,longitude:-80,timezone:'America/New_York'}};
+ const {launch,options}=assessmentScenario(raw,{time:'2026-10-28T11:00:00.000Z',azimuth:'90'});
+ let calls=0;
+ const r=await assessCloud(launch,{...options,now,weatherEnabled:false,weatherProvider:()=>{calls++;throw Error('must not request');}});
+ assert.equal(calls,0);assert.equal(r.weather.status,'disabled');assert.deepEqual(r.weather.samples,[]);
+ assert.notEqual(r.model.code,'pending');assert.notEqual(r.model.code,'preliminary');assert.equal(r.conclusion,r.model.label);
+});

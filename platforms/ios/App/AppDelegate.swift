@@ -46,7 +46,7 @@ final class PreviewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         configuration.userContentController.addUserScript(WKUserScript(source: exportGuard, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
-        configuration.applicationNameForUserAgent = "Xingtu/ios/\(version)/\(build)"
+        configuration.applicationNameForUserAgent = "Xingtu/ios/\(version)/\(build) GeometryOnly/1"
         let buildLabel = String(format: "%04d", Int(build) ?? 0)
         let versionJSON = String(data: try! JSONSerialization.data(withJSONObject: ["v\(version) \(buildLabel)"]), encoding: .utf8)!
         let versionScript = "if(location.origin==='https://space.bh1jss.net'){document.querySelectorAll('.release-footer strong').forEach(el=>el.textContent=\(versionJSON)[0]);}"

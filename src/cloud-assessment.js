@@ -28,6 +28,10 @@ export function modelAssessment(raw,{target=150,observer=null,azimuth,now=Date.n
 }
 export async function assessCloud(launch,options={}){
  const model=modelAssessment(launch,options);
+ // First iOS release is geometry-only: return before any weather provider call.
+ if(options.weatherEnabled===false)return {version:'geometry-only-1',launchId:launch.id,net:launch.timing?.net,generatedAt:new Date(options.now??Date.now()).toISOString(),launchSource:launch.sources||[],model,
+ weather:{status:'disabled',label:'此版本未提供天气预测',samples:[],sources:[],counts:{}},conclusion:model.label,
+ limits:'仅分析光照和几何可见性，不包含天气、尾迹亮度与扩散预测；不保证实际可见。'};
  // Query each observation point at its first eligible time, not weather at the launch pad.
  const groups=new Map();for(const p of model.points){const hour=Math.round(p.firstTime/3600000)*3600000;const group=groups.get(hour)||[];group.push(p);groups.set(hour,group);}
  const batches=[];for(const [hour,points]of groups)batches.push(await (options.weatherProvider||weatherAt)(points,new Date(hour).toISOString(),options));
