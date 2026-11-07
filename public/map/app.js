@@ -1,6 +1,6 @@
 const model3DEnabled=['http:','https:'].includes(location.protocol);
 const task3DUrl=(id,history)=>`./3d/index.html?launch=${encodeURIComponent(id)}&range=${history?'history':'upcoming'}`;
-import { indexBadge } from './cloud-index.js';
+import { indexBadge } from './cloud-index.js?v=0.03-0015';
 import { localizeLaunch } from '../launch-localization.js';
 import { chineseMissionLabel } from '../mission-labels.js?v=0.02';
 import { createMissionCache } from './mission-cache.js?v=0.02';
@@ -12,7 +12,7 @@ import { mountObservationReport } from './observation-report.js?v=20261105-publi
 import { mountObservationArchive } from './observation-archive.js?v=0.02';
 import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
-import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0014';
+import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0015';
 import { areaFill, groundLightTone, AREA_OPACITY, areaLegend } from './area-colors.js?v=20261024ax';
 import { localDateTime, localTimeCandidates, simulationLaunch } from './manual-time.js?v=20261024aq';
 import { playbackWindow, clampPlayback, TAIL_SECONDS } from './timeline.js?v=20261024ao';
@@ -23,7 +23,7 @@ import { trajectoryStyle, regionEdges } from './overlay-style.js?v=20261024aj';
 import { simulationProfile } from './prediction.js?v=0.02';
 import { flightProfile } from './flight-path.js?v=20261024am';
 import { cloudStatus, cloudOpportunity } from '../cloud-status.js?v=20261024ba';
-import { visibilityFootprint, jellyfishReferenceHeight } from './visibility.js?v=20261024ay';
+import { visibilityFootprint, jellyfishReferenceHeight } from './visibility.js?v=0.03-0015';
 import { installMapNavigation } from './navigation.js?v=0.02';
 import { solarPosition, altitudeAt } from './solar.js?v=20261024ad';
 import { localSunContext, sunEvents, padTimezone } from './sun-events.js?v=20261024aq';

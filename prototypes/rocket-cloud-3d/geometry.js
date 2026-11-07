@@ -1,6 +1,6 @@
 import {mapLaunch} from '../../public/map/model.js';
 import {simulationProfile} from '../../public/map/prediction.js';
-import {visibilitySamples,visibilityFootprint,elevationAt} from '../../public/map/visibility.js';
+import {visibilitySamples,visibilityFootprint,elevationAt,parcelVisibility} from '../../public/map/visibility.js?v=0.03-0015';
 import {solarPosition,altitudeAt} from '../../public/map/solar.js';
 import {sunEvents} from '../../public/map/sun-events.js';
 export {solarPosition,altitudeAt,elevationAt};
@@ -12,7 +12,13 @@ export function footprint(s,t){return visibilityFootprint(s.launch,{profile:s.pr
 export function pair(site,day,azimuth){const e=sunEvents(day+'T04:00:00Z',site,'Asia/Shanghai',-4);return ['sunrise','sunset'].map(kind=> e[kind]?{kind,...createScenario(site,e[kind],azimuth)}:null);}
 // Independent Cartesian line-of-sight check: segment intersects the solid sphere.
 export function earthBlocked(observer,point){const a=xyz(observer),b=xyz(point),d=b.map((v,i)=>v-a[i]);const dd=d.reduce((s,v)=>s+v*v,0);if(dd===0)return false;const u=Math.max(0,Math.min(1,-a.reduce((s,v,i)=>s+v*d[i],0)/dd));return a.reduce((s,v,i)=>s+(v+u*d[i])**2,0)<1-1e-12;}
-export function observe(f,observer){const rows=f.parcels.map(p=>({p,elevation:elevationAt(observer,p),blocked:earthBlocked(observer,p)}));const sunAltitude=altitudeAt(f.sun,observer.latitude,observer.longitude);const eligible=rows.filter(r=>!r.blocked&&r.p.sunlit&&r.elevation>=5&&sunAltitude<=-1);const best=[...rows].sort((a,b)=>(Number(eligible.includes(b))-Number(eligible.includes(a)))||b.elevation-a.elevation)[0];return {sunAltitude,eligible,best};}
+export function observe(f,observer){
+ const rows=f.parcels.map(p=>({p,...parcelVisibility(observer,p),blocked:earthBlocked(observer,p)}));
+ const sunAltitude=altitudeAt(f.sun,observer.latitude,observer.longitude);
+ const eligible=rows.filter(r=>!r.blocked&&r.possible);
+ const best=[...rows].sort((a,b)=>(Number(eligible.includes(b))-Number(eligible.includes(a)))||b.elevation-a.elevation)[0];
+ return {sunAltitude,eligible,best,sunwardLimited:!eligible.length&&rows.some(r=>!r.blocked&&r.sunwardLimited)};
+}
 
 // Evaluate the whole available trajectory + parcel lifetime, independent of slider.
 // One-second sampling plus exact emission/expiry boundaries; not a weather probability.
@@ -23,7 +29,7 @@ export function observationWindow(s,observer){
  const windows=[];let open=null,maxElevation=null;
  for(const t of [...times].sort((a,b)=>a-b)){
   const f=frame(s,t);let best=-Infinity;
-  if(altitudeAt(f.sun,observer.latitude,observer.longitude)<=-1)for(const p of f.parcels)if(p.sunlit){const e=elevationAt(observer,p);if(e>=5&&!earthBlocked(observer,p))best=Math.max(best,e);}
+  if(altitudeAt(f.sun,observer.latitude,observer.longitude)<=-1)for(const p of f.parcels)if(p.sunlit){const v=parcelVisibility(observer,p);if(v.possible&&!earthBlocked(observer,p))best=Math.max(best,v.elevation);}
   if(best>-Infinity){if(!open)open={start:t,end:t};else open.end=t;maxElevation=Math.max(maxElevation??-Infinity,best);}
   else if(open){windows.push(open);open=null;}
  }

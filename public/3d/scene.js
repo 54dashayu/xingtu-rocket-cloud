@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {xyz,observe,safeCameraPosition} from './geometry.js?v=20261104-camera';
+import {xyz,observe,safeCameraPosition} from './geometry.js?v=0.03-0015';
 const V=p=>new T.Vector3(...xyz(p));
 function line(points,color,opacity=1,dashed=false){const g=new T.BufferGeometry().setFromPoints(points);const m=dashed?new T.LineDashedMaterial({color,transparent:true,opacity,dashSize:.012,gapSize:.008}):new T.LineBasicMaterial({color,transparent:opacity<1,opacity});const l=new T.Line(g,m);if(dashed)l.computeLineDistances();return l;}
 function disposeGroup(g){for(const o of [...g.children]){o.traverse(q=>{q.geometry?.dispose();if(q.material){q.material.map?.dispose();q.material.dispose();}});g.remove(o);}}

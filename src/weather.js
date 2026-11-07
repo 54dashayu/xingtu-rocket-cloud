@@ -23,7 +23,9 @@ export async function weatherAt(points,time,{now=Date.now(),fetcher=fetch}={}){
  const fields=['cloud_cover','cloud_cover_low','cloud_cover_mid','cloud_cover_high','precipitation','wind_speed_10m',...(route.kind==='reanalysis'?[]:['visibility'])];
  const date=new Date(time).toISOString().slice(0,10),url=new URL(route.base);
  for(const [k,v]of Object.entries({latitude:points.map(p=>p.latitude).join(','),longitude:points.map(p=>p.longitude).join(','),start_date:date,end_date:date,hourly:fields.join(','),timezone:'UTC',timeformat:'unixtime',wind_speed_unit:'ms',cell_selection:'nearest'}))url.searchParams.set(k,v);
- const key=url.href,old=cache.get(key),ttl=route.kind==='reanalysis'?DAY:3600000;
+ // The response below contains the selected hourly values, not the whole day.
+ // Include requested time or later observation windows reuse the wrong hour.
+ const key=url.href+'|'+new Date(time).toISOString(),old=cache.get(key),ttl=route.kind==='reanalysis'?DAY:3600000;
  if(old&&now-old.saved<ttl)return {...old.result,cached:true};
  if(pending.has(key))return pending.get(key);
  const work=(async()=>{try{

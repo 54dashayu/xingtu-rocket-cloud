@@ -39,7 +39,7 @@ export function visibilitySamples(launch,options={}){
  return [points];
 }
 export function observerVisibility(samples,observer,minElevation=5,maxSunAltitude=-1){
- const variants=samples.map(points=>points.filter(p=>p.sunlit&&altitudeAt(p.sun,observer.latitude,observer.longitude)<=maxSunAltitude&&elevationAt(observer,p)>=minElevation));
+ const variants=samples.map(points=>points.filter(p=>parcelVisibility(observer,p,minElevation,maxSunAltitude).possible));
  const hits=variants.filter(v=>v.length),all=hits.flat();
  return {possible:hits.length>0,consistent:hits.length===samples.length&&samples.length>0,variants:hits.length,total:samples.length,
   firstTime:all.length?Math.min(...all.map(p=>p.time)):null,lastTime:all.length?Math.max(...all.map(p=>p.time)):null,
@@ -61,6 +61,24 @@ export function viewingElongation(observer,point,sun){
  return elongation(dot(o,p),dot(o,s),dot(p,s),point.height);
 }
 
+// Experimental sky-background screening, NOT a measured brightness model.
+// Near the Sun require darker ground sky: -6° at 0° separation, tapering
+// smoothly to the original -1° threshold at 90°. Applies equally at dawn/dusk;
+// recomputing the Sun at every parcel time naturally shortens dawn windows.
+// These tunable cutoffs are not fitted to the Nov 7 sighting or literature data.
+export function skySunAltitudeLimit(separation,maxSunAltitude=-1){
+ const sunward=Math.max(0,1-Math.max(0,Math.min(180,separation))/90);
+ return Math.min(maxSunAltitude,-1-5*sunward*sunward);
+}
+export function parcelVisibility(observer,point,minElevation=5,maxSunAltitude=-1){
+ const sunAltitude=altitudeAt(point.sun,observer.latitude,observer.longitude);
+ const elevation=elevationAt(observer,point),sunSeparation=viewingElongation(observer,point,point.sun);
+ const sunAltitudeLimit=skySunAltitudeLimit(sunSeparation,maxSunAltitude);
+ const geometryPossible=Boolean(point.sunlit)&&elevation>=minElevation&&sunAltitude<=maxSunAltitude;
+ return {possible:geometryPossible&&sunAltitude<=sunAltitudeLimit,geometryPossible,
+  sunwardLimited:geometryPossible&&sunAltitude>sunAltitudeLimit,sunAltitude,elevation,sunSeparation,sunAltitudeLimit};
+}
+
 export function visibilityFootprint(launch,options={}){
  const samples=visibilitySamples(launch,options),minElevation=options.minElevation??5,coreElevation=options.coreElevation??5;
  const parcels=samples.flat(),maxHeight=Math.max(0,...parcels.map(p=>p.height));
@@ -78,11 +96,12 @@ export function visibilityFootprint(launch,options={}){
    const observer=unit(cell);let possible=false,core=false,higher=false,chosenRank=-1,sunSeparation=0;
    for(const p of prepared){
     const angle=dot(observer,p.point),sunHeight=dot(observer,p.sun);if(angle<p.edge||sunHeight>darkLimit)continue;
+    const separation=elongation(angle,sunHeight,p.pointSun,p.height);
+    if(sunHeight>Math.sin(rad(skySunAltitudeLimit(separation))))continue;
     possible=true;
     const rank=angle>=p.core?(sunHeight<=coreDarkLimit?2:1):0;
     if(rank>=1)higher=true;if(rank===2)core=true;
     // Pick the most sun-separated visible parcel within the cell's displayed class.
-    const separation=elongation(angle,sunHeight,p.pointSun,p.height);
     if(rank>chosenRank){chosenRank=rank;sunSeparation=separation;}else if(rank===chosenRank)sunSeparation=Math.max(sunSeparation,separation);
    }
    if(possible){const value={...cell,consistent:true,sunSeparation,band:core?'higher':higher?'twilight':'low'};cells.push(value);if(core)coreCells.push(value);else if(higher)twilightCells.push(value);}

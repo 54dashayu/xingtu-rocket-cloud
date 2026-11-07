@@ -34,7 +34,8 @@ test('watching geometry uses local darkness, elevation, and per-point time, not 
  const sample={latitude:0,longitude:90,height:100,time:now,sun:{latitude:0,longitude:0},sunlit:true};
  assert.ok(elevationAt({latitude:0,longitude:90},sample)>89);
  assert.equal(observerVisibility([[sample]],{latitude:0,longitude:90}).possible,false); // ground still daylight boundary
- assert.equal(observerVisibility([[sample]],{latitude:0,longitude:92}).possible,true);
+ assert.equal(observerVisibility([[sample]],{latitude:0,longitude:92}).possible,false); // sunward twilight now screened
+ assert.equal(observerVisibility([[sample]],{latitude:0,longitude:95}).possible,true); // darker sky, still above elevation limit
  assert.equal(observerVisibility([[{...sample,sunlit:false}]],{latitude:0,longitude:92}).possible,false);
  assert.equal(observerVisibility([[sample]],{latitude:0,longitude:120}).possible,false);
  const samples=visibilitySamples(withProfile,{target:100})[0];assert.equal(samples[0].time,Date.parse(l.timing.net)+90e3);

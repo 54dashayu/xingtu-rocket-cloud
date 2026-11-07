@@ -1,5 +1,5 @@
 import { populationCopy } from './population-display.js';
-import { cloudIndex } from './cloud-index.js';
+import { cloudIndex } from './cloud-index.js?v=0.03-0015';
 import { assessmentCopy } from './assessment-copy.js?v=0.02';
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const geometryOnly=/Xingtu\/ios\//.test(globalThis.navigator?.userAgent||'');

@@ -1,7 +1,7 @@
 import { preciseTime } from './model.js';
 import { solarPosition, altitudeAt } from './solar.js';
 import { simulationProfile } from './prediction.js';
-import { visibilitySamples, elevationAt } from './visibility.js';
+import { visibilitySamples, parcelVisibility } from './visibility.js?v=0.03-0015';
 const clamp=x=>Math.max(0,Math.min(1,x));
 const cache=new WeakMap();
 export const INDEX_LIMIT='0–100 分为实验性几何关注指数，不是可见概率。取采样区域较优地点，不代表你所在地；天气、人口和报告数量不计分。参考上升段至150公里并跟踪留存尾迹5分钟，未预测实际尾迹亮度、形态或扩散。';
@@ -12,9 +12,9 @@ export function scoreObserver(parcels,observer){
   if(!Number.isFinite(p.time))continue;
   if(!times.has(p.time))times.set(p.time,0);
   if(!p.sunlit)continue;
-  const sun=altitudeAt(p.sun,observer.latitude,observer.longitude),elevation=elevationAt(observer,p);
-  if(sun>=-1||elevation<1)continue;
-  const darkness=clamp((-sun-1)/5),height=clamp((elevation-1)/14);
+  const view=parcelVisibility(observer,p,1),sun=view.sunAltitude,elevation=view.elevation;
+  if(!view.possible)continue;
+  const darkness=clamp((view.sunAltitudeLimit-sun)/5),height=clamp((elevation-1)/14);
   const quality=darkness*(0.35+0.65*height);
   times.set(p.time,Math.max(times.get(p.time),quality));
  }

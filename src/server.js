@@ -3,6 +3,7 @@ import { fetchWarnings, warningCandidates } from './navigation-warnings.js';
 import { mapLaunch, preciseTime } from '../public/map/model.js';
 import { assessmentScenario } from './assessment-scenario.js';
 import { assessCloud } from './cloud-assessment.js';
+import { observerWeather } from './observer-weather.js';
 import { attachFlightProfile } from './flight-profiles.js';
 import { attachCloudEvidence } from './cloud-evidence.js';
 import http from 'node:http';
@@ -27,6 +28,11 @@ function send(res, status, body, headers = {}) {
 function json(res, status, value) { send(res, status, JSON.stringify(value), { 'content-type': 'application/json; charset=utf-8' }); }
 
 async function api(req, res, url) {
+  if(url.pathname==='/api/observer-weather'){
+    if(req.method!=='GET')return json(res,405,{error:'仅支持 GET'});
+    try{return json(res,200,await observerWeather(url.searchParams,{weatherEnabled:!(/Xingtu\/ios\//.test(req.headers['user-agent']||'')||url.searchParams.get('weather')==='off')}));}
+    catch(error){return json(res,400,{error:error.message});}
+  }
   const warningMatch=url.pathname.match(/^\/api\/launches\/([a-zA-Z0-9-]+)\/heading-constraints$/);
   if(warningMatch){
     const historical=url.searchParams.get('range')==='history';
