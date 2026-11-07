@@ -36,3 +36,7 @@ platforms/android/snapshot/
 
 !public/3d/vendor/build/
 !public/3d/vendor/build/**
+
+# Shared atomic launch feed (runtime data)
+data/launch-snapshot.json
+data/launch-snapshot.json.*.tmp

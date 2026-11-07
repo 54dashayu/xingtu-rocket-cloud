@@ -5,6 +5,8 @@ const configuredFile = (value, fallback) => value ? pathToFileURL(value) : fallb
 export const config = {
   host: process.env.HOST || '127.0.0.1',
   port: Number(process.env.PORT || 4173),
+  launchSnapshotFile: configuredFile(process.env.LAUNCH_SNAPSHOT_FILE, new URL('launch-snapshot.json', configuredFile(process.env.CACHE_FILE, new URL('../data/cache.json', import.meta.url)))),
+  launchFeedReadOnly: process.env.LAUNCH_FEED_READ_ONLY === 'true',
   cacheTtlMs: Number(process.env.CACHE_TTL_MS || 30 * 60 * 1000),
   // Launch Library 2 的单页上限为 100。多取几页可减少高密度发射期的漏项，
   // 仍由 30 分钟服务端缓存约束上游请求量。

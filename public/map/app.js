@@ -3,13 +3,12 @@ const task3DUrl=(id,history)=>`./3d/index.html?launch=${encodeURIComponent(id)}&
 import { indexBadge } from './cloud-index.js?v=0.03-0015';
 import { localizeLaunch } from '../launch-localization.js';
 import { chineseMissionLabel } from '../mission-labels.js?v=0.02';
-import { createMissionCache } from './mission-cache.js?v=0.02';
+import { createMissionCache } from './mission-cache.js?v=0.03-0019';
 const readMissions=createMissionCache();
 import { attachArchiveEvidence, hasReplayEvidence, loadArchiveRecords } from './archive-evidence.js?v=0.02';
 import { HISTORY_RANGES, archiveMatches, observationMatches } from './archive-filters.js?v=0.02';
-import { mountPublicReports } from './public-reports.js?v=0.03-0018';
 import { mountObservationReport } from './observation-report.js?v=0.03-0018';
-import { mountObservationArchive } from './observation-archive.js?v=0.03-0018';
+import { mountObservationArchive } from './observation-archive.js?v=0.03-0019';
 import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
 import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0015';
@@ -27,7 +26,7 @@ import { visibilityFootprint, jellyfishReferenceHeight } from './visibility.js?v
 import { installMapNavigation } from './navigation.js?v=0.02';
 import { solarPosition, altitudeAt } from './solar.js?v=20261024ad';
 import { localSunContext, sunEvents, padTimezone } from './sun-events.js?v=20261024aq';
-import { mapLaunch, upcoming, countdown, preciseTime, destination, project, splitLine, DISCLAIMER, cloudCandidate, siteInventory, geometryRating, isSunlit, siteMarkerRadius, pastLaunches } from './model.js?v=20261024al';
+import { mapLaunch, upcoming, countdown, preciseTime, destination, project, splitLine, DISCLAIMER, cloudCandidate, siteInventory, geometryRating, isSunlit, siteMarkerRadius, pastLaunches } from './model.js?v=0.03-0019';
 import { timePair, launchTimePair } from './time-display.js?v=20261024ad';
 const $=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -397,8 +396,9 @@ function updateMobileLayout(){
  renderSites();scheduleDraw();
 }
 function mapLayoutWidth(){const w=$('world');return Math.max(1,w.clientWidth||innerWidth,mobileLayout.matches?w.clientHeight*2:0);}
-async function load({force=false}={}){
- const id=++requestId;stopPlayback();closePopover();$('data-state').textContent='正在读取'+period()+'任务…';$('refresh').disabled=true;
+async function load({force=false,quiet=false}={}){
+ if(quiet&&($("refresh").disabled||$("utility").open))return;
+ const id=++requestId;if(!quiet){stopPlayback();closePopover();}if(!quiet)$('data-state').textContent='正在读取'+period()+'任务…';$('refresh').disabled=true;
  try{const data=await readMissions(historyMode()?`./api/launches/previous?days=${historyDays}`:'./api/launches?days=30',{force});if(id!==requestId)return;all=data.results.map(localizeLaunch).map(l=>mapLaunch(attachArchiveEvidence({...l,name:chineseMissionLabel(l.name),rocket:chineseMissionLabel(l.rocket),observationReportCount:reportCounts[l.id]||0},archiveRecords)));
  const countries=new Map(all.map(l=>[l.country?.code||'unknown',l.country?.name||'未注明']));const chosenCountry=$('history-country').value;
  $('history-country').innerHTML='<option value="">全部国家 / 地区</option>'+[...countries].sort((a,b)=>a[1].localeCompare(b[1],'zh-CN')).map(([code,name])=>`<option value="${esc(code)}">${esc(name)}</option>`).join('');$('history-country').value=countries.has(chosenCountry)?chosenCountry:'';
@@ -407,9 +407,10 @@ async function load({force=false}={}){
  $('archive-coverage').title='所选期限为检索范围，不代表已收录全部发射。3个月按90天、半年按180天、1年按365天。';
  $('data-state').className=`data-state ${data.meta?.stale?'warning':''}`;$('data-state').textContent=`${data.meta?.stale?'缓存待更新':'已更新'} · ${timePair(data.meta?.fetchedAt,{timezone:'Asia/Shanghai'}).beijing}`;
  $('data-state').title=`更新时间为北京时间${data.meta?.warning?'；'+data.meta.warning:''}`;
+ if(quiet&&selected){renderList();return;}
  $('map-subtitle').textContent='主要发射场常驻 · 悬浮查看本期全部任务';const previous=selected?.id;selected=null;renderList();const chosen=pool.find(l=>l.id===requestedLaunchId)||pool.find(l=>l.id===previous)||(historyMode()?pool.find(l=>cloudStatus(l).code==='observed'):null)||pool[0]||null;selectLaunch(chosen,{focus:historyMode(),reveal:false});requestedLaunchId=null;
  void assessMissionList(all,historyMode(),(launch,result)=>{if(all.includes(launch)){launch.cloudAssessment=result;renderList();}});
- }catch(e){if(id!==requestId)return;all=[];selected=null;$('data-state').className='data-state warning';$('data-state').textContent=`任务数据暂不可用（${e.message}）；主要场址仍可查看。`;renderList();renderDetail();scheduleDraw();}finally{if(id===requestId)$('refresh').disabled=false;}
+ }catch(e){if(id!==requestId)return;if(quiet){$('data-state').textContent='暂时离线 · 自动重试中';return;}all=[];selected=null;$('data-state').className='data-state warning';$('data-state').textContent=`任务数据暂不可用（${e.message}）；主要场址仍可查看。`;renderList();renderDetail();scheduleDraw();}finally{if(id===requestId)$('refresh').disabled=false;}
 }
 const basemap=installTianditu({world:$('world'),viewport:$('viewport'),base:$('tdt-base'),labels:$('tdt-labels'),credit:document.querySelector('.map-credit'),error:$('map-error')});
 const navigation=installMapNavigation({
@@ -483,9 +484,8 @@ function showReportTab(tab){
  $('report-form-panel').hidden=!isReport;$('report-archive-panel').hidden=isReport;
  if(!isReport&&!archiveMounted){
   archiveMounted=true;
-  const photos=document.createElement('section'),tasks=document.createElement('section');
-  $('report-archive-panel').append(photos,tasks);
-  mountPublicReports(photos);
+  const tasks=document.createElement('section');
+  $('report-archive-panel').append(tasks);
   mountObservationArchive(tasks,{onReplay:replayArchiveMission,loadTasks:async()=>{
    await refreshReports();
    const data=await readMissions('./api/launches/previous?days=365');
@@ -499,3 +499,10 @@ for(const id of ['report','archive']){
 }
 $('report-back').onclick=()=>setMobilePage('map');
 void loadLand();renderSites();void Promise.allSettled([refreshReports(),loadArchiveRecords().then(records=>{archiveRecords=records;})]).then(load);scheduleDraw();
+
+setInterval(()=>{if(!document.hidden)void load({force:true,quiet:true});},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)void load({force:true,quiet:true});});
+
+const requestedPage=new URL(location.href).searchParams.get('view');
+if(['map','calendar','analysis','reports'].includes(requestedPage))setMobilePage(requestedPage,{scroll:false});
+document.body.append(document.querySelector('.mobile-nav'));

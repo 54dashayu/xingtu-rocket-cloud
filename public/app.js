@@ -88,14 +88,14 @@ function render(data, cached = false) {
   $('#launches').innerHTML = data.results.length ? data.results.map(card).join('') : '<div class="empty">暂无符合条件的近期任务。</div>';
 }
 
-async function load() {
+async function load({quiet=false}={}) {
   const token = ++state.loadToken;
   const snapshot = readSnapshot();
-  if (snapshot?.results && snapshot?.meta) render(snapshot, true);
-  else $('#launches').innerHTML = '<div class="loading">正在读取发射数据…</div>';
+  if (!quiet && snapshot?.results && snapshot?.meta) render(snapshot, true);
+  else if(!quiet) $('#launches').innerHTML = '<div class="loading">正在读取发射数据…</div>';
   try {
     const endpoint = state.view === 'history' ? '/api/launches/previous' : '/api/launches';
-    const response = await fetch(`${basePath}${endpoint}?${queryString()}`);
+    const response = await fetch(`${basePath}${endpoint}?${queryString()}`, {cache:"no-store",signal:AbortSignal.timeout(20000)});
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     // 切换视图时，较慢的旧请求不能覆盖当前列表。
@@ -167,3 +167,6 @@ updateBackToTop();
 setInterval(() => { if (state.view !== 'upcoming') return; document.querySelectorAll('[data-net]').forEach((node) => { node.textContent = countdown(node.dataset.net); node.classList.toggle('countdown-urgent', isUrgentCountdown(node.dataset.net)); }); const next = state.launches.find((launch) => launch.timing.net); if (next) $('#next-time').textContent = countdown(next.timing.net); }, 1000);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register(`${basePath}/sw.js`).catch(() => {});
 load();
+
+setInterval(()=>{if(!document.hidden)void load({quiet:true});},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)void load({quiet:true});});

@@ -286,7 +286,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == '/public-reports':
             try:
                 page=parse_qs(urlsplit(self.path).query).get('page',['1'])[-1]
-                return self.respond(200,json.dumps(observations.public_reports(connect,page),ensure_ascii=False).encode())
+                return self.respond(200,json.dumps(observations.public_reports(connect,page,parse_qs(urlsplit(self.path).query).get('launch',[None])[-1]),ensure_ascii=False).encode())
             except (ValueError,OverflowError): return self.respond(400)
         if path.startswith('/public-report-images/'):
             try: return self.respond(200,observations.public_image(connect,path.removeprefix('/public-report-images/')), 'image/jpeg')

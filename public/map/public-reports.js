@@ -1,11 +1,11 @@
-export function mountPublicReports(container){
+export function mountPublicReports(container,{launchId=null}={}){
  let page=1,serial=0;
  container.className='observation-archive public-reports';
  container.innerHTML='<h2>观测照片档案</h2><p>照片经授权、审核后展示，版权归提交者所有。任务关联不等于媒体证实。</p><button type="button" class="public-refresh">刷新照片</button><p class="public-state" role="status"></p><div class="public-photo-grid"></div><div class="public-pager"><button type="button" class="public-prev">上一页</button><button type="button" class="public-next">下一页</button></div>';
  const grid=container.querySelector('.public-photo-grid'),state=container.querySelector('.public-state'),prev=container.querySelector('.public-prev'),next=container.querySelector('.public-next');
  const node=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;return el;};
  async function load(){const id=++serial;state.textContent='正在读取…';grid.replaceChildren();prev.disabled=true;next.disabled=true;
- try{const r=await fetch('/xingtu-analytics/public-reports?page='+page,{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error();const data=await r.json();if(id!==serial)return;
+ try{const r=await fetch('/xingtu-analytics/public-reports?page='+page+(launchId?'&launch='+encodeURIComponent(launchId):''),{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error();const data=await r.json();if(id!==serial)return;
  for(const item of data.results){
   const card=node('article',''),img=document.createElement('img');
   card.append(node('h3',item.launchName||'待关联发射任务'));

@@ -59,7 +59,7 @@ export function upcoming(launches, now = Date.now(), days = 30) {
     // A nominal midnight on a date-only plan is not a passed launch time.
     const coarse=/日期|到日|^day$/i.test(l.timing.precision || '');
     const latest=Math.max(net,Number.isFinite(end)?end:net,coarse?net+86400000:net);
-    return latest>=now;
+    return latest>=now || l.dataPending===true;
   }).sort((a,b) => (Date.parse(a.timing?.net) || Infinity) - (Date.parse(b.timing?.net) || Infinity));
 }
 export function groupSites(launches) {
@@ -147,5 +147,5 @@ export function geometryRating(launch,{target=100,azimuth=launch.direction?.azim
 export function siteMarkerRadius(count){return count>0?Math.min(6.6,1.5*Math.sqrt(1+1.5*count)):1.5;}
 
 export function pastLaunches(launches,now=Date.now(),days=30){
- return launches.filter(l=>['success','failure','partial'].includes(l.result?.code)&&Date.parse(l.timing?.net)<=now&&Date.parse(l.timing?.net)>=now-days*86400000).sort((a,b)=>Date.parse(b.timing.net)-Date.parse(a.timing.net));
+ return launches.filter(l=>(l.dataRange==='history'||['success','failure','partial','partial_failure'].includes(l.result?.code))&&Date.parse(l.timing?.net)<=now&&Date.parse(l.timing?.net)>=now-days*86400000).sort((a,b)=>Date.parse(b.timing.net)-Date.parse(a.timing.net));
 }

@@ -320,3 +320,23 @@ body[data-mobile-page="reports"] .mobile-task-context{display:none}
 .archive-evidence-label{font-weight:600;color:#4669a1}
 .public-photo-grid h3{margin:0 0 8px;font-size:18px}
 @media(min-width:851px) and (max-width:1350px){.header-shell .brand-slogan{display:none}.header-shell .topbar{gap:8px}.desktop-report-entry{padding:6px 8px;font-size:13px}}
+/* Keep the application navigation outside every scrolling report/detail panel. */
+@media(max-width:850px){
+ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ body .mobile-nav{display:grid!important;position:fixed;inset:auto 0 0;z-index:1000}
+ body[data-mobile-page="reports"] .report-page{height:auto;overflow:visible;padding-bottom:24px}
+}
+.archive-task-card{padding:0;overflow:hidden}
+.archive-task-card>.archive-task-summary{padding:18px;cursor:pointer;list-style:none;color:#294564}
+.archive-task-summary::-webkit-details-marker{display:none}
+.archive-task-summary:focus-visible{outline:3px solid #366fb7;outline-offset:-3px}
+.archive-task-summary h3{font-size:18px;line-height:1.5}
+.archive-open-hint{display:block;color:#366fb7;font-size:13px;margin-top:10px}
+.archive-task-card[open] .archive-open-hint{display:none}
+.archive-task-body{padding:0 18px 18px;border-top:1px solid #d3e1f1}
+.archive-task-body .archive-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.archive-task-body .archive-actions>button,.archive-task-body .archive-actions>a{
+ display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:44px;width:100%;
+ margin:0;padding:10px 8px;font:600 14px/1.4 system-ui,sans-serif;border:1px solid #366fb7;
+ border-radius:9px;background:#366fb7;color:white;text-decoration:none;text-align:center
+}

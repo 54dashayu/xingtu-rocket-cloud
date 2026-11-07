@@ -1,6 +1,5 @@
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { createLaunchFeed } from './launch-feed.js';
 import { calendarArchive } from './calendar-archive.js';
 import { config } from './config.js';
 import { normalizeLaunches } from './normalize.js';
@@ -8,12 +7,6 @@ import { getSupplements, mergeSupplements } from './supplements.js';
 import { translateAgency, translateLocation, translateMissionName, translateRocket } from './translate.js';
 import { rocketCloudForecast } from './rocket-cloud.js';
 
-let memory = null;
-let historyMemory = null;
-let inFlight = null;
-let historyInFlight = null;
-let refreshRetryAt = 0;
-let historyRefreshRetryAt = 0;
 let historyResourcesMemory = null;
 
 async function readDisk(path) {
@@ -58,12 +51,6 @@ async function readDisk(path) {
   } catch { return null; }
 }
 
-async function writeDisk(file, value) {
-  const path = fileURLToPath(file);
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, JSON.stringify(value, null, 2));
-}
-
 async function getHistoryResources() {
   if (historyResourcesMemory) return historyResourcesMemory;
   const value = await readDisk(config.historyResourcesFile);
@@ -89,112 +76,45 @@ function mergeHistoryResources(value, resourcesByLaunchId) {
   };
 }
 
-export async function fetchLaunchPages(startUrl, fetcher = fetch) {
-  const results = [];
-  const seenUrls = new Set();
+export async function fetchLaunchPages(startUrl, fetcher = fetch, {partial=false}={}) {
+  const results = [], seenUrls = new Set();
   let url = startUrl;
   for (let page = 0; page < config.upstreamPages && url && !seenUrls.has(url); page += 1) {
     seenUrls.add(url);
-    const response = await fetcher(url, { headers: { accept: 'application/json', 'user-agent': config.userAgent }, signal: AbortSignal.timeout(15000) });
-    if (!response.ok) {
-      const error = new Error(`Launch Library 2 returned HTTP ${response.status}`);
-      const waitSeconds = Number(response.headers?.get?.('retry-after') || 0);
-      error.retryAt = Date.now() + (waitSeconds > 0 ? waitSeconds * 1000 : 5 * 60 * 1000);
-      throw error;
-    }
-    const payload = await response.json();
-    if (!Array.isArray(payload.results)) throw new TypeError('Launch Library 2 响应缺少 results');
-    results.push(...payload.results);
-    url = payload.next || null;
+    try {
+      const response = await fetcher(url, { headers: { accept: 'application/json', 'user-agent': config.userAgent }, signal: AbortSignal.timeout(15000) });
+      if (!response.ok) {
+        const error = new Error(`Launch Library 2 returned HTTP ${response.status}`);
+        error.status=response.status;error.retryAfter=response.headers?.get?.('retry-after');
+        const seconds=Number(error.retryAfter);
+        error.retryAt=Date.now()+(seconds>0?seconds*1000:5*60000);
+        throw error;
+      }
+      const payload=await response.json();
+      if(!Array.isArray(payload.results))throw new TypeError('Launch Library 2 响应缺少 results');
+      results.push(...payload.results);url=payload.next||null;
+    }catch(error){if(partial&&results.length)return {results,error};throw error;}
   }
-  return { results };
+  return {results};
 }
-
-export function fetchUpcomingPages(fetcher = fetch) { return fetchLaunchPages(config.upstreamUrl, fetcher); }
-export function fetchPreviousPages(fetcher = fetch) { return fetchLaunchPages(config.previousUrl, fetcher); }
-
-async function refresh() {
-  const [payload, supplements] = await Promise.all([fetchUpcomingPages(), getSupplements()]);
-  const launches = mergeSupplements(normalizeLaunches(payload), supplements);
-  const value = { fetchedAt: new Date().toISOString(), stale: false, source: config.upstreamUrl, supplementCount: supplements.length, launches };
-  await calendarArchive.merge(launches);
-  memory = value;
-  refreshRetryAt = 0;
-  await writeDisk(config.cacheFile, value);
-  return value;
-}
-
-async function refreshHistory() {
-  const payload = await fetchPreviousPages();
-  const resources = await getHistoryResources();
-  const value = mergeHistoryResources({ fetchedAt: new Date().toISOString(), stale: false, source: config.previousUrl, launches: normalizeLaunches(payload) }, resources);
-  await calendarArchive.merge(value.launches);
-  historyMemory = value;
-  historyRefreshRetryAt = 0;
-  await writeDisk(config.historyCacheFile, value);
-  return value;
-}
-
-function startRefresh() {
-  if (!inFlight) inFlight = refresh().catch((error) => {
-    refreshRetryAt = Math.max(refreshRetryAt, error.retryAt || Date.now() + 5 * 60 * 1000);
-    throw error;
-  }).finally(() => { inFlight = null; });
-  return inFlight;
-}
-
-function startHistoryRefresh() {
-  if (!historyInFlight) historyInFlight = refreshHistory().catch((error) => {
-    historyRefreshRetryAt = Math.max(historyRefreshRetryAt, error.retryAt || Date.now() + 5 * 60 * 1000);
-    throw error;
-  }).finally(() => { historyInFlight = null; });
-  return historyInFlight;
-}
-
-function unavailableCache(message) {
-  return {
-    fetchedAt: new Date().toISOString(),
-    stale: true,
-    refreshing: false,
-    warning: message,
-    launches: []
-  };
-}
-
-export async function getLaunchData({ force = false } = {}) {
-  memory ||= await readDisk(config.cacheFile);
-  if (!force && memory && Date.now() - Date.parse(memory.fetchedAt) < config.cacheTtlMs) return { ...memory, stale: false };
-  // 缓存过期不等于不可用：先响应上次成功数据，后台再拉取多页上游数据。
-  // 这样首次画面不会因跨境 API 延迟而空白；没有任何缓存时仍会等待一次完整拉取。
-  if (!force && memory) {
-    const refreshing = Date.now() >= refreshRetryAt;
-    if (refreshing) void startRefresh().catch(() => {});
-    return { ...memory, stale: true, refreshing, warning: refreshing ? null : '上游数据更新稍后自动重试' };
+export function fetchUpcomingPages(fetcher=fetch){return fetchLaunchPages(config.upstreamUrl,fetcher);}
+export function fetchPreviousPages(fetcher=fetch){return fetchLaunchPages(config.previousUrl,fetcher);}
+function newFeed(){return createLaunchFeed({
+  file:config.launchSnapshotFile,readOnly:config.launchFeedReadOnly,ttl:config.cacheTtlMs,
+  seed:async()=>({upcoming:await readDisk(config.cacheFile),history:await readDisk(config.historyCacheFile)}),
+  beforeSave:launches=>calendarArchive.merge(launches),
+  fetchRange:async range=>{
+    const source=range==='history'?config.previousUrl:config.upstreamUrl;
+    const payload=await fetchLaunchPages(source,fetch,{partial:true});
+    let launches=normalizeLaunches(payload);
+    if(range==='upcoming')launches=mergeSupplements(launches,await getSupplements());
+    return {launches,source,error:payload.error};
   }
-  try { return await startRefresh(); } catch (error) {
-    if (memory) return { ...memory, stale: true, warning: error.message };
-    // 上游被限流或暂时不可用时，让客户端得到可解释的缓存状态，
-    // 而不是把一次外部服务错误放大成本站的 502。
-    return unavailableCache('上游数据暂时不可用，系统会自动重试');
-  }
+});}
+let feed=newFeed();
+export async function getLaunchData(options={}){return feed.get('upcoming',options);}
+export async function getLaunchHistoryData(options={}){
+  return mergeHistoryResources(await feed.get('history',options),await getHistoryResources());
 }
-
-export async function getLaunchHistoryData({ force = false } = {}) {
-  const historyResources = await getHistoryResources();
-  historyMemory ||= await readDisk(config.historyCacheFile);
-  // 补充资料独立于上游历史缓存发布；每次读取都合并，确保新收录的中文报道
-  // 能立即出现在已缓存的历史任务卡片中，而不必等待下一次上游刷新。
-  historyMemory = mergeHistoryResources(historyMemory, historyResources);
-  if (!force && historyMemory && Date.now() - Date.parse(historyMemory.fetchedAt) < config.cacheTtlMs) return { ...historyMemory, stale: false };
-  if (!force && historyMemory) {
-    const refreshing = Date.now() >= historyRefreshRetryAt;
-    if (refreshing) void startHistoryRefresh().catch(() => {});
-    return { ...historyMemory, stale: true, refreshing, warning: refreshing ? null : '上游数据更新稍后自动重试' };
-  }
-  try { return await startHistoryRefresh(); } catch (error) {
-    if (historyMemory) return { ...historyMemory, stale: true, warning: error.message };
-    return unavailableCache('历史数据暂时不可用，系统会自动重试');
-  }
-}
-
-export function resetMemoryCache() { memory = null; historyMemory = null; historyResourcesMemory = null; inFlight = null; historyInFlight = null; }
+export function refreshLaunchFeed(options={}){return feed.refresh(options);}
+export function resetMemoryCache(){feed=newFeed();historyResourcesMemory=null;}

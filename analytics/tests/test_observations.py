@@ -30,6 +30,9 @@ class ObservationTest(unittest.TestCase):
         o.match_report(s.connect,dict(id=self.data['id'],action='assign',launchId='launch-test',publish=True,publicCaption='管理员整理说明'))
         item=o.public_reports(s.connect)['results'][0]
         self.assertEqual(item['launchId'],'launch-test')
+        self.assertEqual(len(o.public_reports(s.connect,launch_id='launch-test')['results']),1)
+        self.assertEqual(o.public_reports(s.connect,launch_id='other-task')['results'],[])
+        self.assertEqual(o.public_reports(s.connect,launch_id="' OR 1=1 --")['results'],[])
         self.assertEqual(item['caption'],'管理员整理说明')
         self.assertNotIn('place',item)
         o.review(s.connect,dict(id=self.data['id'],status='reviewed'))

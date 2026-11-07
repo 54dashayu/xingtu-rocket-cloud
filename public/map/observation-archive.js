@@ -1,3 +1,4 @@
+import { mountPublicReports } from './public-reports.js?v=0.03-0019';
 import { loadArchiveRecords } from './archive-evidence.js?v=0.02';
 import { cloudStatus } from '../cloud-status.js?v=20261024ba';
 import { appendArchiveMedia } from './archive-media.js?v=0.03-0018';
@@ -34,17 +35,19 @@ export async function mountObservationArchive(container,{onReplay,loadTasks=asyn
    list.replaceChildren();
    status.textContent=`${items.length} 项 · 媒体证实或有用户报告`+(tasks.status==='rejected'?' · 用户报告任务暂未加载，请重试':'');
    for(const item of items){
-    const card=node('article','','archive-source-card');
-    card.append(node('h3',item.name),node('p',`${item.confirmed?'媒体证实':''}${item.confirmed&&item.reports?' · ':''}${item.reports?'有用户报告 '+item.reports+' 条（含待核对关联）':''}`,'archive-evidence-label'));
-    card.append(node('p',new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(item.time))+' 北京时间','archive-source-time'));
-    if(item.site)card.append(node('p','发射地点：'+item.site));
-    card.append(node('p','观测地点：'+item.place));
-    appendArchiveMedia(card,item);
-    if(item.sources.length){const details=node('details','');details.append(node('summary','查看报道来源'));for(const source of item.sources){let url;try{url=new URL(source.url);}catch{continue;}if(url.protocol!=='https:')continue;const link=node('a',source.title||'报道');link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';details.append(link);}card.append(details);}
+    const card=node('details','','archive-source-card archive-task-card'),summary=node('summary','','archive-task-summary'),body=node('div','','archive-task-body');
+    card.append(summary,body);
+    summary.append(node('h3',item.name),node('p',`${item.confirmed?'媒体证实':''}${item.confirmed&&item.reports?' · ':''}${item.reports?'有用户报告 '+item.reports+' 条（含待核对关联）':''}`,'archive-evidence-label'));
+    summary.append(node('p',new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(item.time))+' 北京时间','archive-source-time'));
+    if(item.site)summary.append(node('p','发射地点：'+item.site));
+    summary.append(node('span','查看详情与照片','archive-open-hint'));
+    body.append(node('p','观测地点：'+item.place));
+    let mediaMounted=false;card.addEventListener('toggle',()=>{if(!card.open||mediaMounted)return;mediaMounted=true;appendArchiveMedia(body,item);if(item.reports){const photos=node('section','');body.append(photos);mountPublicReports(photos,{launchId:item.id});}});
+    if(item.sources.length){const details=node('details','');details.append(node('summary','查看报道来源'));for(const source of item.sources){let url;try{url=new URL(source.url);}catch{continue;}if(url.protocol!=='https:')continue;const link=node('a',source.title||'报道');link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';details.append(link);}body.append(details);}
     if(item.id&&archivePeriod(item.time)==='year'){
      const actions=node('div','','archive-actions');
      if(onReplay){const replay=node('button','回放模拟','archive-replay');replay.type='button';replay.onclick=async()=>{replay.disabled=true;try{await onReplay(item.id);}finally{replay.disabled=false;}};actions.append(replay);}
-     const link=node('a','火箭云3D模型','mission-3d');link.href='./3d/index.html?launch='+encodeURIComponent(item.id)+'&range=history';actions.append(link);card.append(actions);
+     const link=node('a','火箭云3D模型','mission-3d');link.href='./3d/index.html?launch='+encodeURIComponent(item.id)+'&range=history';actions.append(link);body.append(actions);
     }
     list.append(card);
    }

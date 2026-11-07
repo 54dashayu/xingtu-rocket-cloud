@@ -112,3 +112,5 @@ node scripts/validate-cloud-cases.mjs
 原创代码采用 MIT License。第三方服务、底图及引用资料遵循各自条款，见 [第三方说明](THIRD_PARTY.md)。项目标志为长征六号甲外形启发的原创示意，不是官方标识或工程比例图。
 
 Copyright © 2026 BH1JSS.
+
+发射缓存的自动恢复与双站同步配置见 [build 0019 说明](docs/release-v0.03-0019.md)。

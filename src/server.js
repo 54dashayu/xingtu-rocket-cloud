@@ -13,7 +13,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
-import { getLaunchData, getLaunchHistoryData } from './store.js';
+import { getLaunchData, getLaunchHistoryData, refreshLaunchFeed } from './store.js';
 import { filterLaunches } from './normalize.js';
 import { createCalendar, createSubscriptionCalendar, isCalendarEligible } from './ics.js';
 
@@ -83,12 +83,12 @@ async function api(req, res, url) {
     const data = await getLaunchHistoryData();
     url.searchParams.set('range', 'previous');
     const results = filterLaunches(data.launches, url.searchParams);
-    return json(res, 200, { meta: { count: results.length, fetchedAt: data.fetchedAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, range: 'previous', timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
+    return json(res, 200, { meta: { count: results.length, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, range: 'previous', timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
   }
   const data = await getLaunchData();
   if (url.pathname === '/api/launches') {
     const results = filterLaunches(data.launches, url.searchParams);
-    return json(res, 200, { meta: { count: results.length, supplementCount: data.supplementCount || 0, fetchedAt: data.fetchedAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
+    return json(res, 200, { meta: { count: results.length, supplementCount: data.supplementCount || 0, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
   }
   if (url.pathname === '/api/calendar.ics') {
     const results = filterLaunches(data.launches, url.searchParams);
@@ -96,7 +96,7 @@ async function api(req, res, url) {
   }
   const match = url.pathname.match(/^\/api\/launches\/([^/]+?)(?:\.ics)?$/);
   if (match) {
-    const launch = data.launches.find((item) => item.id === decodeURIComponent(match[1]));
+    const launch = data.launches.find((item) => item.id === decodeURIComponent(match[1])) || (await getLaunchHistoryData()).launches.find((item) => item.id === decodeURIComponent(match[1]));
     if (!launch) return json(res, 404, { error: '未找到该发射任务' });
     if (url.pathname.endsWith('.ics') && !isCalendarEligible(launch)) return json(res, 409, { error: '日期尚未确定，暂不能导出单次日历' });
     if (url.pathname.endsWith('.ics')) return send(res, 200, createCalendar([launch], launch.name), { 'content-type': 'text/calendar; charset=utf-8', 'content-disposition': `attachment; filename="launch-${launch.id}.ics"` });
@@ -123,8 +123,8 @@ export function createServer() {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const server = createServer().listen(config.port, config.host, () => console.log(`Launch calendar: http://${config.host}:${config.port}`));
-  const refresh = () => Promise.allSettled([getLaunchData(), getLaunchHistoryData()]);
+  const refresh = () => refreshLaunchFeed().catch(error => console.error('[launch-feed]', error.message));
   void refresh();
-  const timer = setInterval(refresh, Math.max(60000, config.cacheTtlMs));
+  const timer = setInterval(refresh, 60000);
   timer.unref(); server.on('close', () => clearInterval(timer));
 }

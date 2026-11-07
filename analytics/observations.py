@@ -241,10 +241,12 @@ def review(connect, data):
     return dict(ok=True)
 
 
-def public_reports(connect, page=1):
+def public_reports(connect, page=1, launch_id=None):
     page=max(1,int(page))
+    constraint=" AND launch_id=? AND match_method='admin'" if launch_id else ''
+    args=(time.time()-365*86400,)+((launch_id,) if launch_id else ())+((page-1)*20,)
     with connect() as c:
-        rows=c.execute("SELECT id,public_caption,public_credit,public_place,launch_id,launch_name,launch_time,match_method FROM observations WHERE status='published' AND publish_consent=1 AND created>=? AND EXISTS(SELECT 1 FROM observation_images WHERE report_id=observations.id) ORDER BY updated DESC,id LIMIT 21 OFFSET ?",(time.time()-365*86400,(page-1)*20)).fetchall()
+        rows=c.execute("SELECT id,public_caption,public_credit,public_place,launch_id,launch_name,launch_time,match_method FROM observations WHERE status='published' AND publish_consent=1 AND created>=? AND EXISTS(SELECT 1 FROM observation_images WHERE report_id=observations.id) "+constraint+" ORDER BY updated DESC,id LIMIT 21 OFFSET ?",args).fetchall()
     return dict(results=[dict(id=r['id'],caption=r['public_caption'],credit=r['public_credit'],publicPlace=r['public_place'],**(dict(launchId=r['launch_id'],launchName=r['launch_name'],launchTime=r['launch_time']) if r['match_method']=='admin' and r['launch_id'] else {})) for r in rows[:20]],page=page,hasMore=len(rows)>20)
 
 
