@@ -1,3 +1,4 @@
+import {readReportSummary,withReportCount} from './report-summary.js?v=0.03-0021';
 const model3DEnabled=['http:','https:'].includes(location.protocol);
 const task3DUrl=(id,history)=>`./3d/index.html?launch=${encodeURIComponent(id)}&range=${history?'history':'upcoming'}`;
 import { indexBadge } from './cloud-index.js?v=0.03-0015';
@@ -35,7 +36,7 @@ const timeHTML=p=>p.sameBeijing?`<span class="single-time"><small>北京时间</
 const safeLink=(url,label)=>{try{const u=new URL(url);return u.protocol==='https:'?`<a class="source" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">↗ ${esc(label)}</a>`:'';}catch{return '';}};
 let historyDays=30;
 let reportCounts={},archiveRecords=[];
-async function refreshReports(){try{const r=await fetch('/xingtu-analytics/report-summary',{cache:'no-store',signal:AbortSignal.timeout(5000)});if(!r.ok)return;reportCounts=(await r.json()).counts||{};for(const l of all)l.observationReportCount=reportCounts[l.id]||0;areaCache=null;}catch{}}
+async function refreshReports(){const summary=await readReportSummary();if(!summary.available)return;reportCounts=summary.counts;for(const l of all)l.observationReportCount=withReportCount(l,reportCounts).observationReportCount;areaCache=null;}
 let warningConstraint=null;
 let manualLaunch=null,manualAssessmentTimer=null;
 const activeLaunch=()=>manualLaunch&&manualLaunch.id===selected?.id?manualLaunch:selected;

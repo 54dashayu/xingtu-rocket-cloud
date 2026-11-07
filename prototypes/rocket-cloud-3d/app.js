@@ -1,3 +1,4 @@
+import {readReportSummary,withReportCount} from '../../public/map/report-summary.js?v=0.03-0021';
 import {createObserverWeatherController} from './observer-weather.js';
 import {installObservers,nearestObserverCity} from './observers.js?v=0.03-0016';
 import {prepareMission,missionMode,missionScenario,missionEvents,beijingInput} from './missions.js';
@@ -71,17 +72,22 @@ async function loadCatalogue(){
  if(!requested){$('missionTitle').textContent='请先在发射日历选择任务';$('missionBasis').textContent='通过任务的3D入口进入即可继续演示。';$('missionListStatus').textContent='未指定任务';return;}
  $('missionListStatus').textContent='正在读取所选任务…';
  try{
+  const evidencePromise=Promise.all([
+   fetch('/public/map/observation-archive.json',{signal:AbortSignal.timeout(5000)}).then(r=>{if(!r.ok)throw Error('Archive unavailable');return r.json();}).then(d=>Array.isArray(d.records)?d.records:[]).catch(()=>[]),
+   readReportSummary()
+  ]);
   const responses=await Promise.allSettled(['upcoming','history'].map(async range=>{
    const r=await fetch('/api/missions?range='+range,{signal:AbortSignal.timeout(28000)}),data=await r.json();
    if(!r.ok||!Array.isArray(data.results))throw Error(data.error||'任务接口不可用');return data;
   }));
   const feeds=responses.filter(r=>r.status==='fulfilled').map(r=>r.value);
   if(!feeds.length)throw Error('任务接口暂不可用，请返回日历重试。');
-  let records=[];try{records=(await fetch('/public/map/observation-archive.json').then(r=>r.json())).records||[];}catch{}
+  const [records,reportSummary]=await evidencePromise;
   if(generation!==catalogueGeneration)return;
-  missionRows=[...new Map(feeds.flatMap(d=>d.results).map(l=>{const row=prepareMission(l,records);return [row.id,row];})).values()];
+  missionRows=[...new Map(feeds.flatMap(d=>d.results).map(l=>{const row=prepareMission(withReportCount(l,reportSummary.counts),records);return [row.id,row];})).values()];
   if(!missionRows.some(l=>l.id===requested))throw Error('当前日历未取得所选任务，请返回日历重试。');
   $('missionListStatus').textContent=feeds.some(d=>d.meta?.stale)?'任务缓存可能过期':'已读取所选任务';
+  if(!reportSummary.available)$('missionListStatus').textContent+=' · 用户报告摘要暂不可用';
   loadMission(requested);
  }catch(e){if(generation!==catalogueGeneration)return;$('missionTitle').textContent='所选任务暂未取得';$('missionTime').textContent='';$('missionListStatus').textContent=e.message;$('error').textContent=e.message;}
 }
