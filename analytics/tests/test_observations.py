@@ -22,6 +22,69 @@ class ObservationTest(unittest.TestCase):
         self.missions=patch.object(o,'_missions',return_value={'launch-test':self.launch});self.missions.start()
     def tearDown(self):self.missions.stop();self.db.stop();self.tmp.cleanup()
     def submit(self,data=None):return o.submit(s.connect,data or self.data,'203.0.113.1',now=self.now,find_mission=lambda _:self.launch)
+    def test_match_publish_and_public_launch(self):
+        import base64,io
+        from PIL import Image
+        raw=io.BytesIO();Image.new('RGB',(8,8)).save(raw,format='JPEG')
+        self.submit(dict(self.data,photo='data:image/jpeg;base64,'+base64.b64encode(raw.getvalue()).decode(),publishConsent=True))
+        o.match_report(s.connect,dict(id=self.data['id'],action='assign',launchId='launch-test',publish=True,publicCaption='管理员整理说明'))
+        item=o.public_reports(s.connect)['results'][0]
+        self.assertEqual(item['launchId'],'launch-test')
+        self.assertEqual(item['caption'],'管理员整理说明')
+        self.assertNotIn('place',item)
+        o.review(s.connect,dict(id=self.data['id'],status='reviewed'))
+        self.assertEqual(o.public_reports(s.connect)['results'],[])
+    def test_public_credit_is_explicit_and_never_legacy_identity(self):
+        import base64,io
+        from PIL import Image
+        raw=io.BytesIO();Image.new('RGB',(8,8)).save(raw,format='JPEG')
+        photo='data:image/jpeg;base64,'+base64.b64encode(raw.getvalue()).decode()
+        data=dict(self.data,photo=photo,publishConsent=True,publicCredit='摄影小王',publicPlace='山东沿海')
+        self.submit(data)
+        o.review(s.connect,dict(id=data['id'],status='published',publicCaption='观测照片'))
+        item=o.public_reports(s.connect)['results'][0]
+        self.assertEqual(item['credit'],'摄影小王');self.assertEqual(item['publicPlace'],'山东沿海')
+        for key in ('nickname','place','latitude','longitude','notes'):self.assertNotIn(key,item)
+        with self.assertRaises(o.ReportError):self.submit(dict(data,publicCredit='改名'))
+        private=dict(self.data,id=str(uuid.uuid4()),photo=photo,publishConsent=False,publicCredit='不公开',publicPlace='不公开地点')
+        self.submit(private)
+        with s.connect() as c:
+            row=c.execute('SELECT public_credit,public_place FROM observations WHERE id=?',(private['id'],)).fetchone()
+        self.assertEqual(tuple(row),('',''))
+
+    def test_match_publish_rejects_without_consent(self):
+        self.submit()
+        with self.assertRaises(o.ReportError):o.match_report(s.connect,dict(id=self.data['id'],action='assign',launchId='launch-test',publish=True,publicCaption='说明'))
+        self.assertEqual(o.listing(s.connect,{})['results'][0]['match_method'],'')
+    def test_admin_match_assign_recommend_clear_preserves_report(self):
+        self.submit()
+        before=o.listing(s.connect,{})['results'][0]
+        o.match_report(s.connect,dict(id=self.data['id'],action='assign',launchId='launch-test'))
+        d=o.match_report(s.connect,dict(id=self.data['id'],action='recommend',inputs={'place':'浙江杭州'}))
+        self.assertIn('杭州市中心',d['candidates'][0]['basis'])
+        after=o.listing(s.connect,{})['results'][0]
+        for key in ('notes','place','observed_at','status','fingerprint'):
+            if key in before:self.assertEqual(before[key],after[key])
+        self.assertEqual(after['match_method'],'admin')
+        self.assertEqual(after['launch_id'],'launch-test')
+        o.match_report(s.connect,dict(id=self.data['id'],action='clear'))
+        self.assertEqual(o.listing(s.connect,{})['results'][0]['launch_id'],'')
+        self.assertEqual(o.report_summary(s.connect)['counts'],{})
+    def test_admin_matching_validation_and_source_outage(self):
+        self.submit()
+        for data in [dict(action='assign',launchId='missing'),dict(action='recommend',inputs={'latitude':91,'longitude':0}),dict(action='recommend',inputs={'latitude':1}),dict(action='bad')]:
+            with self.assertRaises(o.ReportError):o.match_report(s.connect,dict(id=self.data['id'],**data))
+        before=o.listing(s.connect,{})['results'][0]['candidates']
+        with patch.object(o,'_missions',side_effect=OSError('offline')),self.assertRaises(o.ReportError):
+            o.match_report(s.connect,dict(id=self.data['id'],action='recommend'))
+        self.assertEqual(before,o.listing(s.connect,{})['results'][0]['candidates'])
+    def test_matching_relative_date_anchor_and_city_ambiguity(self):
+        p=dict(observed_at='',time_text='今天',place='杭州上海',latitude=None,longitude=None,coordinate_system='unknown',created=self.now)
+        result,_=o.match_candidates(p,self.now+4*86400)
+        self.assertEqual(result[0]['id'],'launch-test')
+        self.assertIsNone(result[0]['distanceKm'])
+        self.assertEqual(o.search_missions({'q':'测试'})['total'],1)
+        self.assertEqual(o.search_missions({'q':'不存在'})['total'],0)
     def test_persistence_idempotency_and_moderation(self):
         a=self.submit();self.assertEqual(self.submit(),a)
         listing=o.listing(s.connect,{})
@@ -105,7 +168,7 @@ class ObservationTest(unittest.TestCase):
         with self.assertRaises(o.ReportError):self.submit(dict(data,publishConsent=False))
         o.review(s.connect,dict(id=rid,status='published',publicCaption='经过审核的照片'))
         public=o.public_reports(s.connect)['results']
-        self.assertEqual(public,[dict(id=rid,caption='经过审核的照片')])
+        self.assertEqual(public,[dict(id=rid,caption='经过审核的照片',credit='',publicPlace='')])
         self.assertTrue(o.public_image(s.connect,rid).startswith(b'\xff\xd8'))
         o.review(s.connect,dict(id=rid,status='reviewed'))
         self.assertEqual(o.public_reports(s.connect)['results'],[])
@@ -141,11 +204,16 @@ class ObservationTest(unittest.TestCase):
             self.assertEqual(request('/report',self.data)[0],403)
             self.assertEqual(request('/api/reports/status',{'id':'x','status':'reviewed'},{'Origin':s.ORIGIN,'Content-Type':'application/json'})[0],403)
             self.assertEqual(request('/api/reports/status',{}, {'Origin':'https://evil.example','X-Xingtu-Admin':'1','Content-Type':'application/json'})[0],403)
+            self.assertEqual(request('/api/report-missions')[0],403)
+            self.assertEqual(request('/api/reports/match',{}, {'Origin':s.ORIGIN,'Content-Type':'application/json'})[0],403)
+            self.assertEqual(request('/api/reports/match',{}, {'Origin':'https://evil.example','X-Xingtu-Admin':'1','Content-Type':'application/json'})[0],403)
             self.submit()
             code,d=request('/api/reports',headers={'X-Xingtu-Admin':'1'})
             self.assertEqual(code,200);self.assertEqual(d['total'],1)
             headers={'Origin':'https://app.bh1jss.net','X-Xingtu-Admin':'1','Content-Type':'application/json'}
             self.assertEqual(request('/api/reports/status',{'id':self.data['id'],'status':'reviewed'},headers)[0],200)
+            self.assertEqual(request('/api/reports/match',{'id':self.data['id'],'action':'assign','launchId':'launch-test'},headers)[0],200)
+            self.assertEqual(request('/api/report-missions?q=launch-test',headers={'X-Xingtu-Admin':'1'})[0],200)
         finally:http.shutdown();http.server_close();thread.join()
 
 if __name__=='__main__':unittest.main()

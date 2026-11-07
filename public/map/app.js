@@ -7,9 +7,9 @@ import { createMissionCache } from './mission-cache.js?v=0.02';
 const readMissions=createMissionCache();
 import { attachArchiveEvidence, hasReplayEvidence, loadArchiveRecords } from './archive-evidence.js?v=0.02';
 import { HISTORY_RANGES, archiveMatches, observationMatches } from './archive-filters.js?v=0.02';
-import { mountPublicReports } from './public-reports.js?v=20261105-publish';
-import { mountObservationReport } from './observation-report.js?v=20261105-publish';
-import { mountObservationArchive } from './observation-archive.js?v=0.02';
+import { mountPublicReports } from './public-reports.js?v=0.03-0017';
+import { mountObservationReport } from './observation-report.js?v=0.03-0017';
+import { mountObservationArchive } from './observation-archive.js?v=0.03-0017';
 import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
 import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0015';
@@ -110,9 +110,10 @@ function renderCandidateTrails(){
   const p=flightProfile(l,{target});for(const seg of splitLine(p.full)){const path=svg('path',{d:linePath(seg),fill:'none',stroke:'#b98227','stroke-width':'.45','stroke-dasharray':'1 .8',opacity:'.6'});path.append(svg('title',{},`${l.name} · 任务资料轨迹至 ${target} km`));$('candidate-trails').append(path);}
  }
 }
+const possibleCloudTask=l=>Boolean(cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0||(!historyMode()&&cloudOpportunity(l)==='pending'));
 function renderList(){
  pool=historyMode()?pastLaunches(all,Date.now(),historyDays):upcoming(all,Date.now(),30);inventory=siteInventory(pool);
- visible=pool.filter(l=>(!historyMode()||archiveMatches(l,{country:$('history-country').value,crewed:$('history-crewed').value,ownership:$('history-ownership').value}))&&observationMatches({possible:cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0||(!historyMode()&&cloudOpportunity(l)==='pending'),reported:l.observationReportCount>0,media:cloudStatus(l).code==='observed'},{possible:$('cloud-only').checked,reported:historyMode()&&$('report-only').checked,media:historyMode()&&$('media-only').checked}));
+ visible=pool.filter(l=>(!historyMode()||archiveMatches(l,{country:$('history-country').value,crewed:$('history-crewed').value,ownership:$('history-ownership').value}))&&observationMatches({possible:possibleCloudTask(l),reported:l.observationReportCount>0,media:cloudStatus(l).code==='observed'},{possible:$('cloud-only').checked,reported:historyMode()&&$('report-only').checked,media:historyMode()&&$('media-only').checked}));
  $('cloud-filter-note').hidden=true;$('evidence-filters').hidden=!historyMode();
  $('cloud-only').parentElement.title='优先使用逐时轨迹与尾迹受光评估；计算完成前使用晨昏初筛，时刻待定任务保留关注。';$('evidence-filters').title='有报告：关联了用户报告。媒体证实：有公开报道证据。多选满足其一。';
  $('archive-filters').hidden=!historyMode();$('archive-coverage').hidden=!historyMode();
@@ -120,11 +121,11 @@ function renderList(){
  $('range-upcoming').classList.toggle('active',!historyMode());$('range-history').classList.toggle('active',historyMode());$('range-upcoming').setAttribute('aria-pressed',String(!historyMode()));$('range-history').setAttribute('aria-pressed',String(historyMode()));
  $('coverage').textContent=`显示 ${visible.length} / ${pool.length} 项`+(historyMode()?` · 媒体证实 ${pool.filter(l=>cloudStatus(l).code==='observed').length} · 有报告 ${pool.filter(l=>l.observationReportCount>0).length}`:' · 指数为几何关注度，非概率');
  $('coverage').title='地图仍显示所选时段的全部任务；列表按当前条件筛选。';
- $('missions').innerHTML=visible.length?visible.map(l=>`<article class="mission ${l.id===selected?.id?'selected':''}" data-id="${esc(l.id)}"><span class="status">● ${esc(statusLabel(l))}</span><div class="mission-badges">${cloudBadge(l)}${historyMode()&&l.observationReportCount?'<span class="cloud-badge">用户报告候选 · 可回溯</span>':''}${!historyMode()?indexBadge(l):(cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0)?'<button type="button" class="mission-report" data-report title="前往报告 / 档案填写观测">报告</button>':''}${model3DEnabled&&cloudStatus(l).code===(historyMode()?'observed':'reminder')?`<a class="mission-3d" data-3d href="${task3DUrl(l.id,historyMode())}" aria-label="3D模型：${esc(l.name)}">3D模型</a>`:''}</div><button type="button" class="mission-select" aria-pressed="${l.id===selected?.id}" aria-label="选择任务：${esc(l.name)}"><strong>${esc(l.name)}</strong><small>${esc(l.pad?.location || '场址待补充')}${l.coordinates?'':' · 坐标待补充'}</small><span class="time-pair">${timeHTML(launchTimePair(l))}</span><small class="precision">${esc(launchTimePair(l).note)}</small><small class="countdown" data-count="${esc(l.id)}">${esc(countdown(l,clockNow()))}</small></button></article>`).join(''):'<p class="empty">没有匹配项；地图和日历仍保留全部已收录任务。</p>';
+ $('missions').innerHTML=visible.length?visible.map(l=>`<article class="mission ${l.id===selected?.id?'selected':''}" data-id="${esc(l.id)}"><span class="status">● ${esc(statusLabel(l))}</span><div class="mission-badges">${cloudBadge(l)}${historyMode()&&l.observationReportCount?'<span class="cloud-badge">用户报告候选 · 可回溯</span>':''}${!historyMode()?indexBadge(l):(cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0)?'<button type="button" class="mission-report" data-report title="前往报告 / 档案填写观测">报告</button>':''}${model3DEnabled&&possibleCloudTask(l)?`<a class="mission-3d" data-3d href="${task3DUrl(l.id,historyMode())}" aria-label="3D模型：${esc(l.name)}">3D模型</a>`:''}</div><button type="button" class="mission-select" aria-pressed="${l.id===selected?.id}" aria-label="选择任务：${esc(l.name)}"><strong>${esc(l.name)}</strong><small>${esc(l.pad?.location || '场址待补充')}${l.coordinates?'':' · 坐标待补充'}</small><span class="time-pair">${timeHTML(launchTimePair(l))}</span><small class="precision">${esc(launchTimePair(l).note)}</small><small class="countdown" data-count="${esc(l.id)}">${esc(countdown(l,clockNow()))}</small></button></article>`).join(''):'<p class="empty">没有匹配项；地图和日历仍保留全部已收录任务。</p>';
  for(const card of $('missions').querySelectorAll('[data-id]'))card.onclick=e=>{
   if(e.target.closest('[data-3d]'))return;
   if(e.target.closest('[data-report]')){
-   e.stopPropagation();setMobilePage('reports');
+   e.stopPropagation();setMobilePage('reports');showReportTab('report');
    requestAnimationFrame(()=>{$('report-panel').scrollTop=0;if(mobileLayout.matches)window.scrollTo({top:0,behavior:'instant'});const heading=$('report-content').querySelector('h1');heading.tabIndex=-1;heading.focus({preventScroll:true});});
   }else selectLaunch(pool.find(l=>l.id===card.dataset.id));
  };
@@ -424,7 +425,7 @@ $('home').onclick=()=>setView('map');
 $('history-days').onchange=()=>{historyDays=Number($('history-days').value);load();};
 for(const id of ['history-country','history-crewed','history-ownership'])$(id).onchange=renderList;
 for(const button of document.querySelectorAll('[data-mobile-view]'))button.onclick=()=>setMobilePage(button.dataset.mobileView);
-if($('mobile-3d'))$('mobile-3d').onclick=()=>{location.assign(selected?task3DUrl(selected.id,historyMode()):'./3d/index.html');};
+for(const id of ['mobile-3d','open-3d'])if($(id))$(id).onclick=()=>{location.assign(selected?task3DUrl(selected.id,historyMode()):'./3d/index.html');};
 mobileLayout.addEventListener('change',updateMobileLayout);
 const mobileHeaderObserver=new ResizeObserver(updateMobileLayout);mobileHeaderObserver.observe(document.querySelector('.topbar'));mobileHeaderObserver.observe(document.querySelector('.global-toolbar'));mobileHeaderObserver.observe(document.querySelector('.mobile-task-context'));
 updateMobileLayout();
@@ -474,8 +475,27 @@ const replayArchiveMission=async id=>{
   if(!playTimer)togglePlayback();
  });
 };
-mountObservationReport($('report-content'),{onSubmitted:refreshReports,onReplay:replayArchiveMission});
-const publicReports=document.createElement('section');$('report-content').append(publicReports);mountPublicReports(publicReports);
-const referenceArchive=document.createElement('section');referenceArchive.className='observation-archive';referenceArchive.setAttribute('aria-label','火箭云参考档案');$('report-content').append(referenceArchive);mountObservationArchive(referenceArchive,{onReplay:replayArchiveMission});
+mountObservationReport($('report-form-panel'),{onSubmitted:refreshReports,onReplay:replayArchiveMission});
+let archiveMounted=false;
+function showReportTab(tab){
+ const isReport=tab==='report';
+ for(const [id,active] of [['report',isReport],['archive',!isReport]]){const button=$(id+'-tab');button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;}
+ $('report-form-panel').hidden=!isReport;$('report-archive-panel').hidden=isReport;
+ if(!isReport&&!archiveMounted){
+  archiveMounted=true;
+  const photos=document.createElement('section'),tasks=document.createElement('section');
+  $('report-archive-panel').append(photos,tasks);
+  mountPublicReports(photos);
+  mountObservationArchive(tasks,{onReplay:replayArchiveMission,loadTasks:async()=>{
+   await refreshReports();
+   const data=await readMissions('./api/launches/previous?days=365');
+   return data.results.map(localizeLaunch).map(l=>mapLaunch(attachArchiveEvidence({...l,name:chineseMissionLabel(l.name),observationReportCount:reportCounts[l.id]||0},archiveRecords)));
+  }});
+ }
+}
+for(const id of ['report','archive']){
+ $(id+'-tab').onclick=()=>showReportTab(id);
+ $(id+'-tab').onkeydown=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?'report':e.key==='End'?'archive':id==='report'?'archive':'report';showReportTab(next);$(next+'-tab').focus();}};
+}
 $('report-back').onclick=()=>setMobilePage('map');
 void loadLand();renderSites();void Promise.allSettled([refreshReports(),loadArchiveRecords().then(records=>{archiveRecords=records;})]).then(load);scheduleDraw();

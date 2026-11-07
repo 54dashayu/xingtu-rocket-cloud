@@ -6,6 +6,7 @@ import warnings
 from PIL import Image, ImageOps, UnidentifiedImageError
 import datetime as dt
 from functools import lru_cache
+from pathlib import Path
 import hashlib
 import hmac
 import ipaddress
@@ -42,7 +43,7 @@ def init(c):
 
     c.execute('CREATE TABLE IF NOT EXISTS observation_images(report_id TEXT PRIMARY KEY, image BLOB NOT NULL)')
     columns={r[1] for r in c.execute('PRAGMA table_info(observations)')}
-    for name,definition in [('publish_consent', 'INTEGER NOT NULL DEFAULT 0'),('public_caption', "TEXT NOT NULL DEFAULT ''"),('time_text', "TEXT NOT NULL DEFAULT ''"),('candidates', "TEXT NOT NULL DEFAULT '[]'"),('match_note', "TEXT NOT NULL DEFAULT ''")]:
+    for name,definition in [('public_credit', "TEXT NOT NULL DEFAULT ''"),('public_place', "TEXT NOT NULL DEFAULT ''"),('publish_consent', 'INTEGER NOT NULL DEFAULT 0'),('public_caption', "TEXT NOT NULL DEFAULT ''"),('time_text', "TEXT NOT NULL DEFAULT ''"),('candidates', "TEXT NOT NULL DEFAULT '[]'"),('match_note', "TEXT NOT NULL DEFAULT ''"),('match_inputs', "TEXT NOT NULL DEFAULT '{}'"),('match_method', "TEXT NOT NULL DEFAULT ''")]:
         if name not in columns:c.execute(f'ALTER TABLE observations ADD COLUMN {name} {definition}')
 
 
@@ -156,6 +157,10 @@ def submit(connect, data, ip, now=None, find_mission=mission):
     if type(consent) is not bool: raise ReportError('请确认照片公开选项。')
     if consent and image is None: raise ReportError('公开照片需先选择一张图片。')
     p['publish_consent'] = int(consent)
+    p['public_credit'] = text(data, 'publicCredit', 60) if consent else ''
+    p['public_place'] = text(data, 'publicPlace', 100) if consent else ''
+    if p['public_credit'] or p['public_place']:
+        digest = hashlib.sha256((digest + json.dumps([p['public_credit'], p['public_place']], ensure_ascii=False)).encode()).hexdigest()
     if consent: digest = hashlib.sha256((digest + '|publish-photo-v1').encode()).hexdigest()
     if image is not None:
         digest = hashlib.sha256((digest + hashlib.sha256(image).hexdigest()).encode()).hexdigest()
@@ -213,6 +218,7 @@ def listing(connect, query):
     for r in rows:
         r.pop('fingerprint')
         r['candidates']=json.loads(r['candidates'])
+        r['match_inputs']=json.loads(r['match_inputs'])
     total=sum(counts.values()) if status=='all' else counts.get(status,0)
     return dict(results=rows,counts=counts,page=page,pages=max(1,math.ceil(total/20)),total=total)
 
@@ -238,8 +244,8 @@ def review(connect, data):
 def public_reports(connect, page=1):
     page=max(1,int(page))
     with connect() as c:
-        rows=c.execute("SELECT id,public_caption FROM observations WHERE status='published' AND publish_consent=1 AND created>=? AND EXISTS(SELECT 1 FROM observation_images WHERE report_id=observations.id) ORDER BY updated DESC,id LIMIT 21 OFFSET ?",(time.time()-365*86400,(page-1)*20)).fetchall()
-    return dict(results=[dict(id=r['id'],caption=r['public_caption']) for r in rows[:20]],page=page,hasMore=len(rows)>20)
+        rows=c.execute("SELECT id,public_caption,public_credit,public_place,launch_id,launch_name,launch_time,match_method FROM observations WHERE status='published' AND publish_consent=1 AND created>=? AND EXISTS(SELECT 1 FROM observation_images WHERE report_id=observations.id) ORDER BY updated DESC,id LIMIT 21 OFFSET ?",(time.time()-365*86400,(page-1)*20)).fetchall()
+    return dict(results=[dict(id=r['id'],caption=r['public_caption'],credit=r['public_credit'],publicPlace=r['public_place'],**(dict(launchId=r['launch_id'],launchName=r['launch_name'],launchTime=r['launch_time']) if r['match_method']=='admin' and r['launch_id'] else {})) for r in rows[:20]],page=page,hasMore=len(rows)>20)
 
 
 def public_image(connect, rid):
@@ -274,11 +280,17 @@ def time_window(p,now):
     except ValueError:return None
 
 def match_candidates(p,now):
-    window=time_window(p,now)
+    window=time_window(p,p.get('created',now))
     if not window:return [],'已保存原始时间和地点；时间暂不能自动识别，等待作者核对。'
     try:launches=list(_missions(int(now//60)).values())
     except Exception:return [],'报告已保存；发射数据暂不可用，等待作者核对。'
     result=[]
+    p=dict(p);location_basis=''
+    if p['latitude'] is None:
+        cities=json.loads((Path(__file__).with_name('matching-cities.json')).read_text())
+        found=[(name,point) for name,point in cities.items() if name in p.get('place','')]
+        if len(found)==1:
+            name,point=found[0];p.update(latitude=point[0],longitude=point[1],coordinate_system='WGS84');location_basis=f'（{name}市中心近似位置）'
     for launch in launches:
         try:t=dt.datetime.fromisoformat(launch['timing']['net'].replace('Z','+00:00')).timestamp()
         except (KeyError,ValueError,TypeError):continue
@@ -288,10 +300,10 @@ def match_candidates(p,now):
         if p['latitude'] is not None and p['coordinate_system']=='WGS84' and all(type(pad.get(k)) in (int,float) for k in ('latitude','longitude')):
             a,b,c,d=map(math.radians,(p['latitude'],p['longitude'],pad['latitude'],pad['longitude']))
             distance=round(6371*2*math.asin(math.sqrt(min(1,math.sin((a-c)/2)**2+math.cos(a)*math.cos(c)*math.sin((b-d)/2)**2))))
-        result.append(dict(id=launch['id'],name=launch.get('nameZh') or launch.get('name','发射任务'),time=launch['timing']['net'],distanceKm=distance,basis='时间接近；观测点距发射场约 '+str(distance)+' km' if distance is not None else '时间接近；地点待核对'))
+        result.append(dict(id=launch['id'],name=launch.get('nameZh') or launch.get('name','发射任务'),time=launch['timing']['net'],distanceKm=distance,basis='时间接近；观测点距发射场约 '+str(distance)+' km'+location_basis if distance is not None else '时间接近；地点待核对'))
     # Site proximity ranks candidates, not proof of visibility or actual track.
     result.sort(key=lambda x:(x['distanceKm'] is None,x['distanceKm'] or 0,abs(dt.datetime.fromisoformat(x['time'].replace('Z','+00:00')).timestamp()-sum(window)/2)))
-    return result,'按时间初筛，有 GPS 坐标时参考与发射场的距离排序；文字地点暂由作者核对。候选不代表已经确认，也不代表当时一定可见。' if result else '当前一年数据中未找到时间接近的发射，报告已保存，等待作者核对。'
+    return result,'按时间初筛，有 WGS84 坐标或明确城市名时参考与发射场的距离排序；城市使用中心近似位置，未识别或有歧义地点需人工核对。候选不代表已经确认，也不代表当时一定可见。' if result else '当前一年数据中未找到时间接近的发射，报告已保存，等待作者核对。'
 
 def receipt(connect,rid):
     with connect() as c:r=c.execute('SELECT candidates,match_note FROM observations WHERE id=?',(rid,)).fetchone()
@@ -301,8 +313,71 @@ def report_summary(connect):
     # Only aggregate task associations leave the private backend. No report ids, times or locations.
     counts={}
     with connect() as c:
-        for r in c.execute("SELECT launch_id,candidates FROM observations WHERE status!='invalid'"):
-            ids={x['id'] for x in json.loads(r['candidates'])}
+        for r in c.execute("SELECT launch_id,candidates,match_method FROM observations WHERE status!='invalid'"):
+            ids={x['id'] for x in json.loads(r['candidates'])} if not r['match_method'] else set()
             if r['launch_id']:ids.add(r['launch_id'])
             for key in ids:counts[key]=counts.get(key,0)+1
     return dict(counts=counts)
+
+
+def search_missions(query):
+    q=query.get('q','').strip().casefold()
+    if len(q)>160:raise ReportError('搜索内容过长。')
+    try: launches=list(_missions(int(time.time()//60)).values())
+    except Exception:raise ReportError('任务列表暂不可用，请稍后重试。',503)
+    results=[]
+    for item in launches:
+        name=item.get('nameZh') or item.get('name','发射任务');stamp=item.get('timing',{}).get('net','')
+        try:
+            date=dt.datetime.fromisoformat(stamp.replace('Z','+00:00'))
+            if date.timestamp()>time.time():continue
+        except (ValueError,TypeError):continue
+        if q and q not in f"{name} {item.get('name','')} {item['id']} {date.astimezone(TZ).strftime('%Y-%m-%d')}".casefold():continue
+        results.append(dict(id=item['id'],name=name,time=stamp))
+    results.sort(key=lambda x:x['time'],reverse=True)
+    return dict(results=results[:100],total=len(results))
+
+
+def match_report(connect,data):
+    if not isinstance(data,dict):raise ReportError('请求格式无效。')
+    rid=text(data,'id',40,True);action=data.get('action')
+    if action not in ('recommend','assign','clear'):raise ReportError('未知匹配操作。')
+    with connect() as c:
+        row=c.execute('SELECT * FROM observations WHERE id=?',(rid,)).fetchone()
+    if not row:raise ReportError('报告不存在。',404)
+    row=dict(row)
+    if action=='recommend':
+        values=data.get('inputs',{})
+        if not isinstance(values,dict):raise ReportError('匹配条件无效。')
+        report=dict(row)
+        report['time_text']=text(values,'timeText',160) or row['time_text']
+        if values.get('timeText'):report['observed_at']=''
+        report['place']=text(values,'place',160) or row['place']
+        lat,lon=values.get('latitude'),values.get('longitude')
+        if lat is not None or lon is not None:
+            if any(type(v) not in (int,float) or not math.isfinite(v) for v in (lat,lon)) or abs(lat)>90 or abs(lon)>180:raise ReportError('请填写完整有效的 WGS84 经纬度。')
+            report.update(latitude=lat,longitude=lon,coordinate_system='WGS84')
+        # Fail visibly rather than replacing existing candidates on source outages.
+        try:_missions(int(time.time()//60))
+        except Exception:raise ReportError('任务列表暂不可用，原匹配保留。',503)
+        candidates,note=match_candidates(report,time.time())
+        inputs={k:report[k] for k in ('time_text','place','latitude','longitude','coordinate_system')}
+        with connect() as c:c.execute('UPDATE observations SET candidates=?,match_note=?,match_inputs=?,updated=? WHERE id=?',(json.dumps(candidates,ensure_ascii=False),note,json.dumps(inputs,ensure_ascii=False),time.time(),rid))
+        return dict(ok=True,candidates=candidates,note=note)
+    launch_id=text(data,'launchId',80,action=='assign') if action=='assign' else ''
+    launch=mission(launch_id) if launch_id else {}
+    stamp=launch.get('timing',{}).get('net','')
+    if launch_id:
+        try:
+            if dt.datetime.fromisoformat(stamp.replace('Z','+00:00')).timestamp()>time.time():raise ValueError()
+        except (ValueError,TypeError):raise ReportError('不能关联尚未发射的任务。')
+    if data.get('publish'):
+        if action!='assign' or not row['publish_consent']:raise ReportError('此报告未授权公开照片，不能前台展示。')
+        text(data,'publicCaption',500,True)
+        with connect() as c:
+            if not c.execute('SELECT 1 FROM observation_images WHERE report_id=?',(rid,)).fetchone():raise ReportError('报告没有授权照片。')
+        if row['created']<time.time()-365*86400:raise ReportError('报告已超过保留期限。')
+    with connect() as c:
+        c.execute('UPDATE observations SET launch_id=?,launch_name=?,launch_time=?,match_method=?,updated=? WHERE id=?',(launch_id,(launch.get('nameZh') or launch.get('name','发射任务'))[:240] if launch_id else '待匹配任务',stamp,'admin' if launch_id else 'cleared',time.time(),rid))
+        if data.get('publish'):c.execute("UPDATE observations SET status='published',public_caption=? WHERE id=?",(text(data,'publicCaption',500,True),rid))
+    return dict(ok=True)

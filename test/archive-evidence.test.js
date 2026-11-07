@@ -27,3 +27,13 @@ test('evidence enables reference simulation without inventing actual flight data
  assert.equal(simulationProfile(unknown,{historical:true,target:150}).full.length,0);
  assert.ok(simulationProfile({...unknown,observationReportCount:1},{historical:true}).full.length>0);
 });
+
+test('archive shows confirmed or user-reported missions without promoting candidates',async()=>{
+ const {archiveTasks}=await import('../public/map/observation-archive.js');
+ const time=new Date(Date.now()-86400000).toISOString();
+ const launches=[{id:'reported',name:'用户报告任务',timing:{net:time},observationReportCount:2},{id:'none',timing:{net:time}},{id:'future',timing:{net:new Date(Date.now()+86400000).toISOString()},observationReportCount:1}];
+ const sources=[{url:'https://example.com/evidence'}];
+ const records=[{id:'confirmed',name:'已证实任务',time,evidence:{status:'confirmed',sources},reportedRegions:['山东']},{id:'transcript',time,evidence:{status:'transcript',sources:[]}}];
+ const items=archiveTasks(launches,records);
+ assert.equal(items.length,2);assert.equal(items.find(x=>x.id==='reported').confirmed,false);assert.equal(items.find(x=>x.id==='reported').reports,2);assert.ok(items.find(x=>x.name==='已证实任务').confirmed);
+});

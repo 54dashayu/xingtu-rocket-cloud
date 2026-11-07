@@ -296,3 +296,13 @@ body[data-mobile-page="reports"] .mobile-task-context{display:none}
 .report-photo-field{margin:18px 0;padding:12px;border:1px solid #c8daef;border-radius:9px;min-width:0}.report-photo-field legend{font-size:14px;color:#294564}.report-photo-picker{display:block;font-size:14px;color:#315f91}.report-photo-picker input{display:block;max-width:100%;margin-top:8px}#report-photo-preview img{display:block;max-width:100%;max-height:240px;border-radius:8px;object-fit:contain;margin:10px 0}.report-photo-field button{font-size:13px}
 
 .public-photo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}.public-photo-grid article{border:1px solid #c4d7eb;border-radius:12px;padding:12px;overflow:hidden}.public-photo-grid img{display:block;width:100%;max-height:360px;object-fit:contain}.public-photo-grid p{white-space:pre-wrap;overflow-wrap:anywhere}.public-pager{display:flex;gap:12px;margin-top:12px}
+
+/* Report entry and task archive keep their own panels and preserve form input. */
+.report-tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid #d4e0ed;padding-bottom:12px}
+.report-tabs button{flex:1;padding:10px 16px;border:1px solid #bfd3eb;background:#f3f7fc;color:#31577f;font-size:17px}
+.report-tabs button[aria-selected="true"]{background:#356fb6;color:white;border-color:#356fb6}
+.report-content [role="tabpanel"][hidden]{display:none}
+.archive-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.archive-evidence-label{font-weight:600;color:#4669a1}
+.public-photo-grid h3{margin:0 0 8px;font-size:18px}
+@media(min-width:851px) and (max-width:1350px){.header-shell .brand-slogan{display:none}.header-shell .topbar{gap:8px}.desktop-report-entry{padding:6px 8px;font-size:13px}}

@@ -13,13 +13,14 @@ export function reportCoordinates(latitude,longitude,place=''){
 }
 // Independent reports: preserve users' approximate descriptions; never assert a task identity.
 export function mountObservationReport(container,{onSubmitted=()=>{},onReplay=()=>{}}={}) {
- container.innerHTML=`<div class="report-heading"><h1>报告 / 档案</h1><span class="report-future">观测档案</span></div><p class="report-intro">看到天空中的火箭云？记下大概的时间、地点，我们来寻找可能对应的发射。无需知道任务名称。</p>
+ container.innerHTML=`<div class="report-heading"><h1>报告火箭云</h1></div><p class="report-intro">看到天空中的火箭云？记下大概的时间、地点，我们来寻找可能对应的发射。无需知道任务名称。</p>
  <form id="observation-form"><div class="report-grid report-basics"><div><label for="report-time">时间 · 北京时间</label><input id="report-time" name="timeText" required maxlength="160" placeholder="如：10月23日傍晚"><button type="button" id="report-now">当前时间</button></div><div><label for="report-place">地点</label><input id="report-place" name="place" required maxlength="160" placeholder="如：山东烟台海边"><button type="button" id="report-locate">当前地点</button></div></div>
  <div class="report-grid report-coordinates"><div><label for="report-latitude">纬度 °N（选填）</label><input id="report-latitude" name="latitude" type="number" min="-90" max="90" step="any" placeholder="如：36.06"></div><div><label for="report-longitude">经度 °E（选填）</label><input id="report-longitude" name="longitude" type="number" min="-180" max="180" step="any" placeholder="如：103.83"></div></div>
  <p id="report-location-state" class="report-hint" role="status">地点可模糊填写，经纬度可选填。当前地点是设备现在的位置，请确认与当时观测地点一致。</p>
  <label>补充说明（选填）<textarea name="notes" maxlength="1500" rows="2" placeholder="还有什么想告诉我们？"></textarea></label>
  <fieldset class="report-photo-field"><legend>观测照片（选填，最多一张）</legend><label class="report-photo-picker" for="report-photo">拍照或选择图片<input id="report-photo" type="file" accept="image/*"></label><div id="report-photo-preview" hidden><img id="report-photo-image" alt="待提交的观测照片"><button id="report-photo-remove" type="button">移除图片</button></div><p id="report-photo-state" role="status" class="report-hint">支持相机或图库；图片将压缩后随报告提交。</p></fieldset>
- <label class="report-check"><input name="publishConsent" type="checkbox">选填：我有权分享此照片，同意审核后公开照片及管理员整理的说明（不公开原始报告、署名或经纬度）。</label>
+ <div class="report-grid report-basics"><div><label for="report-credit">照片公开署名（选填）</label><input id="report-credit" name="publicCredit" maxlength="60" placeholder="昵称或摄影署名"></div><div><label for="report-public-place">照片公开地点（选填）</label><input id="report-public-place" name="publicPlace" maxlength="100" placeholder="仅填城市或大致区域"></div></div>
+ <label class="report-check"><input name="publishConsent" type="checkbox">我有权分享此照片，同意审核后公开照片、以上公开署名与地点，以及整理后的说明。照片版权归提交者所有，保留原有水印；不公开报告原文或精确坐标。</label>
  <label class="report-check"><input name="consent" type="checkbox" required>同意将时间、地点、说明和所选照片交给作者核对。</label><p class="report-privacy">报告默认仅作者可见，最多保存一年。公开照片须单独勾选授权并经管理员审核；未授权的旧报告保持私密。</p>
  <p id="report-message" role="status" aria-live="polite"></p><div class="report-footer"><button type="submit" class="report-submit">提交报告并匹配任务</button></div></form><section class="report-result" aria-live="polite" hidden></section>`;
  const form=container.querySelector('form'),message=container.querySelector('#report-message'),place=form.elements.place,time=form.elements.timeText,lat=form.elements.latitude,lon=form.elements.longitude,locate=container.querySelector('#report-locate'),locationState=container.querySelector('#report-location-state');
@@ -69,7 +70,7 @@ export function mountObservationReport(container,{onSubmitted=()=>{},onReplay=()
   const f=new FormData(form);
   let point;try{point=reportCoordinates(lat.value,lon.value,place.value);}catch(error){message.textContent=error.message;return;}
   if(f.has('publishConsent')&&!photo){message.textContent='请先选择照片，或取消公开照片选项。';return;}
-  const payload={publishConsent:f.has('publishConsent'),id:rid,timeText:f.get('timeText').trim(),place:f.get('place').trim(),notes:f.get('notes').trim(),consent:f.has('consent'),latitude:point?.latitude??null,longitude:point?.longitude??null,coordinateSystem:geo?'WGS84':'unknown',...(photo?{photo}: {})};
+  const payload={publicCredit:String(f.get('publicCredit')||'').trim(),publicPlace:String(f.get('publicPlace')||'').trim(),publishConsent:f.has('publishConsent'),id:rid,timeText:f.get('timeText').trim(),place:f.get('place').trim(),notes:f.get('notes').trim(),consent:f.has('consent'),latitude:point?.latitude??null,longitude:point?.longitude??null,coordinateSystem:geo?'WGS84':'unknown',...(photo?{photo}: {})};
   busy=true;geoSerial++;form.querySelectorAll('input,textarea,button').forEach(el=>el.disabled=true);message.textContent='正在保存并寻找候选任务…';
   try{
    const r=await fetch('/xingtu-analytics/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(45000)});

@@ -235,8 +235,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(204)
             except (ValueError,TypeError,OverflowError):return self.respond(400)
 
-        if self.path in ('/report', '/api/reports/status'):
-            admin = self.path == '/api/reports/status'
+        if self.path in ('/report', '/api/reports/status', '/api/reports/match'):
+            admin = self.path != '/report'
             origins = (ORIGIN, 'https://app.bh1jss.net') if admin else (ORIGIN,)
             if self.headers.get('Origin') not in origins or (admin and self.headers.get('X-Xingtu-Admin') != '1'):
                 return self.respond(403)
@@ -247,7 +247,7 @@ class Handler(BaseHTTPRequestHandler):
                 if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
                     return self.respond(415)
                 data = json.loads(self.rfile.read(size))
-                result = observations.review(connect, data) if admin else observations.submit(connect, data, self.headers.get('X-Real-IP',''))
+                result = observations.match_report(connect,data) if self.path=='/api/reports/match' else observations.review(connect, data) if admin else observations.submit(connect, data, self.headers.get('X-Real-IP',''))
                 return self.respond(200 if admin else 201, json.dumps(result, ensure_ascii=False).encode())
             except observations.ReportError as error:
                 return self.respond(error.status, json.dumps({'error': str(error)}, ensure_ascii=False).encode())
@@ -304,6 +304,12 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(200, observations.image_for_report(connect, rid), 'image/jpeg')
             except observations.ReportError as error:
                 return self.respond(error.status)
+        if path == '/api/report-missions':
+            try:
+                q={k:v[-1] for k,v in parse_qs(urlsplit(self.path).query).items()}
+                return self.respond(200,json.dumps(observations.search_missions(q),ensure_ascii=False).encode())
+            except observations.ReportError as error:
+                return self.respond(error.status,json.dumps({'error':str(error)},ensure_ascii=False).encode())
         if path == '/api/reports':
             try:
                 query = {k: v[-1] for k, v in parse_qs(urlsplit(self.path).query).items()}
