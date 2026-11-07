@@ -1,7 +1,7 @@
-import { mountPublicReports } from './public-reports.js?v=0.03-0019';
+import { mountPublicReports } from './public-reports.js?v=0.03-0020';
 import { loadArchiveRecords } from './archive-evidence.js?v=0.02';
 import { cloudStatus } from '../cloud-status.js?v=20261024ba';
-import { appendArchiveMedia } from './archive-media.js?v=0.03-0018';
+import { appendArchiveMedia } from './archive-media.js?v=0.03-0020';
 export function archivePeriod(time, now = Date.now()) {
   const age = now - Date.parse(time);
   return !Number.isFinite(age) || age < 0 ? 'future' : age <= 365 * 86400000 ? 'year' : 'older';

@@ -1,7 +1,7 @@
 export function mountPublicReports(container,{launchId=null}={}){
  let page=1,serial=0;
  container.className='observation-archive public-reports';
- container.innerHTML='<h2>观测照片档案</h2><p>照片经授权、审核后展示，版权归提交者所有。任务关联不等于媒体证实。</p><button type="button" class="public-refresh">刷新照片</button><p class="public-state" role="status"></p><div class="public-photo-grid"></div><div class="public-pager"><button type="button" class="public-prev">上一页</button><button type="button" class="public-next">下一页</button></div>';
+ container.innerHTML='<h2>观测照片档案</h2><p>照片经授权、审核后展示，版权归原权利人所有。任务关联不等于媒体证实。</p><button type="button" class="public-refresh">刷新照片</button><p class="public-state" role="status"></p><div class="public-photo-grid"></div><div class="public-pager"><button type="button" class="public-prev">上一页</button><button type="button" class="public-next">下一页</button></div>';
  const grid=container.querySelector('.public-photo-grid'),state=container.querySelector('.public-state'),prev=container.querySelector('.public-prev'),next=container.querySelector('.public-next');
  const node=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;return el;};
  async function load(){const id=++serial;state.textContent='正在读取…';grid.replaceChildren();prev.disabled=true;next.disabled=true;
@@ -13,7 +13,7 @@ export function mountPublicReports(container,{launchId=null}={}){
   card.append(node('p','观测地点：'+(item.publicPlace||'提交者未公开')));
   img.src='/xingtu-analytics/public-report-images/'+encodeURIComponent(item.id);img.alt='火箭云观测照片 · '+(item.credit||'未公开署名');img.loading='lazy';
   img.onerror=()=>{img.replaceWith(node('p','图片已撤下或暂不可用。'));};
-  card.append(img,node('p',item.caption),node('p','© '+(item.credit||'原提交者（未公开署名）')+' · 照片版权归提交者所有'));
+  card.append(img,node('p',item.caption),node('p','署名：'+(item.credit||'未公开署名')+' · 照片版权归原权利人所有'));
   if(item.launchId){const link=node('a','火箭云3D模型');link.href='./3d/index.html?launch='+encodeURIComponent(item.launchId)+'&range=history';card.append(link);}
   grid.append(card);
  }

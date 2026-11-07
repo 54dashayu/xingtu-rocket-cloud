@@ -16,6 +16,7 @@ import re
 import secrets
 import time
 import uuid
+from photo_credit import credit_image
 from urllib.request import urlopen
 
 Image.MAX_IMAGE_PIXELS = 16000000
@@ -252,9 +253,15 @@ def public_reports(connect, page=1, launch_id=None):
 
 def public_image(connect, rid):
     with connect() as c:
-        row=c.execute("SELECT image FROM observation_images JOIN observations ON id=report_id WHERE id=? AND status='published' AND publish_consent=1 AND created>=?",(rid,time.time()-365*86400)).fetchone()
+        row=c.execute("SELECT image,public_credit FROM observation_images JOIN observations ON id=report_id WHERE id=? AND status='published' AND publish_consent=1 AND created>=?",(rid,time.time()-365*86400)).fetchone()
     if not row: raise ReportError('图片不存在或已撤下。',404)
-    return row['image']
+    # Authorization is checked on every request, including a cached derivative.
+    return _credited_public_image(row['image'], row['public_credit'])
+
+
+@lru_cache(maxsize=12)
+def _credited_public_image(raw, credit):
+    return credit_image(raw, credit, '星途用户报告')
 
 
 TZ=dt.timezone(dt.timedelta(hours=8))

@@ -3,7 +3,7 @@ import { heightPreset } from './height-presets.js?v=20261024am';
 import { headingEstimate } from './heading-estimate.js?v=20261024ad';
 import { flightProfile } from './flight-path.js?v=20261024ay';
 import { ascentToHeight, interpolateState, stageSchedule, engineState } from './ascent-dynamics.js?v=20261024am';
-import { destination } from './model.js?v=20261024al';
+import { destination, preciseTime } from './model.js?v=20261024al';
 export function simulationProfile(launch,{target=100,elapsed=Infinity,azimuth=headingEstimate(launch).azimuth,rangeFactor=1,historical=false}={}){
  heightPreset(target);
  const sourced=flightProfile(launch,{target,elapsed,preferFinalCutoff:historical});
@@ -25,4 +25,10 @@ export function simulationProfile(launch,{target=100,elapsed=Infinity,azimuth=he
  const duration=solution.duration,t=Math.min(duration,Math.max(0,elapsed)),points=full.filter(p=>p.seconds<=t);
  if(points.at(-1)?.seconds!==t){const b=full.find(p=>p.seconds>t),a=points.at(-1);if(a&&b)points.push({...interpolateState(a,b,t),emitting:engineState(t).thrust>0});}
  return {full,points,duration,elapsed:t,range:full.at(-1).downrange,target,reached:true,kind:'predicted',label:'上升段动力学模拟',azimuth,source:null,method:'reference-ecef-rk4',parameters:'generic-two-stage',plumeStartHeight,rangeScaled:rangeFactor!==1};
+}
+
+// Match the analysis/playback prerequisites instead of showing a dead historical 3D entry.
+export function canAnalyzeHistory(launch, target=150) {
+ if (!launch?.coordinates || !preciseTime(launch)) return false;
+ return simulationProfile(launch,{historical:true,target}).full.length>0;
 }

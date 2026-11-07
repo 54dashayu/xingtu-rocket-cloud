@@ -7,8 +7,8 @@ import { createMissionCache } from './mission-cache.js?v=0.03-0019';
 const readMissions=createMissionCache();
 import { attachArchiveEvidence, hasReplayEvidence, loadArchiveRecords } from './archive-evidence.js?v=0.02';
 import { HISTORY_RANGES, archiveMatches, observationMatches } from './archive-filters.js?v=0.02';
-import { mountObservationReport } from './observation-report.js?v=0.03-0018';
-import { mountObservationArchive } from './observation-archive.js?v=0.03-0019';
+import { mountObservationReport } from './observation-report.js?v=0.03-0020';
+import { mountObservationArchive } from './observation-archive.js?v=0.03-0020';
 import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
 import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0015';
@@ -19,7 +19,7 @@ import { solarShadePath } from './solar-shade.js?v=20261024ai';
 import { HEIGHT_PRESETS, DEFAULT_HEIGHT } from './height-presets.js?v=20261024am';
 import { headingEstimate } from './heading-estimate.js?v=20261024ad';
 import { trajectoryStyle, regionEdges } from './overlay-style.js?v=20261024aj';
-import { simulationProfile } from './prediction.js?v=0.02';
+import { simulationProfile, canAnalyzeHistory } from './prediction.js?v=0.03-0020';
 import { flightProfile } from './flight-path.js?v=20261024am';
 import { cloudStatus, cloudOpportunity } from '../cloud-status.js?v=20261024ba';
 import { visibilityFootprint, jellyfishReferenceHeight } from './visibility.js?v=0.03-0015';
@@ -120,7 +120,7 @@ function renderList(){
  $('range-upcoming').classList.toggle('active',!historyMode());$('range-history').classList.toggle('active',historyMode());$('range-upcoming').setAttribute('aria-pressed',String(!historyMode()));$('range-history').setAttribute('aria-pressed',String(historyMode()));
  $('coverage').textContent=`显示 ${visible.length} / ${pool.length} 项`+(historyMode()?` · 媒体证实 ${pool.filter(l=>cloudStatus(l).code==='observed').length} · 有报告 ${pool.filter(l=>l.observationReportCount>0).length}`:' · 指数为几何关注度，非概率');
  $('coverage').title='地图仍显示所选时段的全部任务；列表按当前条件筛选。';
- $('missions').innerHTML=visible.length?visible.map(l=>`<article class="mission ${l.id===selected?.id?'selected':''}" data-id="${esc(l.id)}"><span class="status">● ${esc(statusLabel(l))}</span><div class="mission-badges">${cloudBadge(l)}${historyMode()&&l.observationReportCount?'<span class="cloud-badge">用户报告候选 · 可回溯</span>':''}${!historyMode()?indexBadge(l):(cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0)?'<button type="button" class="mission-report" data-report title="前往报告 / 档案填写观测">报告</button>':''}${model3DEnabled&&possibleCloudTask(l)?`<a class="mission-3d" data-3d href="${task3DUrl(l.id,historyMode())}" aria-label="3D模型：${esc(l.name)}">3D模型</a>`:''}</div><button type="button" class="mission-select" aria-pressed="${l.id===selected?.id}" aria-label="选择任务：${esc(l.name)}"><strong>${esc(l.name)}</strong><small>${esc(l.pad?.location || '场址待补充')}${l.coordinates?'':' · 坐标待补充'}</small><span class="time-pair">${timeHTML(launchTimePair(l))}</span><small class="precision">${esc(launchTimePair(l).note)}</small><small class="countdown" data-count="${esc(l.id)}">${esc(countdown(l,clockNow()))}</small></button></article>`).join(''):'<p class="empty">没有匹配项；地图和日历仍保留全部已收录任务。</p>';
+ $('missions').innerHTML=visible.length?visible.map(l=>`<article class="mission ${l.id===selected?.id?'selected':''}" data-id="${esc(l.id)}"><span class="status">● ${esc(statusLabel(l))}</span><div class="mission-badges">${cloudBadge(l)}${historyMode()&&l.observationReportCount?'<span class="cloud-badge">用户报告候选 · 可回溯</span>':''}${!historyMode()?indexBadge(l):(cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0)?'<button type="button" class="mission-report" data-report title="前往报告 / 档案填写观测">报告</button>':''}${model3DEnabled&&possibleCloudTask(l)&&(!historyMode()||canAnalyzeHistory(l,DEFAULT_HEIGHT))?`<a class="mission-3d" data-3d href="${task3DUrl(l.id,historyMode())}" aria-label="3D模型：${esc(l.name)}">3D模型</a>`:''}</div><button type="button" class="mission-select" aria-pressed="${l.id===selected?.id}" aria-label="选择任务：${esc(l.name)}"><strong>${esc(l.name)}</strong><small>${esc(l.pad?.location || '场址待补充')}${l.coordinates?'':' · 坐标待补充'}</small><span class="time-pair">${timeHTML(launchTimePair(l))}</span><small class="precision">${esc(launchTimePair(l).note)}</small><small class="countdown" data-count="${esc(l.id)}">${esc(countdown(l,clockNow()))}</small></button></article>`).join(''):'<p class="empty">没有匹配项；地图和日历仍保留全部已收录任务。</p>';
  for(const card of $('missions').querySelectorAll('[data-id]'))card.onclick=e=>{
   if(e.target.closest('[data-3d]'))return;
   if(e.target.closest('[data-report]')){
@@ -440,7 +440,7 @@ $('about').onclick=()=>{$('contact-author').hidden=false;$('author-wechat').hidd
 <h3>3. 地图颜色怎么看</h3><p>发射场圆点越大，近期任务越多。灰点是常驻场址，蓝点有近期任务，金色点有值得关注的火箭云候选。地图采用天地图底图，缩小时隐藏地名，放大后显示省名，再放大可见省会等城市；地图亮暗底色表示白天和夜晚；橙色线表示模拟上升轨迹。</p><p>蓝色覆盖区域表示当前时刻可能看到受光尾迹的地方，具体分区见“观测分析”中的色标。浅蓝边缘的尾迹更靠近地平线，容易被建筑和云层挡住；深蓝“水母云关注区”值得留意，但不代表一定出现水母形状。地图颜色不等于晴天，出发前还要看“观看建议”。</p>
 <h3>4. 时间未定，也可以试一试</h3><p>选中时间待定的未来任务，在“观测分析”中填写发射地的当地日期和时间，参考旁边的晨昏时间，再点击“按此时间演示”，在当前页观看图表播放，竖屏会自动滚动到图表；需要查看地图时，再点“在地图演示”。填写的时间只用于这次模拟，不会改动公布的发射计划。</p>
 <h3>5. 留下一次观测</h3><p>点击“报告 / 档案”，填写大致的北京时间和地点即可，不需要先选择任务。可以点击“当前时间”或授权获取“当前地点”。系统按时间寻找候选，有 GPS 坐标时参考距离排序；文字地点由作者核对。候选任务可以打开回溯参考演示，但并不等于已经确认对应任务。报告仅供作者后台核对，不会自动改变模型或“已证实”标记。当前不上传图片。</p><h3>6. 航警和其他设置</h3><p>右侧若有“航警方向参考”，展开后可选择候选用于模拟；点击“恢复建议”可撤销。它只提供可能的方向，需要核对是否对应这次任务。100 / 150 公里是演示的终点高度，不是距离你多远；通常保留默认值即可。</p>
-<h3>6. 提前准备观看</h3><p>结合任务时间、所在位置和天气决定是否留意，临近发射再刷新确认是否改期。“已证实火箭云”表示有公开观测报道；没有这一标记，不等于当时没有火箭云。点击“订阅日历”可将发射安排加入日历软件。</p><p>本工具提供观看参考，实际还会受到真实航迹、云层和遮挡影响。想了解计算方法，可查看页脚 GitHub 中的技术说明。</p>`;$('utility').showModal();};
+<h3>数据来源与照片</h3><p>发射数据：<a href="https://thespacedevs.com/llapi" target="_blank" rel="noopener">The Space Devs · Launch Library 2</a>；天气：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>（<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>）。观看建议由本站根据数据计算。本软件免费，用于非商业观测参考。<a href="./data-sources.html" target="_blank" rel="noopener">查看数据来源与图片使用说明</a>。</p><h3>6. 提前准备观看</h3><p>结合任务时间、所在位置和天气决定是否留意，临近发射再刷新确认是否改期。“已证实火箭云”表示有公开观测报道；没有这一标记，不等于当时没有火箭云。点击“订阅日历”可将发射安排加入日历软件。</p><p>本工具提供观看参考，实际还会受到真实航迹、云层和遮挡影响。想了解计算方法，可查看页脚 GitHub 中的技术说明。</p>`;$('utility').showModal();};
 $('subscribe').onclick=()=>{$('contact-author').hidden=true;$('author-wechat').hidden=true;
  const now=Date.now(),today=new Date(now+8*3600000).toISOString().slice(0,10);let since;try{since=localStorage.getItem('xingtu:calendar:since');}catch{}
  if(!/^\d{4}-\d{2}-\d{2}$/.test(since||'')||since>today||since<'1900-01-01'||!Number.isFinite(Date.parse(since))||new Date(since).toISOString().slice(0,10)!==since)since=new Date(now+8*3600000-30*86400000).toISOString().slice(0,10);

@@ -340,3 +340,8 @@ body[data-mobile-page="reports"] .mobile-task-context{display:none}
  margin:0;padding:10px 8px;font:600 14px/1.4 system-ui,sans-serif;border:1px solid #366fb7;
  border-radius:9px;background:#366fb7;color:white;text-decoration:none;text-align:center
 }
+
+/* Task actions share geometry and typography across link/button elements. */
+.mission .mission-badges .mission-report,.mission .mission-badges .mission-3d{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;height:36px;min-height:36px;min-width:66px;padding:0 10px;border:1px solid #b7cde8;border-radius:7px;background:#f5f9ff;color:#3267a9;font-family:inherit;font-size:13px;font-weight:600;line-height:1.2;text-decoration:none;white-space:nowrap;vertical-align:middle}
+.mission .mission-badges .mission-report:hover,.mission .mission-badges .mission-3d:hover{background:#dceafd;border-color:#628cc0}
+@media(pointer:coarse){.mission .mission-badges .mission-report,.mission .mission-badges .mission-3d{height:44px;min-height:44px}}

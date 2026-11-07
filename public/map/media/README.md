@@ -19,3 +19,5 @@
   The appearance of U.S. Department of War (DoW) visual information does not imply or constitute DoW endorsement.
 
 2026-05-12、2026-10-23 长征六号甲的报道照片暂未取得明确转载许可，仅链接至青岛早报、北京日报原报道；没有下载进仓库或自动转成用户投稿。
+
+0020：页面展示 `*-credited.jpg` 副本，在原画面外附加摄影署名和来源。原画面不裁切、不遮盖水印；来源页与使用规则仍在图片旁显示。运行 `/usr/bin/python3 scripts/build-photo-credits.py` 重建。署名不改变上述使用许可或公有领域状态。

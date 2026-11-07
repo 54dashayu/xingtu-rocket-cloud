@@ -59,6 +59,25 @@ class ObservationTest(unittest.TestCase):
         self.submit()
         with self.assertRaises(o.ReportError):o.match_report(s.connect,dict(id=self.data['id'],action='assign',launchId='launch-test',publish=True,publicCaption='说明'))
         self.assertEqual(o.listing(s.connect,{})['results'][0]['match_method'],'')
+
+    def test_public_watermark_preserves_private_image_and_uses_only_public_credit(self):
+        import base64,io
+        from PIL import Image
+        raw=io.BytesIO();Image.new('RGB',(640,480),'blue').save(raw,format='JPEG')
+        data=dict(self.data,photo='data:image/jpeg;base64,'+base64.b64encode(raw.getvalue()).decode(),publishConsent=True,publicCredit='摄影小王',latitude=30,longitude=120)
+        self.submit(data)
+        private=o.image_for_report(s.connect,data['id'])
+        o.review(s.connect,dict(id=data['id'],status='published',publicCaption='公开说明'))
+        with patch.object(o,'_credited_public_image',wraps=o._credited_public_image) as render:
+            output=o.public_image(s.connect,data['id'])
+            render.assert_called_once_with(private,'摄影小王')
+        picture=Image.open(io.BytesIO(output))
+        self.assertEqual(picture.width,640);self.assertGreater(picture.height,480)
+        self.assertEqual(o.image_for_report(s.connect,data['id']),private)
+        self.assertEqual(Image.open(io.BytesIO(private)).size,(640,480))
+        # A cached derivative must not bypass withdrawal.
+        o.review(s.connect,dict(id=data['id'],status='reviewed'))
+        with self.assertRaises(o.ReportError):o.public_image(s.connect,data['id'])
     def test_admin_match_assign_recommend_clear_preserves_report(self):
         self.submit()
         before=o.listing(s.connect,{})['results'][0]

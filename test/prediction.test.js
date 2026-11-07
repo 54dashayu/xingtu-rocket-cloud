@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { simulationProfile } from '../public/map/prediction.js';
+import { simulationProfile, canAnalyzeHistory } from '../public/map/prediction.js';
 import { flightProfile } from '../public/map/flight-path.js';
 import { testProfile } from './fixtures/flight-profile.js';
 import { distanceKm } from '../public/map/model.js';
@@ -50,4 +50,13 @@ test('user-report candidate unlocks a reference scenario, never overrides source
  assert.equal(p.kind,'predicted');assert.equal(p.azimuth,120);assert.equal(p.source,null);assert.ok(p.full.length>0);
  assert.equal(simulationProfile({...unknown,observationReportCount:0},{historical:true}).full.length,0);
  const sourced={...unknown,flightProfile:testProfile(unknown)};assert.equal(simulationProfile(sourced,{historical:true}).kind,'planned');
+});
+
+test('historical 3D entry requires the same time and trajectory prerequisites as analysis',()=>{
+ const unknown={...l,direction:{kind:'unconfirmed',azimuth:90}};
+ assert.equal(canAnalyzeHistory(unknown),false);
+ assert.equal(canAnalyzeHistory(l),true);
+ assert.equal(canAnalyzeHistory({...unknown,observationReportCount:1}),true);
+ assert.equal(canAnalyzeHistory({...l,coordinates:null}),false);
+ assert.equal(canAnalyzeHistory({...l,timing:{...l.timing,precision:'仅确定日期'}}),false);
 });

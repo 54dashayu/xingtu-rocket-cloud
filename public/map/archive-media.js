@@ -4,12 +4,12 @@ const nasaTerms='https://www.nasa.gov/nasa-brand-center/images-and-media/';
 const dvidsTerms='https://www.dvidshub.net/about/copyright';
 export const archiveMedia=[
  {launchId:'bf2c3027-a314-403e-a416-2bfd5d165ad1',date:'2026-10-13',photos:[
-  {file:'crs35-john-kraus.jpg',caption:'晨光照亮 CRS-35 发射留下的水母状尾迹',credit:'NASA / John Kraus',source:'NASA',url:'https://www.nasa.gov/image-article/nasas-space-x-crs-35-launch-jellyfish/',original:'https://www.nasa.gov/wp-content/uploads/2026/10/nhq20261013-admin-0005orig.jpg',terms:nasaTerms,rights:'按 NASA 媒体使用规则作资料展示',width:853,height:1280},
-  {file:'crs35-bill-white.jpg',caption:'CRS-35 发射后的发光尾迹',credit:'NASA / Bill White',source:'NASA 图片库',url:'https://images.nasa.gov/details/KSC-20261013-PH-BWW01_0001',original:'https://images-assets.nasa.gov/image/KSC-20261013-PH-BWW01_0001/KSC-20261013-PH-BWW01_0001~medium.jpg',terms:nasaTerms,rights:'按 NASA 媒体使用规则作资料展示',width:960,height:1280}
+  {originalFile:'crs35-john-kraus.jpg',file:'crs35-john-kraus-credited.jpg',caption:'晨光照亮 CRS-35 发射留下的水母状尾迹',credit:'NASA / John Kraus',source:'NASA',url:'https://www.nasa.gov/image-article/nasas-space-x-crs-35-launch-jellyfish/',original:'https://www.nasa.gov/wp-content/uploads/2026/10/nhq20261013-admin-0005orig.jpg',terms:nasaTerms,rights:'按 NASA 媒体使用规则作资料展示',width:853,height:1280},
+  {originalFile:'crs35-bill-white.jpg',file:'crs35-bill-white-credited.jpg',caption:'CRS-35 发射后的发光尾迹',credit:'NASA / Bill White',source:'NASA 图片库',url:'https://images.nasa.gov/details/KSC-20261013-PH-BWW01_0001',original:'https://images-assets.nasa.gov/image/KSC-20261013-PH-BWW01_0001/KSC-20261013-PH-BWW01_0001~medium.jpg',terms:nasaTerms,rights:'按 NASA 媒体使用规则作资料展示',width:960,height:1280}
  ]},
  {launchId:'5d5e17f4-292b-45f6-ab53-05437cf63ce0',date:'2026-03-04',photos:[
-  {file:'sl1040-9548695.jpg',caption:'星链 10-40 发射后的水母状尾迹',credit:'U.S. Space Force / Gwendolyn Kurzen',source:'DVIDS',url:'https://www.dvidshub.net/image/9548695/falcon-9-starlink-10-40-launch',original:'https://d1ldvf68ux039x.cloudfront.net/thumbs/photos/2603/9548695/1000w_q95.jpg',terms:dvidsTerms,rights:'原站标注 Public Domain；遵循 DVIDS 使用规则',width:999,height:665},
-  {file:'sl1040-9548691.jpg',caption:'日出前天空中的星链 10-40 火箭云',credit:'U.S. Space Force / Gwendolyn Kurzen',source:'DVIDS',url:'https://www.dvidshub.net/image/9548691/falcon-9-starlink-10-40-launch',original:'https://d1ldvf68ux039x.cloudfront.net/thumbs/photos/2603/9548691/1000w_q95.jpg',terms:dvidsTerms,rights:'原站标注 Public Domain；遵循 DVIDS 使用规则',width:999,height:665}
+  {originalFile:'sl1040-9548695.jpg',file:'sl1040-9548695-credited.jpg',caption:'星链 10-40 发射后的水母状尾迹',credit:'U.S. Space Force / Gwendolyn Kurzen',source:'DVIDS',url:'https://www.dvidshub.net/image/9548695/falcon-9-starlink-10-40-launch',original:'https://d1ldvf68ux039x.cloudfront.net/thumbs/photos/2603/9548695/1000w_q95.jpg',terms:dvidsTerms,rights:'原站标注 Public Domain；遵循 DVIDS 使用规则',width:999,height:665},
+  {originalFile:'sl1040-9548691.jpg',file:'sl1040-9548691-credited.jpg',caption:'日出前天空中的星链 10-40 火箭云',credit:'U.S. Space Force / Gwendolyn Kurzen',source:'DVIDS',url:'https://www.dvidshub.net/image/9548691/falcon-9-starlink-10-40-launch',original:'https://d1ldvf68ux039x.cloudfront.net/thumbs/photos/2603/9548691/1000w_q95.jpg',terms:dvidsTerms,rights:'原站标注 Public Domain；遵循 DVIDS 使用规则',width:999,height:665}
  ]},
  {launchId:'9648124f-8568-46d2-86d7-4b4d6f12187f',date:'2026-10-23',photos:[
   {caption:'长征六号甲火箭云 · 钟瑞摄',credit:'钟瑞',source:'北京日报客户端',url:'https://xinwen.bjd.com.cn/content/s6adc18fee4b0e42f8f01fef2.html',rights:'版权归原作者；本站仅提供原报道入口'},
@@ -34,7 +34,7 @@ export function appendArchiveMedia(card,item){
   const figure=node('figure','',photo.file?'archive-media-photo':'archive-media-source');
   if(photo.file){
    const link=node('a','','archive-media-image');link.href=new URL('./media/'+photo.file,import.meta.url).href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label','放大图片：'+photo.caption);
-   const img=node('img');img.src=link.href;img.alt=photo.caption;img.loading='lazy';img.decoding='async';img.width=photo.width;img.height=photo.height;
+   const img=node('img');img.src=link.href;img.alt=photo.caption;img.loading='lazy';img.decoding='async';img.width=photo.width;
    img.onerror=()=>link.replaceWith(node('p','图片暂未加载，可打开下方来源查看。','archive-media-error'));link.append(img);figure.append(link);
   }
   const caption=node('figcaption');caption.append(node('strong',photo.caption),node('span','摄影 / 署名：'+photo.credit));
