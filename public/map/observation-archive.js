@@ -1,5 +1,6 @@
 import { loadArchiveRecords } from './archive-evidence.js?v=0.02';
 import { cloudStatus } from '../cloud-status.js?v=20261024ba';
+import { appendArchiveMedia } from './archive-media.js?v=0.03-0018';
 export function archivePeriod(time, now = Date.now()) {
   const age = now - Date.parse(time);
   return !Number.isFinite(age) || age < 0 ? 'future' : age <= 365 * 86400000 ? 'year' : 'older';
@@ -38,6 +39,7 @@ export async function mountObservationArchive(container,{onReplay,loadTasks=asyn
     card.append(node('p',new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(item.time))+' 北京时间','archive-source-time'));
     if(item.site)card.append(node('p','发射地点：'+item.site));
     card.append(node('p','观测地点：'+item.place));
+    appendArchiveMedia(card,item);
     if(item.sources.length){const details=node('details','');details.append(node('summary','查看报道来源'));for(const source of item.sources){let url;try{url=new URL(source.url);}catch{continue;}if(url.protocol!=='https:')continue;const link=node('a',source.title||'报道');link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';details.append(link);}card.append(details);}
     if(item.id&&archivePeriod(item.time)==='year'){
      const actions=node('div','','archive-actions');

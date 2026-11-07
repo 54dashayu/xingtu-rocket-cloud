@@ -303,6 +303,20 @@ body[data-mobile-page="reports"] .mobile-task-context{display:none}
 .report-tabs button[aria-selected="true"]{background:#356fb6;color:white;border-color:#356fb6}
 .report-content [role="tabpanel"][hidden]{display:none}
 .archive-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.archive-media h4{margin:18px 0 10px;font-size:16px}
+.archive-media-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.archive-media figure{margin:0;min-width:0;border:1px solid #d3e1f1;border-radius:10px;overflow:hidden;background:#fff}
+.archive-media .archive-media-image{display:block;margin:0;background:#0d1e30}
+.archive-media img{display:block;width:100%;height:260px;object-fit:contain}
+.archive-media figcaption{padding:12px;font-size:14px}
+.archive-media figcaption strong,.archive-media figcaption span,.archive-media figcaption small{display:block}
+.archive-media figcaption span{color:#536d89;margin-top:4px}
+.archive-media figcaption small,.archive-media-notice{font-size:12px;color:#657c92}
+.archive-media figcaption a{margin:6px 0}
+.archive-media .archive-media-terms{font-size:12px}
+.archive-media-notice{display:block;margin-top:8px}
+.archive-media-error{padding:16px}
+@media(max-width:600px){.archive-media-grid{grid-template-columns:1fr}.archive-media img{height:280px}}
 .archive-evidence-label{font-weight:600;color:#4669a1}
 .public-photo-grid h3{margin:0 0 8px;font-size:18px}
 @media(min-width:851px) and (max-width:1350px){.header-shell .brand-slogan{display:none}.header-shell .topbar{gap:8px}.desktop-report-entry{padding:6px 8px;font-size:13px}}
