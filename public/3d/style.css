@@ -61,3 +61,5 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#366
 .observerWeather{grid-column:1/-1;margin:12px 0;padding:12px;border:1px solid var(--ui-border);border-radius:10px;background:#edf4fd;color:#294564}.observerWeather h2{margin-top:0}.observerWeather p{font-size:13px;line-height:1.6;overflow-wrap:anywhere}.observerWeather small{display:block;line-height:1.6;color:var(--ui-muted)}.observerWeather a{color:var(--ui-accent)}
 
 .observerWeather{margin:6px 0;padding:8px 10px;font-size:12px}.observerWeather summary{margin:0;line-height:1.6;color:#315f91;cursor:pointer}.observerWeather summary strong{font-size:12px;font-weight:500}.observerWeather details>p{margin:8px 0}.observerWeather small{font-size:11px}.observerWeather button{padding:4px 8px}
+
+.selectedMission{grid-column:1/-1;margin:0 0 14px;padding:12px;background:#edf4fd;border:1px solid var(--ui-border);border-radius:10px}.selectedMission strong{font-size:16px;font-weight:600;line-height:1.5}.selectedMission span{font-size:12px}.selectedMission #missionTime{font-variant-numeric:tabular-nums}

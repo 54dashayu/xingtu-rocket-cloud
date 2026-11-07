@@ -1,0 +1,132 @@
+{
+  "source": "Open-Meteo Geocoding / GeoNames",
+  "retrieved": "2026-11-07",
+  "cities": [
+    {
+      "name": "泰特斯维尔",
+      "latitude": 28.61222,
+      "longitude": -80.80755,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Titusville&countryCode=US&count=10&language=en&format=json",
+      "geonamesId": 4175437,
+      "admin1": "Florida"
+    },
+    {
+      "name": "隆波克",
+      "latitude": 34.63915,
+      "longitude": -120.45794,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Lompoc&countryCode=US&count=10&language=en&format=json",
+      "geonamesId": 5367788,
+      "admin1": "California"
+    },
+    {
+      "name": "布朗斯维尔",
+      "latitude": 25.90175,
+      "longitude": -97.49748,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Brownsville&countryCode=US&count=10&language=en&format=json",
+      "geonamesId": 4676740,
+      "admin1": "Texas"
+    },
+    {
+      "name": "库鲁",
+      "latitude": 5.16281,
+      "longitude": -52.64265,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Kourou&countryCode=GF&count=10&language=en&format=json",
+      "geonamesId": 3381303,
+      "admin1": "Guyane"
+    },
+    {
+      "name": "吉斯伯恩",
+      "latitude": -38.65333,
+      "longitude": 178.00417,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Gisborne&countryCode=NZ&count=10&language=en&format=json",
+      "geonamesId": 2206854,
+      "admin1": "Gisborne"
+    },
+    {
+      "name": "西之表",
+      "latitude": 30.73333,
+      "longitude": 131.0,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Nishinoomote&countryCode=JP&count=10&language=en&format=json",
+      "geonamesId": 1855203,
+      "admin1": "Kagoshima"
+    },
+    {
+      "name": "鹿儿岛",
+      "latitude": 31.56667,
+      "longitude": 130.55,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Kagoshima&countryCode=JP&count=10&language=en&format=json",
+      "geonamesId": 1860827,
+      "admin1": "Kagoshima"
+    },
+    {
+      "name": "拜科努尔",
+      "latitude": 45.61667,
+      "longitude": 63.31667,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Baikonur&countryCode=KZ&count=10&language=en&format=json",
+      "geonamesId": 1521368,
+      "admin1": "Baikonur"
+    },
+    {
+      "name": "齐奥尔科夫斯基",
+      "latitude": 51.76872,
+      "longitude": 128.12018,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Tsiolkovsky&countryCode=RU&count=10&language=en&format=json",
+      "geonamesId": 6641869,
+      "admin1": "Amur Oblast"
+    },
+    {
+      "name": "米尔内",
+      "latitude": 62.76437,
+      "longitude": 40.33855,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Mirny&countryCode=RU&count=10",
+      "geonamesId": 831129
+    },
+    {
+      "name": "金奈",
+      "latitude": 13.08784,
+      "longitude": 80.27847,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Chennai&countryCode=IN&count=10&language=en&format=json",
+      "geonamesId": 1264527,
+      "admin1": "Tamil Nadu"
+    },
+    {
+      "name": "安德内斯",
+      "latitude": 69.31428,
+      "longitude": 16.11939,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Andenes&countryCode=NO&count=10&language=en&format=json",
+      "geonamesId": 3163146,
+      "admin1": "Nordland"
+    },
+    {
+      "name": "科迪亚克",
+      "latitude": 57.78852,
+      "longitude": -152.40533,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Kodiak&countryCode=US&count=10&language=en&format=json",
+      "geonamesId": 5866583,
+      "admin1": "Alaska"
+    },
+    {
+      "name": "钦科蒂格",
+      "latitude": 37.93318,
+      "longitude": -75.37881,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Chincoteague&countryCode=US&count=10&language=en&format=json",
+      "geonamesId": 4752495,
+      "admin1": "Virginia"
+    },
+    {
+      "name": "阿尔坎塔拉",
+      "latitude": -2.4041,
+      "longitude": -44.41669,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Alcantara&countryCode=BR&count=10&language=en&format=json",
+      "geonamesId": 3408073,
+      "admin1": "Maranhão"
+    },
+    {
+      "name": "丽水（韩国）",
+      "latitude": 34.76062,
+      "longitude": 127.66215,
+      "source": "https://geocoding-api.open-meteo.com/v1/search?name=Yeosu&countryCode=KR&count=10&language=en",
+      "geonamesId": 1884138
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import {createObserverWeatherController} from './observer-weather.js';
-import {installObservers} from './observers.js?v=20261105-location-hint';
+import {installObservers,nearestObserverCity} from './observers.js?v=0.03-0016';
 import {prepareMission,missionMode,missionScenario,missionEvents,beijingInput} from './missions.js';
 import {flightEvents} from './events.js';
 import {GlobeView} from './scene.js?v=0.03-0015';
@@ -45,7 +45,7 @@ function matchesMission(){return boundInputs&&$('site').value===boundInputs.site
 function setSceneVisible(visible){if(!visible)weatherController.clear();for(const selector of ['#views','.transport','.flightEvents','.readouts'])document.querySelector(selector).hidden=!visible;}
 function addSource(url,name){try{const u=new URL(url);if(u.protocol!=='https:')return;const a=document.createElement('a');a.href=u.href;a.textContent=name||'资料来源';a.target='_blank';a.rel='noopener noreferrer';$('missionSources').append(a);}catch{}}
 function renderContext(s,custom=false){
- const l=boundMission;$('missionSources').replaceChildren();
+ const l=boundMission;$('missionSources').replaceChildren();$('missionTime').textContent=l?(Number.isFinite(Date.parse(l.timing?.net))?'北京时间 '+fmt(l.timing.net):'发射时间待定'):'';
  if(!l){$('missionTitle').textContent='手动实验 · 通用参考轨迹';$('missionBasis').textContent='非具体任务 · 地影柱默认显示';$('missionMetadata').textContent='手动设置时间、场址与航向。';$('eventBasis').textContent='通用模型 · 参考事件';return;}
  const mode=missionMode(l);$('missionTitle').textContent=l.name;
  $('missionBasis').textContent=custom?'自定义假设 · 已偏离任务参数':`${mode.historical?'历史回溯':'未来预测'} · ${mode.confirmed?'火箭云已证实':mode.historical?'观测证据未核实':mode.candidate?'火箭云候选 · 非保证':'未通过火箭云初筛'} · ${s.sourced?s.profile.label:'通用参考轨迹 · '+(s.heading?.label||'航向待确认')}`;
@@ -54,23 +54,40 @@ function renderContext(s,custom=false){
  $('eventBasis').textContent=custom?'自定义假设':'资料优先 · 缺失用示意估计';
 }
 function loadMission(id){const row=missionRows.find(l=>l.id===id);if(!row){$('error').textContent='未在当前日历数据中找到该任务；历史列表不代表完整档案。';return;}
- boundMission=row;$('parameterDetails').open=false;$('missionRestore').disabled=false;
+ const defaultObserver=!boundMission||boundMission.id!==row.id;boundMission=row;$('parameterDetails').open=false;$('missionRestore').disabled=false;
  const coordinates=row.coordinates;if(!coordinates){renderContext({});setSceneVisible(false);scenarios=[];$('error').textContent='任务缺少发射场坐标。';return;}
  let option=$('site').querySelector('option[value="mission-site"]');if(!option){option=document.createElement('option');option.value='mission-site';$('site').append(option);}option.textContent='任务场址 · '+(row.pad.location||row.pad.name||'发射点');const old=sites.findIndex(s=>s.id==='mission-site');const newSite={...row.pad,...coordinates,id:'mission-site'};if(old<0)sites.push(newSite);else sites[old]=newSite;
- $('site').value='mission-site';if($('observer').value==='site'){$('lat').value=coordinates.latitude;$('lon').value=coordinates.longitude;}$('net').value=Number.isFinite(Date.parse(row.timing?.net))?beijingInput(row.timing.net):'';
+ $('site').value='mission-site';
+ if(defaultObserver){const city=nearestObserverCity(coordinates);$('observer').value=city?.name||'site';setObserver();$('locationStatus').textContent=city?`默认观测点：${city.name}，距发射场约 ${Math.round(city.distanceKm)} km，可更换。`:'附近城市暂未收录，先用发射场位置，可更换观测点。';}
+ else if($('observer').value==='site'){$('lat').value=coordinates.latitude;$('lon').value=coordinates.longitude;}
+$('net').value=Number.isFinite(Date.parse(row.timing?.net))?beijingInput(row.timing.net):'';
  let heading=90;try{heading=missionScenario(row).heading.azimuth;}catch{}$('heading').value=heading;heading=+$('heading').value;$('headingValue').textContent=heading+'°';boundInputs={site:'mission-site',net:$('net').value,heading};
  const mode=missionMode(row),url=new URL(location.href);url.searchParams.set('launch',row.id);url.searchParams.set('range',mode.historical?'history':'upcoming');history.replaceState(null,'',url);$('backCalendar').href='http://127.0.0.1:4186/map.html?launch='+encodeURIComponent(row.id)+(mode.historical?'&range=history':'');
  renderContext({});rebuild();setViewMode(false);
 }
-function renderMissionList(preferred){const filter=$('missionFilter').value;const rows=missionRows.filter(l=>{const m=missionMode(l);return filter==='candidate'?m.candidate:filter==='confirmed'?m.confirmed:filter==='history'?m.historical:!m.historical;});$('missionSelect').replaceChildren();for(const l of rows){const opt=document.createElement('option');opt.value=l.id;opt.textContent=(Number.isFinite(Date.parse(l.timing?.net))?fmt(l.timing.net):'时刻待定')+' · '+l.name;$('missionSelect').append(opt);}if(!rows.length){const opt=document.createElement('option');opt.textContent='当前列表无匹配任务';opt.value='';$('missionSelect').append(opt);}$('missionLoad').disabled=!rows.length;if(preferred&&rows.some(l=>l.id===preferred))$('missionSelect').value=preferred;}
-async function loadCatalogue(initial=false){const generation=++catalogueGeneration;$('missionListStatus').textContent='正在读取本地日历…';$('missionRefresh').disabled=true;
- try{const responses=await Promise.allSettled(['upcoming','history'].map(async range=>{const r=await fetch('/api/missions?range='+range,{signal:AbortSignal.timeout(28000)});const data=await r.json();if(!r.ok||!Array.isArray(data.results))throw Error(data.error||'任务接口不可用');return data;}));let records=[];try{records=(await fetch('/public/map/observation-archive.json').then(r=>r.json())).records||[];}catch{}
- if(generation!==catalogueGeneration)return;const data=responses.filter(r=>r.status==='fulfilled').map(r=>r.value);if(!data.length)throw Error('日历未连接，请启动 4186 服务后刷新。');missionRows=[...new Map(data.flatMap(d=>d.results).map(l=>{const p=prepareMission(l,records);return [p.id,p];})).values()];const stale=data.some(d=>d.meta.stale),partial=data.length<2;const dates=data.map(d=>Date.parse(d.meta.fetchedAt)).filter(Number.isFinite);$('missionListStatus').textContent=`${missionRows.length} 项 · ${stale?'缓存可能过期':'日历数据'}${partial?' · 部分列表未取得':''}${dates.length?' · 更新 '+fmt(Math.min(...dates)):''}`;
- const requested=new URL(location.href).searchParams.get('launch');if(initial&&requested){const row=missionRows.find(l=>l.id===requested);if(!row){setSceneVisible(false);scenarios=[];$('missionTitle').textContent='指定任务暂未取得';$('error').textContent='当前日历未收录此任务，不能用其他任务代替。';renderMissionList();return;}$('missionFilter').value=missionMode(row).historical?'history':'upcoming';renderMissionList(requested);loadMission(requested);}else{renderMissionList(boundMission?.id);if(initial&&$('missionSelect').value)loadMission($('missionSelect').value);}
- }catch(e){$('missionListStatus').textContent=e.message;if(initial&&new URL(location.href).searchParams.has('launch')){playing=false;scenarios=[];setSceneVisible(false);$('missionTitle').textContent='指定任务暂未取得';$('missionBasis').textContent=e.message;}}finally{if(generation===catalogueGeneration)$('missionRefresh').disabled=false;}}
+async function loadCatalogue(){
+ const generation=++catalogueGeneration,params=new URL(location.href).searchParams,requested=params.get('launch');
+ playing=false;scenarios=[];setSceneVisible(false);
+ if(!requested){$('missionTitle').textContent='请先在发射日历选择任务';$('missionBasis').textContent='通过任务的3D入口进入即可继续演示。';$('missionListStatus').textContent='未指定任务';return;}
+ $('missionListStatus').textContent='正在读取所选任务…';
+ try{
+  const responses=await Promise.allSettled(['upcoming','history'].map(async range=>{
+   const r=await fetch('/api/missions?range='+range,{signal:AbortSignal.timeout(28000)}),data=await r.json();
+   if(!r.ok||!Array.isArray(data.results))throw Error(data.error||'任务接口不可用');return data;
+  }));
+  const feeds=responses.filter(r=>r.status==='fulfilled').map(r=>r.value);
+  if(!feeds.length)throw Error('任务接口暂不可用，请返回日历重试。');
+  let records=[];try{records=(await fetch('/public/map/observation-archive.json').then(r=>r.json())).records||[];}catch{}
+  if(generation!==catalogueGeneration)return;
+  missionRows=[...new Map(feeds.flatMap(d=>d.results).map(l=>{const row=prepareMission(l,records);return [row.id,row];})).values()];
+  if(!missionRows.some(l=>l.id===requested))throw Error('当前日历未取得所选任务，请返回日历重试。');
+  $('missionListStatus').textContent=feeds.some(d=>d.meta?.stale)?'任务缓存可能过期':'已读取所选任务';
+  loadMission(requested);
+ }catch(e){if(generation!==catalogueGeneration)return;$('missionTitle').textContent='所选任务暂未取得';$('missionTime').textContent='';$('missionListStatus').textContent=e.message;$('error').textContent=e.message;}
+}
 const {setObserver}=installObservers({select:$('observer'),lat:$('lat'),lon:$('lon'),gpsButton:$('locate'),status:$('locationStatus'),site,onPending:pending});
-try{const land=await fetch('/public/map/land.json').then(r=>r.json());views=[$('canvas0')].map(el=>new GlobeView(el,land));for(const v of views)v.focus(site(),false);setEvent('sunset');
-$('missionLoad').onclick=()=>loadMission($('missionSelect').value);$('missionFilter').onchange=()=>renderMissionList();$('missionRefresh').onclick=()=>loadCatalogue();$('missionRestore').onclick=()=>{if(boundMission)loadMission(boundMission.id);};$('manualMode').onclick=()=>{boundMission=null;boundInputs=null;$('missionRestore').disabled=true;$('parameterDetails').open=true;const url=new URL(location.href);url.searchParams.delete('launch');url.searchParams.delete('range');history.replaceState(null,'',url);$('backCalendar').href='http://127.0.0.1:4186/map.html';rebuild();};void loadCatalogue(true);
+try{const land=await fetch('/public/map/land.json').then(r=>r.json());views=[$('canvas0')].map(el=>new GlobeView(el,land));for(const v of views)v.focus(site(),false);if(!new URL(location.href).searchParams.has('launch'))setEvent('sunset');
+$('missionRestore').onclick=()=>{if(boundMission)loadMission(boundMission.id);};$('manualMode').onclick=()=>{boundMission=null;boundInputs=null;$('missionRestore').disabled=true;$('parameterDetails').open=true;const url=new URL(location.href);url.searchParams.delete('launch');url.searchParams.delete('range');history.replaceState(null,'',url);$('backCalendar').href='http://127.0.0.1:4186/map.html';rebuild();};void loadCatalogue();
 $('weatherRetry').onclick=refreshObserverWeather;
 $('settings').onsubmit=e=>{e.preventDefault();rebuild();};$('settings').addEventListener('input',pending);$('heading').oninput=()=>{$('headingValue').textContent=azimuth()+'°';};$('dawn').onclick=()=>setEvent('sunrise');$('dusk').onclick=()=>setEvent('sunset');$('site').onchange=()=>{if($('observer').value==='site')setObserver();pending();};
 $('globalView').onclick=()=>setViewMode(true);$('launchView').onclick=()=>setViewMode(false);
