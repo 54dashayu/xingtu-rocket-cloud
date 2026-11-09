@@ -113,10 +113,10 @@ function renderCandidateTrails(){
 const possibleCloudTask=l=>Boolean(cloudCandidate(l)||cloudStatus(l).code==='observed'||l.archiveEvidence?.length>0||l.observationReportCount>0||(!historyMode()&&cloudOpportunity(l)==='pending'));
 function renderList(){
  pool=historyMode()?pastLaunches(all,Date.now(),historyDays):upcoming(all,Date.now(),30);inventory=siteInventory(pool);
- visible=pool.filter(l=>(!historyMode()||archiveMatches(l,{country:$('history-country').value,crewed:$('history-crewed').value,ownership:$('history-ownership').value}))&&observationMatches({possible:possibleCloudTask(l),reported:l.observationReportCount>0,media:cloudStatus(l).code==='observed'},{possible:$('cloud-only').checked,reported:historyMode()&&$('report-only').checked,media:historyMode()&&$('media-only').checked}));
+ visible=pool.filter(l=>archiveMatches(l,{country:$('history-country').value,crewed:$('history-crewed').value,ownership:$('history-ownership').value})&&observationMatches({possible:possibleCloudTask(l),reported:l.observationReportCount>0,media:cloudStatus(l).code==='observed'},{possible:$('cloud-only').checked,reported:historyMode()&&$('report-only').checked,media:historyMode()&&$('media-only').checked}));
  $('cloud-filter-note').hidden=true;$('evidence-filters').hidden=!historyMode();
  $('cloud-only').parentElement.title='优先使用逐时轨迹与尾迹受光评估；计算完成前使用晨昏初筛，时刻待定任务保留关注。';$('evidence-filters').title='有报告：关联了用户报告。媒体证实：有公开报道证据。多选满足其一。';
- $('archive-filters').hidden=!historyMode();$('archive-coverage').hidden=!historyMode();
+ $('history-period').hidden=!historyMode();$('archive-coverage').hidden=!historyMode();
  $('total').textContent=pool.length;$('range-title').textContent=period()+'发射';
  $('range-upcoming').classList.toggle('active',!historyMode());$('range-history').classList.toggle('active',historyMode());$('range-upcoming').setAttribute('aria-pressed',String(!historyMode()));$('range-history').setAttribute('aria-pressed',String(historyMode()));
  $('coverage').textContent=`显示 ${visible.length} / ${pool.length} 项`+(historyMode()?` · 媒体证实 ${pool.filter(l=>cloudStatus(l).code==='observed').length} · 有报告 ${pool.filter(l=>l.observationReportCount>0).length}`:' · 指数为几何关注度，非概率');

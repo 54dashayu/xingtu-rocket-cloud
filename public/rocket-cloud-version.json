@@ -1,8 +1,8 @@
 {
   "name": "星途·火箭云预测",
   "version": "0.03",
-  "releaseDate": "2026-11-07",
+  "releaseDate": "2026-11-10",
   "path": "/rocket-cloud/",
-  "build": "0021",
+  "build": "0022",
   "platform": "web"
 }
