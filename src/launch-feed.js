@@ -1,3 +1,4 @@
+import {withDeadline} from './deadline.js';
 import { readFile, writeFile, mkdir, rename } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,7 +19,7 @@ export async function atomicJSON(file, value) {
 }
 // Exactly one writer owns this snapshot. Other services reread the same atomic file.
 export function createLaunchFeed({file, readOnly=false, seed, fetchRange, beforeSave=async()=>{},
-  clock=Date.now, ttl=1800000, nearTtl=300000}) {
+  clock=Date.now, ttl=1800000, nearTtl=600000,fetchTimeoutMs=70000}) {
   let state, initializing, running, readFailed=false;
   async function disk() {
     const value = JSON.parse(await readFile(file,'utf8'));
@@ -68,15 +69,16 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
   async function cycle(force) {
     await init();if(readOnly)return;
     // Serial requests share a global 429 cooldown instead of competing for quota.
-    for(const range of ['history','upcoming']) {
+    for(const range of ['history','upcoming'].sort((a,b)=>ms(state.feeds[a]?.checkedAt||state.feeds[a]?.fetchedAt)-ms(state.feeds[b]?.checkedAt||state.feeds[b]?.fetchedAt))) {
       if(!due(range,force))continue;
       const next=structuredClone(state), old=next.feeds[range]||{};
       let error;
       try {
-        const value=await fetchRange(range);
+        const value=await withDeadline(signal=>fetchRange(range,{signal,deepFetchedAt:old.deepFetchedAt}),{timeoutMs:fetchTimeoutMs});
         merge(next,range,value.launches,clock());
         error=value.error;
         next.feeds[range]={...old,source:value.source,checkedAt:iso(clock()),latestAt:iso(clock()),
+          deepFetchedAt:value.deepFetchedAt||old.deepFetchedAt,
           fetchedAt:error?old.fetchedAt:iso(clock()),partial:Boolean(error),failures:0,retryAt:0};
         if(!error)next.globalRetryAt=0;
       }catch(e){error=e;}

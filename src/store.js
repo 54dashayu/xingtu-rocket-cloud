@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import {withDeadline,createRequestBudget} from './upstream-request.js';
 import { createLaunchFeed } from './launch-feed.js';
 import { calendarArchive } from './calendar-archive.js';
 import { config } from './config.js';
@@ -76,13 +77,16 @@ function mergeHistoryResources(value, resourcesByLaunchId) {
   };
 }
 
-export async function fetchLaunchPages(startUrl, fetcher = fetch, {partial=false}={}) {
+export async function fetchLaunchPages(startUrl, fetcher = fetch, {partial=false,maxPages=config.upstreamPages,signal,timeoutMs=20000,reserve}={}) {
   const results = [], seenUrls = new Set();
   let url = startUrl;
-  for (let page = 0; page < config.upstreamPages && url && !seenUrls.has(url); page += 1) {
+  for (let page = 0; page < maxPages && url && !seenUrls.has(url); page += 1) {
     seenUrls.add(url);
     try {
-      const response = await fetcher(url, { headers: { accept: 'application/json', 'user-agent': config.userAgent }, signal: AbortSignal.timeout(15000) });
+      signal?.throwIfAborted();
+      if(reserve)await reserve();
+      const payload=await withDeadline(async requestSignal=>{
+      const response = await fetcher(url, { headers: { accept: 'application/json', 'user-agent': config.userAgent }, signal:requestSignal });
       if (!response.ok) {
         const error = new Error(`Launch Library 2 returned HTTP ${response.status}`);
         error.status=response.status;error.retryAfter=response.headers?.get?.('retry-after');
@@ -90,7 +94,8 @@ export async function fetchLaunchPages(startUrl, fetcher = fetch, {partial=false
         error.retryAt=Date.now()+(seconds>0?seconds*1000:5*60000);
         throw error;
       }
-      const payload=await response.json();
+      return response.json();
+      },{timeoutMs,signal});
       if(!Array.isArray(payload.results))throw new TypeError('Launch Library 2 响应缺少 results');
       results.push(...payload.results);url=payload.next||null;
     }catch(error){if(partial&&results.length)return {results,error};throw error;}
@@ -99,16 +104,19 @@ export async function fetchLaunchPages(startUrl, fetcher = fetch, {partial=false
 }
 export function fetchUpcomingPages(fetcher=fetch){return fetchLaunchPages(config.upstreamUrl,fetcher);}
 export function fetchPreviousPages(fetcher=fetch){return fetchLaunchPages(config.previousUrl,fetcher);}
+const reserveRequest=createRequestBudget({file:new URL('launch-request-budget.json',config.launchSnapshotFile)});
 function newFeed(){return createLaunchFeed({
   file:config.launchSnapshotFile,readOnly:config.launchFeedReadOnly,ttl:config.cacheTtlMs,
   seed:async()=>({upcoming:await readDisk(config.cacheFile),history:await readDisk(config.historyCacheFile)}),
   beforeSave:launches=>calendarArchive.merge(launches),
-  fetchRange:async range=>{
+  fetchRange:async (range,{signal,deepFetchedAt}={})=>{
     const source=range==='history'?config.previousUrl:config.upstreamUrl;
-    const payload=await fetchLaunchPages(source,fetch,{partial:true});
+    // Refresh the newest page often; refresh older pages every six hours.
+    const deep=!deepFetchedAt||Date.now()-Date.parse(deepFetchedAt)>=6*3600000;
+    const payload=await fetchLaunchPages(source,fetch,{partial:true,maxPages:deep?config.upstreamPages:1,signal,reserve:reserveRequest});
     let launches=normalizeLaunches(payload);
     if(range==='upcoming')launches=mergeSupplements(launches,await getSupplements());
-    return {launches,source,error:payload.error};
+    return {launches,source,error:payload.error,deepFetchedAt:deep&&!payload.error?new Date().toISOString():deepFetchedAt};
   }
 });}
 let feed=newFeed();

@@ -12,7 +12,7 @@ const launch=(id='flight',stamp='2026-11-07T00:35:00Z')=>({id,uid:id,name:id,las
 async function setup(t, fetchRange, entries=[launch()]){
  const dir=await mkdtemp(join(tmpdir(),'launch-feed-'));t.after(()=>rm(dir,{recursive:true,force:true}));
  let now=initial;const file=join(dir,'snapshot.json');
- const opts={file,clock:()=>now,fetchRange,seed:async()=>({upcoming:{fetchedAt:new Date(now).toISOString(),launches:entries},history:{fetchedAt:new Date(now).toISOString(),launches:[]}})};
+ const opts={file,nearTtl:300000,clock:()=>now,fetchRange,seed:async()=>({upcoming:{fetchedAt:new Date(now).toISOString(),launches:entries},history:{fetchedAt:new Date(now).toISOString(),launches:[]}})};
  const writer=createLaunchFeed(opts);await writer.get('upcoming');
  return {writer,opts,file,advance:n=>{now+=n;},now:()=>now};
 }
@@ -78,4 +78,22 @@ test('reader IO failure keeps its last snapshot and a cold reader fails instead 
  await writeFile(x.file,'invalid json');
  const retained=await reader.get('upcoming');assert.deepEqual(retained.launches,initial.launches);assert.equal(retained.stale,true);
  await assert.rejects(createLaunchFeed({...x.opts,readOnly:true}).get('upcoming'));
+});
+
+
+test('hung upstream cycle releases single-flight lock and recovers on next scheduled retry',async t=>{
+ let hung=true;const x=await setup(t,async()=>hung?new Promise(()=>{}):{launches:[launch('recovered')]});
+ const writer=createLaunchFeed({...x.opts,fetchTimeoutMs:15});
+ x.advance(6*60000);await writer.refresh();
+ const failed=await writer.get('upcoming');assert.equal(failed.refreshing,false);assert.equal(failed.stale,true);
+ hung=false;x.advance(61000);await writer.refresh();
+ assert.equal((await writer.get('upcoming')).stale,false);
+ assert.ok((await writer.get('history')).launches.some(l=>l.id==='recovered'));
+});
+
+test('late upstream completion cannot overwrite successful retry',async t=>{
+ let resolveLate;const x=await setup(t,async range=>range==='history'?new Promise(r=>resolveLate=r):{launches:[]});
+ const writer=createLaunchFeed({...x.opts,fetchTimeoutMs:10});x.advance(6*60000);await writer.refresh();
+ const before=await writer.get('history');resolveLate({launches:[launch('late')]});await new Promise(r=>setImmediate(r));
+ assert.deepEqual((await writer.get('history')).launches,before.launches);
 });
