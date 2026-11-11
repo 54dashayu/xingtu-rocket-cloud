@@ -1,0 +1,11 @@
+[Unit]
+Description=Check shared Xingtu launch data every two minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=10s
+Unit=xingtu-launch-watchdog.service
+
+[Install]
+WantedBy=timers.target
