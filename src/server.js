@@ -83,12 +83,12 @@ async function api(req, res, url) {
     const data = await getLaunchHistoryData();
     url.searchParams.set('range', 'previous');
     const results = filterLaunches(data.launches, url.searchParams);
-    return json(res, 200, { meta: { count: results.length, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, range: 'previous', timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
+    return json(res, 200, { meta: { count: results.length, officialSources: data.official || null, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, range: 'previous', timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
   }
   const data = await getLaunchData();
   if (url.pathname === '/api/launches') {
     const results = filterLaunches(data.launches, url.searchParams);
-    return json(res, 200, { meta: { count: results.length, warningDiscovery: data.discovery || null, supplementCount: data.supplementCount || 0, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
+    return json(res, 200, { meta: { count: results.length, officialSources: data.official || null, warningDiscovery: data.discovery || null, supplementCount: data.supplementCount || 0, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
   }
   if (url.pathname === '/api/calendar.ics') {
     const results = filterLaunches(data.launches, url.searchParams);

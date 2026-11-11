@@ -1,3 +1,4 @@
+import {fetchOfficialAnnouncements} from './official-announcements.js';
 import { readFile } from 'node:fs/promises';
 import {withDeadline,createRequestBudget} from './upstream-request.js';
 import { createLaunchFeed } from './launch-feed.js';
@@ -107,6 +108,7 @@ export function fetchUpcomingPages(fetcher=fetch){return fetchLaunchPages(config
 export function fetchPreviousPages(fetcher=fetch){return fetchLaunchPages(config.previousUrl,fetcher);}
 const reserveRequest=createRequestBudget({file:new URL('launch-request-budget.json',config.launchSnapshotFile)});
 function newFeed(){return createLaunchFeed({
+  official:fetchOfficialAnnouncements,decorate:l=>({...l,rocketCloud:rocketCloudForecast(l)}),
   discover:fetchWarningDiscovery,file:config.launchSnapshotFile,readOnly:config.launchFeedReadOnly,ttl:config.cacheTtlMs,
   seed:async()=>({upcoming:await readDisk(config.cacheFile),history:await readDisk(config.historyCacheFile)}),
   beforeSave:launches=>calendarArchive.merge(launches),

@@ -1,3 +1,4 @@
+import {reconcileOfficialEntries} from './official-state.js';
 import {isWarningLaunch,reconcileWarningEntries} from './warning-state.js';
 import {withDeadline} from './deadline.js';
 import { readFile, writeFile, mkdir, rename } from 'node:fs/promises';
@@ -20,7 +21,7 @@ export async function atomicJSON(file, value) {
 }
 // Exactly one writer owns this snapshot. Other services reread the same atomic file.
 export function createLaunchFeed({file, readOnly=false, seed, fetchRange, beforeSave=async()=>{},
-  discover, discoveryTtl=1800000, clock=Date.now, ttl=1800000, nearTtl=600000,fetchTimeoutMs=70000}) {
+  official, officialTtl=1800000, decorate=l=>l, discover, discoveryTtl=1800000, clock=Date.now, ttl=1800000, nearTtl=600000,fetchTimeoutMs=70000}) {
   let state, initializing, running, readFailed=false;
   async function disk() {
     const value = JSON.parse(await readFile(file,'utf8'));
@@ -68,8 +69,24 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
       (force || f.partial || !f.fetchedAt || clock()-ms(f.fetchedAt)>=effectiveTtl(range));
   }
   function discoveryDue(){return discover && (!state.discovery?.checkedAt || clock()-ms(state.discovery.checkedAt)>=discoveryTtl);}
+  function officialDue(){const interval=state.official?.sources?.some(s=>s.status==='retrying')?Math.min(officialTtl,600000):officialTtl;return official&&(!state.official?.checkedAt||clock()-ms(state.official.checkedAt)>=interval);}
+  function applyOfficial(next){
+    if(!next.official?.records?.length)return;
+    const applied=reconcileOfficialEntries(next.entries,next.official.records,clock());
+    next.entries=applied.entries.map(e=>({...e,launch:e.launch.officialVerification?decorate(e.launch):e.launch}));
+    next.official.reconciliation=applied.summary;
+  }
   async function cycle(force) {
     await init();if(readOnly)return;
+    // Official announcements have their own cadence and remain available during LL2 cooldowns.
+    if(officialDue()) {
+      const next=structuredClone(state);
+      try{next.official=await withDeadline(()=>official(next.official||{}),{timeoutMs:180000});}
+      catch(error){next.official={...next.official,checkedAt:iso(clock()),sources:(next.official?.sources||[{id:'cmse'},{id:'casc'}]).map(s=>({...s,status:'retrying'})),warning:'官方公告读取暂缓，自动重试中'};console.warn('[official-announcements]',error.message);}
+      applyOfficial(next);
+      if(discover)next.entries=reconcileWarningEntries(next.entries,next.entries.filter(e=>isWarningLaunch(e.launch)).map(e=>e.launch),clock());
+      next.revision++;next.updatedAt=iso(clock());await beforeSave(next.entries.map(x=>x.launch));await atomicJSON(file,next);state=next;
+    }
     // Independent of LL2 cooldown: notice discovery still works during upstream outages.
     if(discoveryDue()) {
       const next=structuredClone(state);
@@ -106,6 +123,7 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
         if(error.status===429)next.globalRetryAt=retryAt;
         console.warn(`[launch-feed] ${range}: ${error.message}; retry ${iso(retryAt)}`);
       }else delete next.feeds[range].warning;
+      applyOfficial(next);
       if(discover)next.entries=reconcileWarningEntries(next.entries,next.entries.filter(e=>isWarningLaunch(e.launch)).map(e=>e.launch),clock());
       next.revision++;next.updatedAt=iso(clock());
       await beforeSave(next.entries.map(x=>x.launch));
@@ -120,7 +138,7 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
     await init();
     if(!readOnly) {
       if(force||!state.entries.length)await refresh({force});
-      else if(discoveryDue()||['history','upcoming'].some(key=>due(key,false)))void refresh().catch(error=>console.error('[launch-feed]',error.message));
+      else if(officialDue()||discoveryDue()||['history','upcoming'].some(key=>due(key,false)))void refresh().catch(error=>console.error('[launch-feed]',error.message));
     }
     const f=state?.feeds[range]||{};
     const stale=readFailed||!f.fetchedAt||Boolean(f.partial)||clock()-ms(f.fetchedAt)>= (state?effectiveTtl(range):ttl);
@@ -128,7 +146,7 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
       ...(range==='upcoming' && x.launch.result?.code==='pending' && ms(x.launch.timing?.net) && ms(x.launch.timing.net)<clock()
         ? {dataPending:true} : {})}));
     launches.sort((a,b)=>(ms(a.timing?.net)||Infinity)-(ms(b.timing?.net)||Infinity));
-    return {launches,discovery:state.discovery||null,fetchedAt:f.fetchedAt||null,source:f.source,revision:state?.revision||0,
+    return {launches,official:state.official?{checkedAt:state.official.checkedAt,sources:state.official.sources,reconciliation:state.official.reconciliation,reviewCount:state.official.reviews?.length||0,spacemapper:state.official.spacemapper}:null,discovery:state.discovery||null,fetchedAt:f.fetchedAt||null,source:f.source,revision:state?.revision||0,
       snapshotAt:state?.updatedAt||null,latestAt:f.latestAt||f.fetchedAt||null,stale,
       refreshing:Boolean(running),retryAt:f.retryAt?iso(f.retryAt):null,
       warning:stale?(f.warning||'发射数据待更新，自动重试中'):null};

@@ -63,4 +63,5 @@ def overview(path=None, now=None, timer=None):
               for e in state.get('events', []) if isinstance(e, dict)]
     return {'generatedAt': now, 'available': bool(state), 'monitoring': monitoring,
             'timer': timer, 'lastCheck': last, 'feeds': feeds, 'services': services,
+            'officialSources': snapshot.get('officialSources') or {},
             'revision': snapshot.get('revision'), 'events': list(reversed(events[-100:]))}

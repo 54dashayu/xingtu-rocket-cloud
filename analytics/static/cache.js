@@ -42,6 +42,10 @@
     const cards=document.querySelector('#cache-cards');cards.replaceChildren();
     for(const f of d.feeds){const c=el('section',null,'cache-card');c.append(el('h3',f.name),badge(f.stale?['缓存待更新','warn']:['数据已更新','']),el('strong',date(f.fetchedAt),'cache-value'),el('p',`最后成功更新 · ${age(f.ageSeconds)}`),el('p',`最近尝试：${date(f.checkedAt)}`));if(f.retryAt>d.generatedAt)c.append(el('p',`下次允许重试：${date(f.retryAt)}`));cards.append(c);}
     const c=el('section',null,'cache-card');c.append(el('h3','自动巡检'),badge(monitoring[d.monitoring]),el('strong',date(d.lastCheck),'cache-value'),el('p','最后巡检 · 每两分钟检查一次'),el('p',`开机自动巡检：${d.timer.enabled==='enabled'?'已开启':d.timer.enabled==='disabled'?'未开启':'暂无法确认'}`));cards.append(c);
+    for(const source of d.officialSources?.sources||[]){
+      const c=el('section',null,'cache-card');const recent=source.checkedAt&&d.generatedAt-Date.parse(source.checkedAt)/1000<3600;
+      c.append(el('h3',source.name||source.id),badge(source.status==='ok'&&recent?['官方公告读取正常','']:['公告待更新 / 自动重试','warn']),el('p',`最近检查：${date(Date.parse(source.checkedAt)/1000)}`),el('p',`最近完整读取：${date(Date.parse(source.fetchedAt)/1000)}`),el('p',`本轮 ${source.requests||0} 次请求 · 正文 ${((source.downloadedBytes||0)/1024).toFixed(0)} KB`),el('p',`累计读取正文 ${((source.totalDownloadedBytes||0)/1048576).toFixed(2)} MB（解压后，不含图片）`));cards.append(c);
+    }
     const services=document.querySelector('#cache-services');services.replaceChildren();
     for(const s of d.services){const row=el('div',null,'cache-service');row.append(el('strong',s.name),badge(states[s.status]||states.unknown),el('small',`检查时间：${date(s.checkedAt)} · 近 6 小时恢复尝试 ${s.restartCount} 次`));services.append(row);}
     events();

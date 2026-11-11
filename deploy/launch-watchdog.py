@@ -132,7 +132,8 @@ def run(directory, snapshot_path, dry_run=False):
                         ('fetchedAt', 'checkedAt', 'retryAt', 'failures')}
                         for name, feed in (snapshot or {}).get('feeds', {}).items()
                         if name in ('upcoming', 'history')},
-                    'globalRetryAt': (snapshot or {}).get('globalRetryAt', 0)
+                    'globalRetryAt': (snapshot or {}).get('globalRetryAt', 0),
+                    'officialSources': {key: ((snapshot or {}).get('official') or {}).get(key) for key in ('checkedAt', 'sources', 'reconciliation')}
                 }
             previous = state.get(service, {})
             record, restart = evaluate(snapshot, meta, previous, now, service == 'rocket-cloud')
