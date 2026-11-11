@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT))
 from geolocation import locator
 import observations
 import app_metrics
+import cache_monitor
 
 DB = os.getenv('ANALYTICS_DB', '/var/lib/xingtu-analytics/visits.sqlite3')
 ORIGIN = os.getenv('ANALYTICS_ORIGIN', 'https://space.bh1jss.net')
@@ -298,6 +299,8 @@ class Handler(BaseHTTPRequestHandler):
         # A trusted, authenticated Nginx location supplies this flag; public routes explicitly clear it.
         if path not in ('/tracker.js', '/privacy') and self.headers.get('X-Xingtu-Admin') != '1':
             return self.respond(403)
+        if path == '/api/cache-monitor':
+            return self.respond(200, json.dumps(cache_monitor.overview(), ensure_ascii=False).encode())
         if path.startswith('/api/report-images/'):
             try:
                 rid = path.removeprefix('/api/report-images/')
@@ -328,7 +331,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.respond(200, json.dumps(stats(q), ensure_ascii=False).encode())
             except (ValueError, TypeError):
                 return self.respond(400, b'{"error":"invalid filter"}')
-        files = {'/apps.html': ('apps.html','text/html'), '/apps.js': ('apps.js','text/javascript'), '/reports.html': ('reports.html', 'text/html'), '/reports.js': ('reports.js', 'text/javascript'), '/privacy': ('privacy.html', 'text/html'), '/': ('index.html', 'text/html'), '/dashboard.js': ('dashboard.js', 'text/javascript'),
+        files = {'/cache.html': ('cache.html', 'text/html'), '/cache.js': ('cache.js', 'text/javascript'), '/cache.css': ('cache.css', 'text/css'), '/apps.html': ('apps.html','text/html'), '/apps.js': ('apps.js','text/javascript'), '/reports.html': ('reports.html', 'text/html'), '/reports.js': ('reports.js', 'text/javascript'), '/privacy': ('privacy.html', 'text/html'), '/': ('index.html', 'text/html'), '/dashboard.js': ('dashboard.js', 'text/javascript'),
                  '/style.css': ('style.css', 'text/css'), '/tracker.js': ('tracker.js', 'text/javascript')}
         if path not in files:
             return self.respond(404)

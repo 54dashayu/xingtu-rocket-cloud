@@ -76,3 +76,11 @@ Install `python3-pil` on the Ubuntu server (or `pip install -r requirements.txt`
 
 ## Moderated public photos
 New reports may opt in with `publishConsent=true`. Migration defaults old reports to false. Admin status `published` requires that consent, a stored photo, an unexpired report, and a separate public caption (500 characters maximum). Public listing only returns id and caption; the image route repeats consent/status/retention checks on every request. Setting any non-public status withdraws the photo. Raw report fields and coordinates remain private, and publication never changes mission evidence. Back up SQLite and Nginx before deployment.
+
+## 缓存监控（2026-11-11）
+
+统一后台新增 `cache.html` 标签及首页摘要，读取 `/api/cache-monitor`。沿用现有管理员认证，不提供手动重启接口。显示未来 / 历史数据最后成功更新时间、最近尝试时间、限流等待时间、巡检定时器状态、服务状态，以及最近100条状态变化和恢复记录；页面30秒刷新一次，时间为北京时间。
+
+数据来自独立巡检 `/var/lib/xingtu-launch-watchdog/status.json`。巡检以 root 运行、组为 www-data；目录0750、状态文件0640，后台进程只读，不能写入或触发重启。状态超6分钟未更新时显示巡检超时，不能沿用旧的绿色状态。巡检定时器启用状态通过只读 systemctl show 获取（两秒超时）。
+
+仅更新后台服务与巡检，不涉及移动客户端发布。后台沿用 `https://app.bh1jss.net/xingtu-admin/`，也可直接访问 `https://space.bh1jss.net/xingtu-admin/cache.html`。

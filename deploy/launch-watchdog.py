@@ -105,7 +105,7 @@ def probe(port):
 def save(path, state):
     temporary = path.with_suffix('.tmp')
     temporary.write_text(json.dumps(state, ensure_ascii=False, indent=2) + '\n')
-    os.chmod(temporary, 0o600)
+    os.chmod(temporary, 0o640)
     temporary.replace(path)
 
 
@@ -124,18 +124,33 @@ def run(directory, snapshot_path, dry_run=False):
             snapshot = read_snapshot(snapshot_path)
             meta = probe(port)
             now = time.time()
+            if service == 'rocket-cloud':
+                state['snapshot'] = {
+                    'available': snapshot is not None,
+                    'revision': snapshot.get('revision') if snapshot else None,
+                    'feeds': {name: {key: feed.get(key) for key in
+                        ('fetchedAt', 'checkedAt', 'retryAt', 'failures')}
+                        for name, feed in (snapshot or {}).get('feeds', {}).items()
+                        if name in ('upcoming', 'history')},
+                    'globalRetryAt': (snapshot or {}).get('globalRetryAt', 0)
+                }
             previous = state.get(service, {})
             record, restart = evaluate(snapshot, meta, previous, now, service == 'rocket-cloud')
             state[service] = record
             if previous.get('status') != record['status']:
-                events.append({'at': now, 'service': service, 'status': record['status']})
+                events.append({'at': now, 'service': service, 'status': record['status'],
+                    'recovered': record['status'] == 'healthy' and bool(previous.get('issue') or previous.get('awaitingRecovery'))})
+            if record['status'] == 'healthy':
+                record.pop('awaitingRecovery', None)
             if restart:
                 if dry_run:
                     record['wouldRestart'] = True
                 else:
                     # Persist the attempt BEFORE systemctl, including failed/timed-out attempts.
                     record['restarts'].append(now)
-                    events.append({'at': now, 'service': service, 'action': 'restart', 'reason': record['issue']})
+                    record['awaitingRecovery'] = True
+                    event = {'at': now, 'service': service, 'action': 'restart', 'reason': record['issue']}
+                    events.append(event)
                     state['events'] = events[-100:]
                     save(state_path, state)
                     try:
@@ -143,6 +158,7 @@ def run(directory, snapshot_path, dry_run=False):
                         record['restartResult'] = 'accepted' if result.returncode == 0 else 'failed'
                     except subprocess.TimeoutExpired:
                         record['restartResult'] = 'timed_out'
+                    event['result'] = record['restartResult']
                     # A successful systemctl call is not a successful data refresh. Next check verifies it.
                     record.pop('refreshingSince', None)
                     record['badChecks'] = 0

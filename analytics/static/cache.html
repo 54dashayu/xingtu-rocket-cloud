@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>缓存监控 · 星途统计后台</title><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./cache.css"></head><body>
+<header><div><span class="eyebrow">XINGTU · ADMIN</span><h1>星途统计后台</h1><p>网页访问 · App 使用与下载 · 观测报告 · 缓存监控</p></div><a class="back" href="https://app.bh1jss.net/admin/">← 管理首页</a></header>
+<nav class="admin-tabs" aria-label="后台功能"><a href="./">网页访问</a><a href="./apps.html">App 使用与下载</a><a href="./reports.html">报告审核</a><a href="./cache.html" aria-current="page">缓存监控</a></nav>
+<main id="cache-monitor"><div class="section-head"><div><h2>发射数据与自动巡检</h2><p>日历、火箭云及小程序共用的数据源 · 时间均为北京时间</p></div><button id="cache-refresh" class="primary">刷新状态</button></div><p id="cache-message" role="status">正在读取…</p>
+<div id="cache-cards" class="cache-grid"></div>
+<section class="panel"><h2>服务状态</h2><div id="cache-services" class="cache-services"></div></section>
+<section class="panel"><div class="section-head"><div><h2>恢复与巡检记录</h2><p>最近 100 条状态变化与恢复记录</p></div><label class="cache-toggle"><input id="recoveries-only" type="checkbox" checked>只看恢复记录</label></div><div id="cache-events" class="cache-events"></div></section>
+<details class="panel methodology"><summary>什么时候会自动恢复？</summary><p>每两分钟独立巡检。缓存超过 45 分钟未成功更新会提示陈旧；刷新没有进展、持续卡死或接口无响应，连续两次确认后自动重启相应服务。</p><p>上游限流时保留原数据并等待重试，避免反复重启。每次恢复至少间隔 30 分钟，每个服务 6 小时内最多尝试 3 次。超过限制会在这里显示“需要检查”。</p><p>“最后成功更新”表示从数据源取得数据的时间，不代表任务公告本身的发布时间。“刷新状态”只读取监控结果，不会强制请求数据源或重启服务。</p></details></main>
+<footer>星途 · 缓存监控　|　统一后台账号登录</footer><script src="./cache.js" defer></script></body></html>
