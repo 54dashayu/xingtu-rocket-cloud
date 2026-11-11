@@ -15,7 +15,7 @@ export function headingEstimate(launch={}){
  if(['sourced_heading','reported_sector'].includes(d?.kind)&&Number.isFinite(d.azimuth)&&d.azimuth>=0&&d.azimuth<360)return {azimuth:d.azimuth,kind:d.kind,label:d.kind==='sourced_heading'?'资料航向':'报道方位',basis:d.kind==='sourced_heading'?'优先采用本次任务方位资料。':'采用报道方向的代表角度，非精确航向。'};
  const notice=launch.warningDiscovery||launch.warningReference;
  if(Number.isFinite(notice?.headingEstimate)&&notice.headingEstimate>=0&&notice.headingEstimate<360)
-  return {azimuth:Math.round(notice.headingEstimate),kind:'estimated',label:'航警方向参考',basis:'由通告区域相对场址的位置估算，仅作情景参考；非官方航向，任务关联待核实。'};
+  return {azimuth:Math.round(notice.headingEstimate*10)/10,kind:'estimated',label:'航警方向参考',basis:'由通告区域相对场址的位置估算，仅作情景参考；非官方航向，任务关联待核实。'};
  const mission=launch.mission||{},orbit=String(typeof mission.orbit==='object'?mission.orbit?.name||'':mission.orbit||''),south=!northBranch.has(launch.siteId);
  const inclination=Number.isFinite(mission.inclination)?mission.inclination:/sun.synchronous|太阳同步|\bSSO\b/i.test(orbit)?98:/polar|极轨|\bPO\b/i.test(orbit)?90:null;
  if(inclination!==null){

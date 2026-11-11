@@ -1,7 +1,8 @@
+import {loadNoticeScenario} from '../map/notice-scenario.js?v=0.03-0029';
 import {readReportSummary,withReportCount} from '../map/report-summary.js?v=0.03-0021';
 import {createObserverWeatherController} from './observer-weather.js';
 import {installObservers,nearestObserverCity} from './observers.js?v=0.03-0016';
-import {prepareMission,missionMode,missionScenario,missionEvents,beijingInput} from './missions.js';
+import {prepareMission,missionMode,missionScenario,missionEvents,beijingInput} from './missions.js?v=0.03-0029';
 import {flightEvents} from './events.js';
 import {GlobeView} from './scene.js?v=0.03-0015';
 import {createScenario,frame,footprint,pair,observationWindow} from './geometry.js?v=0.03-0015';
@@ -52,6 +53,11 @@ function renderContext(s,custom=false){
  $('missionBasis').textContent=custom?'自定义假设 · 已偏离任务参数':`${mode.historical?'历史回溯':'未来预测'} · ${mode.confirmed?'火箭云已证实':mode.historical?'观测证据未核实':mode.candidate?'火箭云候选 · 非保证':'未通过火箭云初筛'} · ${s.sourced?s.profile.label:'通用参考轨迹 · '+(s.heading?.label||'航向待确认')}`;
  $('missionMetadata').textContent=`火箭：${l.rocket||'待补充'}；场址：${l.pad?.location||l.pad?.name||'待补充'}；时刻精度：${l.timing?.precision||'待定'}。${s.heading?.basis||''}${s.sourced&&!s.profile.propulsion?' 无任务推进时序，尾迹发射仅作示意。':''} 火箭云观测证据不等于实测轨迹。`;
  for(const source of l.sources||[])addSource(source.url,source.name||'任务来源');for(const source of l.cloudEvidence?.observation?.sources||[])addSource(source.url,source.name||source.title||'火箭云观测证据');if(s.profile?.source)addSource(s.profile.source.sourceUrl,'轨迹资料');
+ if(l.noticeScenario&&!custom){
+  $('missionTime').textContent=`航警窗口：北京时间 ${fmt(l.noticeScenario.start)}—${fmt(l.noticeScenario.end)}；演示参考：${fmt(l.timing.net)}`;
+  $('missionBasis').textContent=`航警预估 · 航向 ${l.noticeScenario.heading}° · 通用参考轨迹`;
+  $('missionMetadata').textContent='参考时刻取窗口内几何条件较好的采样点；非正式点火时间，航向由航警区域估算。可更换观测地点查看当地条件。';
+ }
  $('eventBasis').textContent=custom?'自定义假设':'资料优先 · 缺失用示意估计';
 }
 function loadMission(id){const row=missionRows.find(l=>l.id===id);if(!row){$('error').textContent='未在当前日历数据中找到该任务；历史列表不代表完整档案。';return;}
@@ -88,6 +94,14 @@ async function loadCatalogue(){
   if(!missionRows.some(l=>l.id===requested))throw Error('当前日历未取得所选任务，请返回日历重试。');
   $('missionListStatus').textContent=feeds.some(d=>d.meta?.stale)?'任务缓存可能过期':'已读取所选任务';
   if(!reportSummary.available)$('missionListStatus').textContent+=' · 用户报告摘要暂不可用';
+  const i=missionRows.findIndex(l=>l.id===requested);
+  if(missionRows[i].timing?.basis==='notice_window'){
+   $('missionListStatus').textContent='正在读取航警窗口参考时刻…';
+   const scenario=await loadNoticeScenario(missionRows[i],'../api/');
+   if(generation!==catalogueGeneration)return;
+   if(!scenario)throw Error('航警窗口或方向不足，暂不能生成演示。');
+   missionRows[i]=scenario;$('missionListStatus').textContent='航警预估 · 与指数评估共用参考时刻和航向';
+  }
   loadMission(requested);
  }catch(e){if(generation!==catalogueGeneration)return;$('missionTitle').textContent='所选任务暂未取得';$('missionTime').textContent='';$('missionListStatus').textContent=e.message;$('error').textContent=e.message;}
 }
