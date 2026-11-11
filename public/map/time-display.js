@@ -12,11 +12,19 @@ export function timePair(date,pad={},dateOnly=false){
   const sameBeijing=known&&format(ms,zone.name)===format(ms,'Asia/Shanghai');
   return {local:known?format(ms,zone.name,dateOnly):'时区待补充',beijing:format(ms,'Asia/Shanghai',dateOnly),zone:zone.name,known,sameBeijing};
 }
+export function dayPeriod(date,zone='Asia/Shanghai'){
+ const hour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:zone,hour:'2-digit',hourCycle:'h23'}).format(new Date(date)));
+ return hour<5?'凌晨':hour<8?'清晨':hour<12?'上午':hour<14?'中午':hour<17?'下午':hour<19?'傍晚':'晚上';
+}
+export function noticeTimeRange(start,end,zone='Asia/Shanghai'){
+ const stamp=t=>format(Date.parse(t),zone).replace(' ',` ${dayPeriod(t,zone)} `);
+ return `${stamp(start)}—${stamp(end)}`;
+}
 export function launchTimePair(launch){
   const precision=launch.timing?.precision || '';
   if(launch.timing?.basis==='notice_window'){
     const a=timePair(launch.timing.windowStart,launch.pad),b=timePair(launch.timing.windowEnd,launch.pad);
-    return {...a,local:a.local+'—'+b.local,beijing:a.beijing+'—'+b.beijing,note:'航警时间窗 · 点火时刻待核实'};
+    return {...a,local:a.known?noticeTimeRange(launch.timing.windowStart,launch.timing.windowEnd,a.zone):'时区待补充',beijing:noticeTimeRange(launch.timing.windowStart,launch.timing.windowEnd),note:'航警时间窗（24小时制）· 点火时刻待核实'};
   }
   if(!Number.isFinite(Date.parse(launch.timing?.net))||/month|quarter|year|月份|季度|年份/i.test(precision))return {...timePair(null,launch.pad),note:precision || '时间待定'};
   const timed=/分钟|秒|小时|minute|second|hour/i.test(precision) && !['tbd','approximate','postponed','cancelled'].includes(launch.scheduleStatus?.code);

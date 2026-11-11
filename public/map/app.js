@@ -1,4 +1,4 @@
-import {loadNoticeScenario} from './notice-scenario.js?v=0.03-0029';
+import {loadNoticeScenario} from './notice-scenario.js?v=0.03-0030';
 import {readReportSummary,withReportCount} from './report-summary.js?v=0.03-0021';
 const model3DEnabled=['http:','https:'].includes(location.protocol);
 const task3DUrl=(id,history)=>`./3d/index.html?launch=${encodeURIComponent(id)}&range=${history?'history':'upcoming'}`;
@@ -15,11 +15,11 @@ import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
 import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0028';
 import { areaFill, groundLightTone, AREA_OPACITY, areaLegend } from './area-colors.js?v=20261024ax';
-import { localDateTime, localTimeCandidates, simulationLaunch } from './manual-time.js?v=0.03-0025';
+import { localDateTime, localTimeCandidates, simulationLaunch } from './manual-time.js?v=0.03-0030';
 import { playbackWindow, clampPlayback, TAIL_SECONDS } from './timeline.js?v=20261024ao';
 import { solarShadePath } from './solar-shade.js?v=20261024ai';
 import { HEIGHT_PRESETS, DEFAULT_HEIGHT } from './height-presets.js?v=20261024am';
-import { headingEstimate } from './heading-estimate.js?v=0.03-0029';
+import { headingEstimate } from './heading-estimate.js?v=0.03-0030';
 import { trajectoryStyle, regionEdges } from './overlay-style.js?v=20261024aj';
 import { simulationProfile, canAnalyzeHistory } from './prediction.js?v=0.03-0020';
 import { flightProfile } from './flight-path.js?v=20261024am';
@@ -29,7 +29,7 @@ import { installMapNavigation } from './navigation.js?v=0.02';
 import { solarPosition, altitudeAt } from './solar.js?v=20261024ad';
 import { localSunContext, sunEvents, padTimezone } from './sun-events.js?v=20261024aq';
 import { mapLaunch, upcoming, countdown, preciseTime, destination, project, splitLine, DISCLAIMER, cloudCandidate, siteInventory, geometryRating, isSunlit, siteMarkerRadius, pastLaunches } from './model.js?v=0.03-0025';
-import { timePair, launchTimePair } from './time-display.js?v=0.03-0025';
+import { timePair, launchTimePair } from './time-display.js?v=0.03-0030';
 const $=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=(tag,attrs={},text)=>{const n=document.createElementNS(NS,tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;return n;};
@@ -156,8 +156,9 @@ function manualTimeForm(){
  if(!canSetManualTime())return '';
  const zone=padTimezone(selected.pad),known=!zone.source.includes('缺失');
  const original=Date.parse(selected.timing?.net),useDate=Number.isFinite(original)&&!/月份|季度|年份|month|quarter|year/i.test(selected.timing?.precision||'');
- const value=localDateTime(manualLaunch?.timing.net||(useDate?original:Date.now()),zone.name);
- return `<section class="manual-time-card"><h3>手动发射时间 <small>当地时间</small></h3><p class="manual-zone">${known?esc(zone.name):'发射场时区待补充'}</p><div class="manual-time-fields"><label>当地日期<input id="manual-date" type="date" value="${value.slice(0,10)}" ${known?'':'disabled'}></label><label>当地时间<input id="manual-clock" type="time" step="60" value="${manualLaunch?value.slice(11,16):''}" ${known?'':'disabled'}></label></div><div id="manual-sun" class="manual-sun"></div><label id="manual-fold-label" hidden>夏令时重复时刻<select id="manual-fold"></select></label><p id="manual-time-message" role="status"></p><div class="manual-time-actions"><button id="manual-demo" type="button" disabled>▶ 按此时间演示</button><button id="manual-clear" type="button" ${manualLaunch?'':'hidden'}>恢复待定</button></div><small>仅用于演示，不修改任务公布时间。</small></section>`;
+ const reference=manualLaunch?.timing.net||noticeLaunch?.timing.net;
+ const value=localDateTime(reference||(useDate?original:Date.now()),zone.name,true);
+ return `<section class="manual-time-card"><h3>${selected.timing?.basis==='notice_window'?'模拟点火时间':'手动发射时间'} <small>当地时间 · 24小时制</small></h3><p class="manual-zone">${known?esc(zone.name):'发射场时区待补充'}</p><div class="manual-time-fields"><label>当地日期<input id="manual-date" type="date" value="${value.slice(0,10)}" ${known?'':'disabled'}></label><label>当地时间<input id="manual-clock" type="time" step="1" value="${reference?value.slice(11,19):''}" ${known?'':'disabled'}></label></div><div id="manual-sun" class="manual-sun"></div><label id="manual-fold-label" hidden>夏令时重复时刻<select id="manual-fold"></select></label><p id="manual-time-message" role="status"></p><div class="manual-time-actions"><button id="manual-demo" type="button" disabled>▶ 按此时间演示</button><button id="manual-clear" type="button" ${manualLaunch?'':'hidden'}>恢复待定</button></div><small>仅用于演示，不修改任务公布时间。</small></section>`;
 }
 function bindManualTime(){
  if(!$('manual-date'))return;
@@ -176,7 +177,7 @@ function bindManualTime(){
   $('manual-fold').innerHTML=choices.map((utc,i)=>`<option value="${utc}">${i===0?'第一次':'第二次'} · UTC ${utc.slice(11,16)}</option>`).join('');
   if(choices.includes(old))$('manual-fold').value=old;
   $('manual-demo').disabled=!choices.length||!selected.coordinates;
-  $('manual-time-message').textContent=date&&time&&!choices.length&&known?'该当地时间不存在或格式无效，请调整（可能处于夏令时跳时）。':manualLaunch?'当前为手动时间模拟；修改后自动更新分析。':'';
+  $('manual-time-message').textContent=date&&time&&!choices.length&&known?'该当地时间不存在或格式无效，请调整（可能处于夏令时跳时）。':manualLaunch?'当前为手动时间模拟；修改后自动更新分析。':noticeLaunch?'已填入程序选取的较有利采样时刻，非公告点火时间；可修改后演示。':'';
  };
  const apply=(play=false)=>{
   update();if($('manual-demo').disabled)return;

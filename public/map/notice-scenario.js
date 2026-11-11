@@ -1,4 +1,4 @@
-import {simulationLaunch} from './manual-time.js';
+import {simulationLaunch} from './manual-time.js?v=0.03-0030';
 // Reuse the canonical 150 km window assessment; never turn a window into an official ignition time.
 export function noticeScenario(launch,assessment){
  const w=assessment?.noticeWindow,t=Date.parse(w?.referenceTime),start=Date.parse(launch.timing?.windowStart),end=Date.parse(launch.timing?.windowEnd);

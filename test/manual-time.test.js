@@ -26,3 +26,10 @@ test('civil dawn/dusk and sunrise/sunset share date but separate cache entries',
  assert.ok(Date.parse(civil.sunrise)<Date.parse(sun.sunrise));assert.ok(Date.parse(civil.sunset)>Date.parse(sun.sunset));
  assert.equal(sun.threshold,-.833);assert.equal(civil.threshold,-6);assert.equal(sun.date,civil.date);
 });
+test('notice reference seconds survive the local input round trip',()=>{
+ const utc='2026-11-18T22:47:30.000Z';
+ assert.equal(localDateTime(utc,'Asia/Shanghai',true),'2026-11-19T06:47:30');
+ assert.deepEqual(localTimeCandidates('2026-11-19T06:47:30','Asia/Shanghai'),[utc]);
+ assert.deepEqual(localTimeCandidates('2026-11-19T06:47:60','Asia/Shanghai'),[]);
+ assert.deepEqual(localTimeCandidates('2026-11-01T01:30:30','America/New_York'),['2026-11-01T05:30:30.000Z','2026-11-01T06:30:30.000Z']);
+});
