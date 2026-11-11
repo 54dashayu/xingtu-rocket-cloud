@@ -1,4 +1,4 @@
-import { flightProfile } from './flight-path.js?v=20261024ad';
+import { flightProfile } from './flight-path.js?v=0.03-0031';
 import { distanceKm, horizonKm, isSunlit } from './model.js?v=20261024ad';
 import { solarPosition, altitudeAt, rad, deg, wrap } from './solar.js?v=20261024ad';
 const R=6371;

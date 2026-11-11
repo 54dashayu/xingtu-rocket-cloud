@@ -1,19 +1,20 @@
+import {playbackWindow} from '../../public/map/timeline.js?v=0.03-0031';
 import {mapLaunch} from '../../public/map/model.js';
-import {simulationProfile} from '../../public/map/prediction.js';
+import {simulationProfile} from '../../public/map/prediction.js?v=0.03-0031';
 import {visibilitySamples,visibilityFootprint,elevationAt,parcelVisibility} from '../../public/map/visibility.js?v=0.03-0015';
 import {solarPosition,altitudeAt} from '../../public/map/solar.js';
 import {sunEvents} from '../../public/map/sun-events.js';
 export {solarPosition,altitudeAt,elevationAt};
 export const R=6371;
 export function xyz(p,scale=1){const a=p.latitude*Math.PI/180,b=p.longitude*Math.PI/180,r=1+(p.height||0)*scale/R;return [r*Math.cos(a)*Math.cos(b),r*Math.sin(a),-r*Math.cos(a)*Math.sin(b)];}
-export function createScenario(site,net,azimuth=90){const launch=mapLaunch({id:'3d-reference',name:'参考上升段',pad:site,timing:{net,precision:'精确到秒'},scheduleStatus:{code:'tentative'}});const profile=simulationProfile(launch,{target:150,azimuth});return {launch,profile,end:profile.duration+300};}
+export function createScenario(site,net,azimuth=90){const launch=mapLaunch({id:'3d-reference',name:'参考上升段',pad:site,timing:{net,precision:'精确到秒'},scheduleStatus:{code:'tentative'}});const profile=simulationProfile(launch,{target:0,azimuth});return {launch,profile,end:playbackWindow(profile).end};}
 export function frame(s,t){const time=Date.parse(s.launch.timing.net)+t*1000;const parcels=visibilitySamples(s.launch,{profile:s.profile,persistenceSeconds:300,atSeconds:t,untilSeconds:s.end}).flat();return {time,sun:solarPosition(time),parcels};}
-export function footprint(s,t){return visibilityFootprint(s.launch,{profile:s.profile,persistenceSeconds:300,untilSeconds:s.end,minElevation:5,...(t===undefined?{}:{atSeconds:t})});}
+export function footprint(s,t){return visibilityFootprint(s.launch,{profile:s.profile,persistenceSeconds:300,untilSeconds:s.end,minElevation:1,coreElevation:5,...(t===undefined?{}:{atSeconds:t})});}
 export function pair(site,day,azimuth){const e=sunEvents(day+'T04:00:00Z',site,'Asia/Shanghai',-4);return ['sunrise','sunset'].map(kind=> e[kind]?{kind,...createScenario(site,e[kind],azimuth)}:null);}
 // Independent Cartesian line-of-sight check: segment intersects the solid sphere.
 export function earthBlocked(observer,point){const a=xyz(observer),b=xyz(point),d=b.map((v,i)=>v-a[i]);const dd=d.reduce((s,v)=>s+v*v,0);if(dd===0)return false;const u=Math.max(0,Math.min(1,-a.reduce((s,v,i)=>s+v*d[i],0)/dd));return a.reduce((s,v,i)=>s+(v+u*d[i])**2,0)<1-1e-12;}
 export function observe(f,observer){
- const rows=f.parcels.map(p=>({p,...parcelVisibility(observer,p),blocked:earthBlocked(observer,p)}));
+ const rows=f.parcels.map(p=>({p,...parcelVisibility(observer,p,1),blocked:earthBlocked(observer,p)}));
  const sunAltitude=altitudeAt(f.sun,observer.latitude,observer.longitude);
  const eligible=rows.filter(r=>!r.blocked&&r.possible);
  const best=[...rows].sort((a,b)=>(Number(eligible.includes(b))-Number(eligible.includes(a)))||b.elevation-a.elevation)[0];
@@ -29,7 +30,7 @@ export function observationWindow(s,observer){
  const windows=[];let open=null,maxElevation=null;
  for(const t of [...times].sort((a,b)=>a-b)){
   const f=frame(s,t);let best=-Infinity;
-  if(altitudeAt(f.sun,observer.latitude,observer.longitude)<=-1)for(const p of f.parcels)if(p.sunlit){const v=parcelVisibility(observer,p);if(v.possible&&!earthBlocked(observer,p))best=Math.max(best,v.elevation);}
+  if(altitudeAt(f.sun,observer.latitude,observer.longitude)<=-1)for(const p of f.parcels)if(p.sunlit){const v=parcelVisibility(observer,p,1);if(v.possible&&!earthBlocked(observer,p))best=Math.max(best,v.elevation);}
   if(best>-Infinity){if(!open)open={start:t,end:t};else open.end=t;maxElevation=Math.max(maxElevation??-Infinity,best);}
   else if(open){windows.push(open);open=null;}
  }

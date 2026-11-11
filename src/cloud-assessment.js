@@ -13,7 +13,7 @@ export function sampleCells(cells,count=9){
  while(selected.length<count){let best=null,score=-1;for(const p of cells){const d=Math.min(...selected.map(q=>distance(p,q)));if(d>score){score=d;best=p;}}if(score<=0)break;selected.push(best);}
  return selected;
 }
-export function modelAssessment(raw,{target=150,observer=null,azimuth,now=Date.now()}={}){
+export function modelAssessment(raw,{target=0,observer=null,azimuth,now=Date.now()}={}){
  const l=mapLaunch(raw),history=!raw.manualScenario&&Date.parse(l.timing?.net)<=now,base={time:l.timing?.net,target,observer,siteSolarAltitude:l.rocketCloud.solarAltitude,reliability:launchReliability(raw)};
  if(!preciseTime(l)||!l.coordinates)return {...base,code:'pending',label:'发射时刻或场址待补充',points:[]};
  const key=JSON.stringify([raw,target,observer,azimuth,history]),cached=memo.get(key);if(cached)return cached;
@@ -21,7 +21,7 @@ export function modelAssessment(raw,{target=150,observer=null,azimuth,now=Date.n
  let result;
  if(!profile.full.length)result={...base,code:'preliminary',label:'晨昏初筛 · 轨迹参数待补',candidate:['possible','favorable'].includes(l.rocketCloud.code),reason:profile.reason,points:[]};
  else {
-  const options={profile,untilSeconds:profile.duration+(history?0:300),persistenceSeconds:300,minElevation:1};
+  const options={profile,untilSeconds:profile.duration+300,persistenceSeconds:300,minElevation:1};
   let points;
   if(observer){const hit=observerVisibility(visibilitySamples(l,options),observer,1);points=hit.possible?[{...observer,...hit}]:[];}
   else points=sampleCells(visibilityFootprint(l,options).cells).map(p=>({...p,...observerVisibility(visibilitySamples(l,options),p,1)})).filter(p=>p.possible&&Number.isFinite(p.firstTime));

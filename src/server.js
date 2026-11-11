@@ -50,10 +50,10 @@ async function api(req, res, url) {
   if(url.pathname==='/api/population'){let result;try{if(!url.searchParams.has('latitude')||!url.searchParams.has('longitude'))throw Error();result=await surroundingPopulation(Number(url.searchParams.get('latitude')),Number(url.searchParams.get('longitude')));}catch{result={status:'unavailable',reason:'坐标无效'};}return json(res,200,result);}
   const assessmentMatch=url.pathname.match(/^\/api\/launches\/([a-zA-Z0-9-]+)\/cloud-assessment$/);
   if(assessmentMatch){
-    const target=Number(url.searchParams.get('target')||150);
+    const target=Number(url.searchParams.get('target')||0);
     const latitude=url.searchParams.get('latitude'),longitude=url.searchParams.get('longitude');
     const observer=latitude!==null&&longitude!==null?{latitude:Number(latitude),longitude:Number(longitude)}:null;
-    if(![100,150].includes(target)||(latitude!==null||longitude!==null)&&(!observer||!latitude.trim()||!longitude.trim()||!Number.isFinite(observer.latitude)||!Number.isFinite(observer.longitude)||Math.abs(observer.latitude)>90||Math.abs(observer.longitude)>180))return json(res,400,{error:'高度或观测坐标无效'});
+    if(![0,100,150].includes(target)||(latitude!==null||longitude!==null)&&(!observer||!latitude.trim()||!longitude.trim()||!Number.isFinite(observer.latitude)||!Number.isFinite(observer.longitude)||Math.abs(observer.latitude)>90||Math.abs(observer.longitude)>180))return json(res,400,{error:'高度或观测坐标无效'});
     const history=url.searchParams.get('range')==='history';
     const data=await (history?getLaunchHistoryData():getLaunchData());
     const raw=data.launches.find(l=>l.id===assessmentMatch[1]);

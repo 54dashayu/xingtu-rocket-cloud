@@ -1,35 +1,25 @@
-> build 6 已修复 iPadOS 27 启动闪退：迁移至 UIScene / UIWindowScene 生命周期。
+# 星途 iOS
 
-# V0.03 更新（2026-11-05）
+当前本地版本：0.03 / build 16（2026-11-07）。在线 WKWebView 直接载入 https://space.bh1jss.net/rocket-cloud/ ，当前在线网页 v0.03 / 0031 已在模拟器加载，显示完整动力段与 T+780 秒时间轴；未重新打包，未进行此次 iPhone 真机验收。仅维护本目录。
 
-MARKETING_VERSION 0.03，build 6。在线 WKWebView 载入同一套五导航/3D 页面；已移除早期报告提交拦截，使用持久化网站存储，增加定位用途说明与浅色原生外观，补充 1024 AppIcon。报告仅在用户主动提交时发送。
+## 当前行为
 
-本轮用户已授权继续打包；以下旧记录中的“只读验证壳”“不要归档”仅描述此前准备阶段，不再作为本轮构建限制。日历原生导出仍未开放，真机定位和报告提交未实测。构建与签名结果见 ../../output/v0.03/RELEASE.md。
+- 启动直达整合页面，沿用网页导航、任务与报告/照片授权逻辑；没有欢迎中转页或顶部原生菜单。
+- 采用 UIScene 生命周期、持久化网站存储、原生安全区域与底部 CSS 适配；保留 GeometryOnly 标记及前后台事件。
+- 报告/照片由用户主动提交，已移除早期只读原型拦截。公开署名图片由后端返回，iOS 不重复加水印。
+- 加载时提供原生状态提示，20秒未完成显示重新加载按钮；导航失败或 WebKit 页面进程退出也提供重试。
+- 日历原生导出仍未开放，点击导出有明确未完成提示。
+- 页脚保留网页版本，同时附加 iOS 版本及构建号，避免混淆两个版本层。
+- 已有 AppIcon、相机/图库/定位用途说明和本地化；真机权限与真实报告链路需单独验收。
 
-# 星途 iOS P01 · 本地开发准备
+## 构建
 
-2026-11-03。仅本目录由 iOS 对话维护，Android 对话不得修改。共享 public/、src/、analytics/、根 package.json 均未调整；没有部署、签名配置、商店建档或审核提交。
+在本目录运行 `./scripts/build-simulator.sh`；使用完整 Xcode，脚本不更改系统 xcode-select。
+模拟器产物：`output/DerivedData/Build/Products/Debug-iphonesimulator/Xingtu.app`。
+工程：`Xingtu.xcodeproj`，Bundle ID `net.bh1jss.xingtu.ios.dev`。
 
-## 当前产物
+本轮未归档上传、未提交 App Store、未安装真机。历史签名包和设备记录不代表 build 16 已验收。
 
-- `Xingtu.xcodeproj`：UIKit + WKWebView 原生验证工程，无第三方包。临时 Bundle ID `net.bh1jss.xingtu.ios.dev`，本地版本 0.1.0 (1)，最低部署目标暂定 iOS 16，支持 iPhone/iPad。
-- `App/`：启动直达整合页面、系统分享、安全区域容器、外链处理、失败提示。沿用 public/icons/rocket-cloud-512.png，不是正式 1024 AppIcon。
-- 预览使用临时 WebKit 存储，关闭后不承诺保留状态。启动直接加载线上整合页面；“首页”也返回整合页面，不再经过欢迎中转页。
-- 内容规则阻止 `/xingtu-analytics/` 请求，包括报告提交和统计。此为只读验证壳，不是首版完整 App。定位、事件编辑、ICS/blob 下载、离线业务和正式图标尚未实现。
+[本轮对齐记录](docs/2026-11-07-web-0020-alignment.md)；[早期模拟器记录](docs/2026-11-03-模拟器测试.md)。早期只读壳、欢迎页、分享气泡说明均为历史状态。
 
-## 本地构建
-
-```sh
-./scripts/build-simulator.sh
-open Xingtu.xcodeproj
-```
-
-命令在本目录运行。构建产物 `output/DerivedData/Build/Products/Debug-iphonesimulator/Xingtu.app`。脚本仅为当前进程设置 DEVELOPER_DIR，不切换系统 xcode-select。
-
-真机前：在 Xcode 选定用户的 Developer Team，确认正式 Bundle ID，再连接 iPhone、启用开发者模式并运行。当前仅有模拟器包，不能安装到真机；不要使用 `-allowProvisioningUpdates` 自动建标识或申请资料，也不要归档上传。
-
-详见 [方案与验收](docs/首版方案与验收.md)。整个目录移走即可撤销本轮源码准备；不会改变网站。
-
-## 后续模拟器交互测试
-
-见 [2026-11-03 模拟器测试](docs/2026-11-03-模拟器测试.md)。已修复整合入口误跳 Safari 和日历导出误报成功；地图/图表共享播放进度、历史筛选和分享弹窗已实测。横屏地图区域偏小仍待优化。
+[历史报告候选3D修复验收](docs/2026-11-07-history-3d-0021.md)：线上共享修复，无原生二进制变更。

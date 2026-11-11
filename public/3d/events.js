@@ -1,4 +1,4 @@
-import {stageSchedule,interpolateState} from '../map/ascent-dynamics.js';
+import {stageSchedule,interpolateState} from '../map/ascent-dynamics.js?v=0.03-0031';
 export function eventPoint(profile,seconds){if(!Number.isFinite(seconds))return null;const a=profile.full.findLast(p=>p.seconds<=seconds),b=profile.full.find(p=>p.seconds>=seconds);return a&&b?(a.seconds===b.seconds?{...a}:interpolateState(a,b,seconds)):null;}
 // Explicit teaching heuristics, not vehicle-specific statistical predictions.
 // Fairing: first 100 km crossing; payload: 60 s after assumed final cutoff.

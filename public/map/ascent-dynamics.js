@@ -70,7 +70,7 @@ export function integrateAscent(origin,azimuth,{step=.5,maxSeconds=600,vehicle=R
  const pos=state.slice(0,3),vel=state.slice(3),up=unit(pos),heading=unit(cross(plane,up));
  return [...vel,...acceleration(pos,vel,{...engine,pitch:commandedPitch(time+delta,vehicle.pitch)*rad,tangent:heading,cdArea:vehicle.cdArea,omega})];};
  y=rk4(y,dt,f);time+=dt;sample();
- if(points.at(-1).height>250||time>15&&norm(y.slice(0,3))<EARTH_RADIUS||time>schedule.cutoff&&points.at(-1).verticalSpeed<0)break;
+ if(time>15&&norm(y.slice(0,3))<EARTH_RADIUS||time>schedule.cutoff&&points.at(-1).verticalSpeed<0)break;
  }
  if(cache.size>96)cache.clear();cache.set(key,points);return points;
 }
@@ -89,4 +89,21 @@ export function ascentToHeight(origin,azimuth,target,options={}){
   if(!full.some(p=>Math.abs(p.seconds-t)<1e-8))full.push({...interpolateState(a,b,t),height:h});
  }
  full.push(end);full.sort((a,b)=>a.seconds-b.seconds);return {raw,full,reached:true,duration:time,range:end.downrange};
+}
+
+// Follow the reference propulsion schedule, not an altitude threshold. No post-cutoff
+// rocket extrapolation: only retained exhaust is evaluated after this endpoint.
+export function poweredFlight(origin,azimuth,options={}){
+ const vehicle=options.vehicle||REFERENCE_VEHICLE,schedule=stageSchedule(vehicle);
+ const raw=integrateAscent(origin,azimuth,{...options,maxSeconds:schedule.cutoff});
+ const end=raw.at(-1),times=new Set([0,end.seconds]);
+ for(let t=2;t<end.seconds;t+=2)times.add(t);
+ for(const t of [schedule.separation,schedule.ignition])if(t<end.seconds)times.add(t);
+ let j=1;
+ const full=[...times].sort((a,b)=>a-b).map(t=>{
+  while(j<raw.length-1&&raw[j].seconds<t)j++;
+  const point=t===0?{...raw[0]}:interpolateState(raw[j-1],raw[j],t);
+  return {...point,stage:engineState(t,vehicle).stage,emitting:engineState(t,vehicle).thrust>0};
+ });
+ return {raw,full,duration:end.seconds,range:end.downrange,reached:Math.abs(end.seconds-schedule.cutoff)<1e-6,schedule};
 }

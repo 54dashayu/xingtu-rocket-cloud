@@ -33,8 +33,8 @@ test('RK4 converges when halving time step, and produces nonlinear non-constant 
  assert.ok(at(200).verticalSpeed<at(140).verticalSpeed);
  for(let i=1;i<p.length;i++)assert.ok(p[i].seconds>p[i-1].seconds&&p[i].downrange>=p[i-1].downrange);
 });
-test('UI uses two observation cutoffs; solver is deterministic and handles geographic seams',()=>{
- assert.deepEqual(HEIGHT_PRESETS.map(x=>x.height),[100,150]);assert.equal(DEFAULT_HEIGHT,150);
+test('UI defaults to full propulsion with two optional observation cutoffs; solver is deterministic and handles geographic seams',()=>{
+ assert.deepEqual(HEIGHT_PRESETS.map(x=>x.height),[0,100,150]);assert.equal(DEFAULT_HEIGHT,0);
  for(const o of [{latitude:0,longitude:179.9},{latitude:70,longitude:-179.9}])for(const b of [0,90,180,270]){
  const p=ascentToHeight(o,b,150);assert.ok(p.reached);assert.deepEqual(p,ascentToHeight(o,b,150));
  for(const q of p.full)assert.ok(Math.abs(q.latitude)<=90&&Math.abs(q.longitude)<=180);

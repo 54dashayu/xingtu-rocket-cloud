@@ -1,4 +1,4 @@
-import { heightPreset } from './height-presets.js?v=20261024am';
+import { heightPreset } from './height-presets.js?v=0.03-0031';
 // Mission-specific geodetic samples. No default range, heading, or ballistic curve.
 const wrap=x=>((x+180)%360+360)%360-180;
 export function validFlightData(launch){
@@ -11,7 +11,7 @@ export function validFlightData(launch){
  }
  return f;
 }
-function mix(a,b,u){return {seconds:a.seconds+(b.seconds-a.seconds)*u,height:a.height+(b.height-a.height)*u,downrange:a.downrange+(b.downrange-a.downrange)*u,latitude:a.latitude+(b.latitude-a.latitude)*u,longitude:wrap(a.longitude+wrap(b.longitude-a.longitude)*u)};}
+function mix(a,b,u){return {seconds:a.seconds+(b.seconds-a.seconds)*u,height:a.height+(b.height-a.height)*u,downrange:a.downrange+(b.downrange-a.downrange)*u,latitude:a.latitude+(b.latitude-a.latitude)*u,longitude:wrap(a.longitude+wrap(b.longitude-a.longitude)*u),...(typeof a.emitting==='boolean'?{emitting:a.emitting}:{})};}
 // Propulsion data must be tied to the same mission trajectory, with its own public source.
 export function validPropulsionData(launch){
  const data=validFlightData(launch),p=data?.propulsion;
@@ -32,11 +32,13 @@ export function validPropulsionData(launch){
 export function flightProfile(launch,{target=100,elapsed=Infinity,preferFinalCutoff=false}={}){
  heightPreset(target);
  const data=validFlightData(launch),propulsion=validPropulsionData(launch);
- const cutoff=preferFinalCutoff&&data?.kind!=='planned'?propulsion?.point:null;
+ const cutoff=(target===0||preferFinalCutoff&&data?.kind!=='planned')?propulsion?.point:null;
+ const complete=target===0;
  const empty={full:[],points:[],duration:0,range:null,target,kind:'unavailable',reason:'缺少与本次任务匹配的时间、高度及地面位置资料'};
  if(!data)return empty;
  let full=[],reached=false;
  if(cutoff){full=data.points.filter(p=>p.seconds<cutoff.seconds).map(p=>({...p}));full.push({...cutoff});reached=true;target=cutoff.height;}
+ else if(complete){full=data.points.map(p=>({...p}));target=full.at(-1).height;}
  else for(let i=0;i<data.points.length;i++){
   const p=data.points[i],a=data.points[i-1];
   if(a&&a.height<target&&p.height>=target){full.push(mix(a,p,(target-a.height)/(p.height-a.height)));reached=true;break;}
@@ -44,18 +46,18 @@ export function flightProfile(launch,{target=100,elapsed=Infinity,preferFinalCut
   full.push({...p});
  }
  // Include burn boundaries and intermediate samples so coast/restart gaps remain explicit.
- if(propulsion){
+ if(propulsion||complete){
   const first=full[0].seconds,last=full.at(-1).seconds,times=new Set(full.map(p=>p.seconds));
-  for(const burn of propulsion.burns)for(const t of [burn.start,burn.end])if(t>=first&&t<=last)times.add(t);
+  for(const burn of propulsion?.burns||[])for(const t of [burn.start,burn.end])if(t>=first&&t<=last)times.add(t);
   for(let t=first;t<last;t+=Math.max(2,(last-first)/600))times.add(t);
   const original=full;
   full=[...times].sort((a,b)=>a-b).map(t=>{
    const a=original.findLast(p=>p.seconds<=t),b=original.find(p=>p.seconds>=t);
    const point=a.seconds===b.seconds?{...a}:mix(a,b,(t-a.seconds)/(b.seconds-a.seconds));
-   return {...point,emitting:propulsion.burns.some(b=>t>=b.start&&t<b.end)};
+   return {...point,emitting:propulsion?propulsion.burns.some(b=>t>=b.start&&t<b.end):point.emitting};
   });
  }
  const end=full.at(-1),t=Math.min(end.seconds,Math.max(full[0].seconds,elapsed)),points=full.filter(p=>p.seconds<=t);
  const b=full.find(p=>p.seconds>t),a=points.at(-1);if(b&&a&&a.seconds<t)points.push({...mix(a,b,(t-a.seconds)/(b.seconds-a.seconds)),...(propulsion?{emitting:propulsion.burns.some(b=>t>=b.start&&t<b.end)}:{})});
- return {full,points,duration:end.seconds,elapsed:t,range:Math.max(...full.map(p=>p.downrange)),target,reached,kind:data.kind,source:data,label:{planned:'公布的计划轨迹',measured:'任务飞行记录',reconstructed:'任务数据重建轨迹'}[data.kind],...(propulsion?{propulsion}:{}),...(cutoff?{endpointKind:'published-final-cutoff'}:{})};
+ return {full,points,duration:end.seconds,elapsed:t,range:Math.max(...full.map(p=>p.downrange)),target,reached,kind:data.kind,source:data,label:{planned:'公布的计划轨迹',measured:'任务飞行记录',reconstructed:'任务数据重建轨迹'}[data.kind],...(propulsion?{propulsion}:{}),...(cutoff?{endpointKind:'published-final-cutoff'}:complete?{endpointKind:'data-end',emissionBasis:propulsion?'published':'unknown-assumed'}:{})};
 }

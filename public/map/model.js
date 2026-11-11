@@ -1,5 +1,5 @@
 import { cloudOpportunity } from '../cloud-status.js?v=20261024al';
-import { flightProfile } from './flight-path.js?v=20261024ad';
+import { flightProfile } from './flight-path.js?v=0.03-0031';
 import { MAJOR_SITES, findSite } from './sites.js?v=20261024ad';
 import { rad, deg, clamp, wrap, solarPosition, altitudeAt } from './solar.js?v=20261024ad';
 import { launchCoordinates, rocketCloudForecast } from './rocket-cloud.js?v=20261024ad';

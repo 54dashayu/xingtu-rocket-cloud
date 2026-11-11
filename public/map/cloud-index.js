@@ -1,10 +1,10 @@
 import { preciseTime } from './model.js';
 import { solarPosition, altitudeAt } from './solar.js';
-import { simulationProfile } from './prediction.js';
+import { simulationProfile } from './prediction.js?v=0.03-0031';
 import { visibilitySamples, parcelVisibility } from './visibility.js?v=0.03-0015';
 const clamp=x=>Math.max(0,Math.min(1,x));
 const cache=new WeakMap();
-export const INDEX_LIMIT='0–100 分为实验性几何关注指数，不是可见概率。取采样区域较优地点，不代表你所在地；天气、人口和报告数量不计分。参考上升段至150公里并跟踪留存尾迹5分钟，未预测实际尾迹亮度、形态或扩散。';
+export const INDEX_LIMIT='0–100 分为实验性几何关注指数，不是可见概率。取采样区域较优地点，不代表你所在地；天气、人口和报告数量不计分。按可用动力段或任务资料计算，并跟踪留存尾迹5分钟，未预测实际尾迹亮度、形态或扩散。';
 // Score each observation time jointly: darkness cannot compensate an unlit plume.
 export function scoreObserver(parcels,observer){
  const times=new Map();
@@ -39,9 +39,9 @@ export function cloudIndex(launch,assessment=launch.cloudAssessment){
  if(!assessment||assessment.net!==launch.timing?.net)return pending('等待本次计划时刻的几何计算');
  const old=cache.get(launch);if(old?.assessment===assessment)return old.value;
  const model=assessment.model;
- if(!model||model.target!==150||model.observer)return pending('等待标准区域评估');
+ if(!model||![0,150].includes(model.target)||model.observer)return pending('等待标准区域评估');
  if(!['possible','no_geometry'].includes(model.code))return pending('场址或轨迹资料待补充');
- const profile=simulationProfile(launch,{target:150,...(Number.isFinite(model.heading)?{azimuth:model.heading}:{})});
+ const profile=simulationProfile(launch,{target:model.target,...(Number.isFinite(model.heading)?{azimuth:model.heading}:{})});
  if(!profile.full.length)return pending('轨迹资料待补充');
  const parcels=visibilitySamples(launch,{profile,untilSeconds:profile.duration+300,persistenceSeconds:300,timeStepSeconds:30}).flat();
  const points=(model.points||[]).filter(p=>Number.isFinite(p.latitude)&&Number.isFinite(p.longitude));

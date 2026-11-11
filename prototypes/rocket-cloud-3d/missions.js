@@ -1,6 +1,7 @@
+import {playbackWindow} from '../../public/map/timeline.js?v=0.03-0031';
 import {flightEvents,eventPoint} from './events.js';
 import {mapLaunch,preciseTime} from '../../public/map/model.js';
-import {simulationProfile} from '../../public/map/prediction.js';
+import {simulationProfile} from '../../public/map/prediction.js?v=0.03-0031';
 import {headingEstimate} from '../../public/map/heading-estimate.js';
 import {cloudStatus} from '../../public/cloud-status.js';
 import {attachArchiveEvidence} from '../../public/map/archive-evidence.js';
@@ -14,10 +15,10 @@ export function missionScenario(l){
  if(!l.coordinates)throw Error('该任务缺少发射场坐标，暂不能绘制。');
  if(!preciseTime(l))throw Error('该任务发射时刻待定或计划已变更，暂不能生成任务预测；可切换手动实验。');
  const mode=missionMode(l),heading=headingEstimate(l);
- const profile=simulationProfile(l,{target:150,azimuth:heading.azimuth,historical:mode.historical});
+ const profile=simulationProfile(l,{target:0,azimuth:heading.azimuth,historical:mode.historical});
  if(!profile.full.length)throw Error(profile.reason||'该任务轨迹资料不足。');
  const sourced=profile.kind!=='predicted';
- return {launch:l,profile,end:profile.duration+300,heading,mode,sourced};
+ return {launch:l,profile,end:playbackWindow(profile).end,heading,mode,sourced};
 }
 export function missionEvents(s){
  const list=flightEvents(s.profile).filter(e=>e.id!=='liftoff');

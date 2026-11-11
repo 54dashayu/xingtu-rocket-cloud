@@ -10,7 +10,7 @@ test('notice playback preserves original window and shares time and exact headin
  const before=JSON.stringify(raw),s=noticeScenario(mapLaunch(raw),result);
  assert.ok(preciseTime(s));assert.equal(preciseTime(raw),false);assert.equal(JSON.stringify(raw),before);
  assert.equal(s.timing.net,result.noticeWindow.referenceTime);assert.equal(s.noticeScenario.heading,188.8);
- const three=missionScenario(s),two=simulationProfile(s,{target:150,azimuth:188.8,historical:false});
+ const three=missionScenario(s),two=simulationProfile(s,{target:0,azimuth:188.8,historical:false});
  assert.equal(three.heading.azimuth,188.8);assert.deepEqual(three.profile.full,two.full);
  assert.match(countdown(raw),/待核实/);assert.equal(s.scheduleStatus.label,'航警预估');
 });

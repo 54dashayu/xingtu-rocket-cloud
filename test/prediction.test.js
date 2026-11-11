@@ -10,13 +10,13 @@ test('fallback is explicitly predicted, continuous across 100/200 km and stops a
  const a=simulationProfile(l,{target:100}),b=simulationProfile(l,{target:200});
  assert.equal(a.kind,'predicted');assert.equal(a.source,null);assert.equal(a.full.at(-1).height,100);assert.equal(b.full.at(-1).height,200);
  assert.deepEqual(a.full,b.full.filter(p=>p.seconds<=a.duration));assert.ok(a.range>0&&b.range>a.range);assert.equal(a.method,'reference-ecef-rk4');
- assert.equal(simulationProfile(l,{elapsed:-5}).elapsed,0);assert.equal(simulationProfile(l,{elapsed:9999}).elapsed,a.duration);
+ assert.equal(simulationProfile(l,{elapsed:-5}).elapsed,0);assert.equal(simulationProfile(l,{target:100,elapsed:9999}).elapsed,a.duration);
 });
 test('adjusting heading and range changes actual map positions; sourced trajectory has priority',()=>{
  const a=simulationProfile(l,{azimuth:90,rangeFactor:2}),b=simulationProfile(l,{azimuth:270});
  assert.ok(a.full.at(-1).longitude>l.coordinates.longitude);assert.ok(b.full.at(-1).longitude<l.coordinates.longitude);
  assert.ok(Math.abs(distanceKm(l.coordinates,a.full.at(-1))-2*simulationProfile(l,{azimuth:90}).range)<1e-6);
- const task={...l,flightProfile:testProfile(l)};assert.deepEqual(simulationProfile(task,{azimuth:90,rangeFactor:2}),flightProfile(task));
+ const task={...l,flightProfile:testProfile(l)};assert.deepEqual(simulationProfile(task,{azimuth:90,rangeFactor:2}),flightProfile(task,{target:0,preferFinalCutoff:true}));
  for(const params of [{azimuth:360},{rangeFactor:0},{rangeFactor:NaN}])assert.throws(()=>simulationProfile(l,params));
 });
 test('prediction viewing samples use explicitly supplied prediction and do not masquerade as recorded data',()=>{
