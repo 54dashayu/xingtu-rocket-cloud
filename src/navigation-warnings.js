@@ -1,4 +1,5 @@
 // Independently implemented CSV adapter. External notices are reference data, not telemetry.
+import {withDeadline} from './deadline.js';
 import { distanceKm } from '../public/map/model.js';
 const FEEDS=[['NOTAM','https://rocket.rainywhisper.com/notams.csv'],['MSI','https://rocket.rainywhisper.com/msi.csv']];
 let saved=null,pending=null;
@@ -38,5 +39,5 @@ export function warningCandidates(launch,rows){
 }
 export async function fetchWarnings({fetcher=fetch,now=Date.now()}={}){
  if(saved&&now-saved.fetched<1800000)return saved.value;if(pending)return pending;
- pending=(async()=>{const batches=await Promise.all(FEEDS.map(async([source,url])=>{try{const r=await fetcher(url,{signal:AbortSignal.timeout(10000)});if(!r.ok)throw Error(`HTTP ${r.status}`);const text=await r.text();if(text.length>5000000)throw Error('Feed too large');return {source,url,rows:parseWarningCSV(text).map(v=>({...v,source,sourceUrl:url}))};}catch(e){return {source,url,rows:[],error:e.message};}}));const value={fetchedAt:new Date(now).toISOString(),provider:'notam-whisper 公共通告聚合（非官方接口）',sources:batches.map(({rows,...b})=>({...b,count:rows.length})),rows:batches.flatMap(b=>b.rows)};saved={fetched:now,value};return value;})().finally(()=>{pending=null;});return pending;
+ pending=(async()=>{const batches=await Promise.all(FEEDS.map(async([source,url])=>{try{const text=await withDeadline(async signal=>{const r=await fetcher(url,{signal});if(!r.ok)throw Error(`HTTP ${r.status}`);return r.text();},{timeoutMs:10000});if(text.length>5000000)throw Error('Feed too large');return {source,url,rows:parseWarningCSV(text).map(v=>({...v,source,sourceUrl:url}))};}catch(e){return {source,url,rows:[],error:e.message};}}));const value={fetchedAt:new Date(now).toISOString(),provider:'notam-whisper 公共通告聚合（非官方接口）',sources:batches.map(({rows,...b})=>({...b,count:rows.length})),rows:batches.flatMap(b=>b.rows)};saved={fetched:now,value};return value;})().finally(()=>{pending=null;});return pending;
 }

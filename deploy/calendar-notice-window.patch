@@ -1,0 +1,68 @@
+--- a/public/app.js
++++ b/public/app.js
+@@ -50,7 +50,9 @@
+   const historyResourceLinks = history
+     ? historyResources.length ? `<div class="history-card-links">${historyResources.map((resource) => `<a data-resource href="${escapeHtml(resource.url)}" target="_blank" rel="noreferrer">${escapeHtml(resource.name)} ↗</a>`).join('')}</div>` : ''
+     : '';
+-  const time = scheduled
++  const time = launch.timing.basis==='notice_window'
++    ? `<div class="time"><div><strong>航警时间窗（北京时间）</strong><small>${formatter.format(new Date(launch.timing.windowStart))}—${formatter.format(new Date(launch.timing.windowEnd))}</small><small>点火时刻待核实 · 不作发射倒计时</small></div></div>`
++    : scheduled
+     ? `<div class="time"><div class="date-box"><small>${date.month}月</small><strong>${date.day}</strong></div><div><strong>${date.hour}:${date.minute} 北京时间</strong><small>${utcFormatter.format(new Date(launch.timing.net))} 世界协调时</small><div class="countdown${isUrgentCountdown(launch.timing.net) ? ' countdown-urgent' : ''}" data-net="${launch.timing.net}">${countdown(launch.timing.net)}</div></div></div>`
+     : `<div class="time uncertain-time"><div class="date-box"><small>计划</small><strong>待定</strong></div><div><strong>${escapeHtml(launch.timing.precision || '时间待定')}</strong><small>以公开来源后续更新为准</small></div></div>`;
+   return `<article class="launch-card" data-id="${launch.id}" tabindex="0" style="--accent:${launch.crewed ? '#39d6d1' : '#ff6935'}">
+@@ -76,7 +78,7 @@
+ }
+ function render(data, cached = false) {
+   state.launches = data.results;
+-  const next = data.results.find((launch) => launch.timing.net);
++  const next = data.results.find((launch) => launch.timing.net && launch.timing.basis!=='notice_window');
+   $('#count').textContent = data.meta.count; $('#next-time').textContent = state.view === 'history' ? '已完成' : (next ? countdown(next.timing.net) : '--');
+   const suffix = cached || data.meta.refreshing ? '（缓存已显示，正在刷新）' : data.meta.stale ? '（缓存）' : '';
+   const warning = data.meta.warning ? ` · ${data.meta.warning}` : '';
+@@ -112,12 +114,12 @@
+ function showDetail(launch) {
+   const body = $('#detail-body');
+   const scheduled = Boolean(launch.timing.net);
+-  const time = scheduled
++  const time = launch.timing.basis==='notice_window' ? `${formatter.format(new Date(launch.timing.windowStart))}—${formatter.format(new Date(launch.timing.windowEnd))} 北京时间` : scheduled
+     ? `${formatter.format(new Date(launch.timing.net))} 北京时间<br><small>${utcFormatter.format(new Date(launch.timing.net))} 世界协调时</small>`
+     : `${escapeHtml(launch.timing.precision || '时间待定')}<br><small>尚未公布可导入日历的具体时间</small>`;
+   const provenance = launch.provenance ? `<p class="provenance"><strong>${escapeHtml(launch.provenance.label)}</strong> · ${escapeHtml(launch.provenance.confidence)}${launch.provenance.lastVerified ? ` · 核验于 ${escapeHtml(launch.provenance.lastVerified.slice(0, 10))}` : ''}</p>` : '';
+   const status = state.view === 'history' ? launch.result.label : launch.scheduleStatus.label;
+-  const timeLabel = state.view === 'history' ? '实际发射时间' : '计划时间';
++  const timeLabel = launch.timing.basis==='notice_window'?'航警时间窗（非点火时间）':state.view === 'history' ? '实际发射时间' : '计划时间';
+   const resources = state.view === 'history' ? historyResourcesFor(launch) : [];
+   const rocketCloud = ['favorable', 'possible'].includes(launch.rocketCloud?.code) ? `<p class="rocket-cloud-detail"><strong>☁ 火箭云提醒：${escapeHtml(launch.rocketCloud.label)}</strong><br><small>${escapeHtml(launch.rocketCloud.reason)}。发射场太阳高度约 ${escapeHtml(launch.rocketCloud.solarAltitude)}°。${escapeHtml(launch.rocketCloud.disclaimer)}</small></p>` : '';
+   const resourceBlock = state.view === 'history' && resources.length
+@@ -157,7 +159,7 @@
+ window.addEventListener('scroll', updateBackToTop, { passive: true });
+ backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+ updateBackToTop();
+-setInterval(() => { if (state.view !== 'upcoming') return; document.querySelectorAll('[data-net]').forEach((node) => { node.textContent = countdown(node.dataset.net); node.classList.toggle('countdown-urgent', isUrgentCountdown(node.dataset.net)); }); const next = state.launches.find((launch) => launch.timing.net); if (next) $('#next-time').textContent = countdown(next.timing.net); }, 1000);
++setInterval(() => { if (state.view !== 'upcoming') return; document.querySelectorAll('[data-net]').forEach((node) => { node.textContent = countdown(node.dataset.net); node.classList.toggle('countdown-urgent', isUrgentCountdown(node.dataset.net)); }); const next = state.launches.find((launch) => launch.timing.net && launch.timing.basis!=='notice_window'); if (next) $('#next-time').textContent = countdown(next.timing.net); }, 1000);
+ if ('serviceWorker' in navigator) navigator.serviceWorker.register(`${basePath}/sw.js`).catch(() => {});
+ load();
+ 
+--- a/public/index.html
++++ b/public/index.html
+@@ -48,7 +48,7 @@
+   <dialog id="detail"><button class="close" aria-label="关闭">×</button><div id="detail-body"></div></dialog>
+   <button id="back-to-top" class="back-to-top" type="button" aria-label="回到页面顶部" title="回到顶部">↑<span>顶部</span></button>
+   <footer><div class="footer-notes"><a href="https://thespacedevs.com/llapi" target="_blank" rel="noopener">发射数据：The Space Devs · Launch Library 2</a><a href="./data-sources.html" target="_blank" rel="noopener">数据与图片来源</a><span>Copyright © 2026 BH1JSS. All rights reserved.</span></div><div class="filings"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">鲁ICP备2026051181号-1</a><a href="https://beian.mps.gov.cn/#/query/webSearch?code=37030502001103" target="_blank" rel="noopener noreferrer"><img src="/beian-icon.png" alt="" width="20" height="20">鲁公网安备37030502001103号</a><a href="https://www.12377.cn/" target="_blank" rel="noopener noreferrer">违法和不良信息投诉电话：12377 · 中国互联网举报中心</a></div><a href="/xingtu-analytics/privacy" target="_blank" rel="noopener">访问统计说明</a></footer>
+-  <script type="module" src="./app.js?v=20261024rocketcloud"></script>
++  <script type="module" src="./app.js?v=20261111-notices"></script>
+ 
+ <!-- bh1jss-author-home-v2 -->
+ <style>.bh1jss-author-host{position:relative!important;min-height:36px!important;box-sizing:border-box;padding-right:56px!important}.bh1jss-author-host>.bh1jss-author-icon{position:absolute!important;right:16px;top:50%;transform:translateY(-50%)}body:has(.sstv-download-prompt) .bh1jss-author-host{padding-right:144px!important}body:has(.sstv-download-prompt) .bh1jss-author-host>.bh1jss-author-icon{right:120px}.bh1jss-author-icon{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:32px!important;height:32px!important;min-width:32px;flex:0 0 32px;vertical-align:middle;margin-left:10px;color:inherit!important;text-decoration:none!important;border:0!important;border-radius:6px;padding:4px!important;box-sizing:border-box;opacity:.85}.bh1jss-author-icon svg{width:20px!important;height:20px!important;display:block}.bh1jss-author-icon:hover{opacity:1;background:rgba(128,128,128,.15)}.bh1jss-author-icon:focus-visible{outline:2px solid currentColor;outline-offset:2px}@media print{.bh1jss-author-icon{display:none!important}}</style>
+--- a/src/server.js
++++ b/src/server.js
+@@ -44,7 +44,7 @@
+   const data = await getLaunchData();
+   if (url.pathname === '/api/launches') {
+     const results = filterLaunches(data.launches, url.searchParams);
+-    return json(res, 200, { meta: { count: results.length, supplementCount: data.supplementCount || 0, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, timezone: 'UTC in API; client also renders Asia/Shanghai' }, results });
++    return json(res, 200, { meta: { count: results.length, warningDiscovery: data.discovery || null, supplementCount: data.supplementCount || 0, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, timezone: 'UTC in API; client also renders Asia/Shanghai' }, results });
+   }
+   if (url.pathname === '/api/calendar.ics') {
+     const results = filterLaunches(data.launches, url.searchParams);

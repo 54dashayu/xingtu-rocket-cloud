@@ -14,11 +14,11 @@ import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
 import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0015';
 import { areaFill, groundLightTone, AREA_OPACITY, areaLegend } from './area-colors.js?v=20261024ax';
-import { localDateTime, localTimeCandidates, simulationLaunch } from './manual-time.js?v=20261024aq';
+import { localDateTime, localTimeCandidates, simulationLaunch } from './manual-time.js?v=0.03-0025';
 import { playbackWindow, clampPlayback, TAIL_SECONDS } from './timeline.js?v=20261024ao';
 import { solarShadePath } from './solar-shade.js?v=20261024ai';
 import { HEIGHT_PRESETS, DEFAULT_HEIGHT } from './height-presets.js?v=20261024am';
-import { headingEstimate } from './heading-estimate.js?v=20261024ad';
+import { headingEstimate } from './heading-estimate.js?v=0.03-0025';
 import { trajectoryStyle, regionEdges } from './overlay-style.js?v=20261024aj';
 import { simulationProfile, canAnalyzeHistory } from './prediction.js?v=0.03-0020';
 import { flightProfile } from './flight-path.js?v=20261024am';
@@ -27,8 +27,8 @@ import { visibilityFootprint, jellyfishReferenceHeight } from './visibility.js?v
 import { installMapNavigation } from './navigation.js?v=0.02';
 import { solarPosition, altitudeAt } from './solar.js?v=20261024ad';
 import { localSunContext, sunEvents, padTimezone } from './sun-events.js?v=20261024aq';
-import { mapLaunch, upcoming, countdown, preciseTime, destination, project, splitLine, DISCLAIMER, cloudCandidate, siteInventory, geometryRating, isSunlit, siteMarkerRadius, pastLaunches } from './model.js?v=0.03-0019';
-import { timePair, launchTimePair } from './time-display.js?v=20261024ad';
+import { mapLaunch, upcoming, countdown, preciseTime, destination, project, splitLine, DISCLAIMER, cloudCandidate, siteInventory, geometryRating, isSunlit, siteMarkerRadius, pastLaunches } from './model.js?v=0.03-0025';
+import { timePair, launchTimePair } from './time-display.js?v=0.03-0025';
 const $=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const svg=(tag,attrs={},text)=>{const n=document.createElementNS(NS,tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;return n;};
@@ -200,7 +200,7 @@ function renderDetail(){
  $('offset').disabled=!selected||!preciseTime(activeLaunch());$('reset-earliest').disabled=$('offset').disabled;$('reset-time').disabled=$('offset').disabled;$('play-speed').disabled=$('offset').disabled;$('play-ascent').hidden=!selected||!preciseTime(activeLaunch())||!selected.coordinates;
  if(!selected){$('detail').innerHTML='<p class="eyebrow">MISSION INSIGHT</p><h2>选择任务或发射场</h2><p>悬浮场址查看资料和所选时段任务；点击任务查看详情。</p>';return;}
  const l=activeLaunch(),c=l.coordinates;
- $('detail').innerHTML=`<div class="analysis-heading"><h2>轨迹与观测分析</h2><span>${historyMode()?'发射回溯':manualLaunch?'手动时间模拟':'发射预报'}</span></div><section class="analysis-task-summary"><strong>${esc(l.name)}</strong><div class="time-pair">${timeHTML(launchTimePair(l))}</div></section>${manualTimeForm()}${c?`<section class="ascent-card"><div class="ascent-heading"><h3>上升段模拟</h3><select id="target" aria-label="轨迹终点高度">${HEIGHT_PRESETS.map(p=>`<option value="${p.height}" ${target===p.height?'selected':''}>${p.label}</option>`).join('')}</select></div><p id="profile-provenance"></p><div class="prediction-controls" id="prediction-controls"><label id="bearing-label">航向 °<input id="prediction-bearing" type="number" min="0" max="359" step="1" value="${azimuth}"></label><div class="range-readout" title="到达所选高度时的地面投影距离；模拟估算，不是当前飞行距离"><span id="range-readout-label">终点地面距离</span><output id="prediction-range" aria-labelledby="range-readout-label" aria-live="polite">—</output></div></div><div id="heading-hint" class="heading-hint"><span id="heading-basis"></span><button id="restore-heading" type="button">恢复建议</button></div><div id="warning-heading" class="warning-heading"></div><p id="historical-heading" class="historical-heading" hidden></p><svg id="profile" viewBox="0 0 260 145" role="img" aria-label="上升段高度与地面距离曲线"></svg><p id="ascent-state"></p><small><span id="profile-limit">预测参数可调，非官方飞行轨迹。</span></small><div class="ascent-actions"><button id="focus-flight" class="focus-flight">▶ 在地图演示</button></div></section>`:'<div class="info-block"><h3>上升段模拟</h3><p>缺少发射场坐标，无法绘制轨迹。</p></div>'}<div class="cloud-card" id="recommendation"></div><div id="area-evaluation" class="area-evaluation"></div><button id="export-event">下载该任务日历</button><p id="export-state" role="status"></p>`;
+ $('detail').innerHTML=`<div class="analysis-heading"><h2>轨迹与观测分析</h2><span>${historyMode()?'发射回溯':manualLaunch?'手动时间模拟':'发射预报'}</span></div><section class="analysis-task-summary"><strong>${esc(l.name)}</strong><div class="time-pair">${timeHTML(launchTimePair(l))}</div></section>${l.provenance?.kind==='navigation_warning_candidate'?`<p class="coverage">航警线索，非正式发射公告。<a href="https://rocket.rainywhisper.com/notams.csv" target="_blank" rel="noopener">查看通告来源</a></p>`:''}${manualTimeForm()}${c?`<section class="ascent-card"><div class="ascent-heading"><h3>上升段模拟</h3><select id="target" aria-label="轨迹终点高度">${HEIGHT_PRESETS.map(p=>`<option value="${p.height}" ${target===p.height?'selected':''}>${p.label}</option>`).join('')}</select></div><p id="profile-provenance"></p><div class="prediction-controls" id="prediction-controls"><label id="bearing-label">航向 °<input id="prediction-bearing" type="number" min="0" max="359" step="1" value="${azimuth}"></label><div class="range-readout" title="到达所选高度时的地面投影距离；模拟估算，不是当前飞行距离"><span id="range-readout-label">终点地面距离</span><output id="prediction-range" aria-labelledby="range-readout-label" aria-live="polite">—</output></div></div><div id="heading-hint" class="heading-hint"><span id="heading-basis"></span><button id="restore-heading" type="button">恢复建议</button></div><div id="warning-heading" class="warning-heading"></div><p id="historical-heading" class="historical-heading" hidden></p><svg id="profile" viewBox="0 0 260 145" role="img" aria-label="上升段高度与地面距离曲线"></svg><p id="ascent-state"></p><small><span id="profile-limit">预测参数可调，非官方飞行轨迹。</span></small><div class="ascent-actions"><button id="focus-flight" class="focus-flight">▶ 在地图演示</button></div></section>`:'<div class="info-block"><h3>上升段模拟</h3><p>缺少发射场坐标，无法绘制轨迹。</p></div>'}<div class="cloud-card" id="recommendation"></div><div id="area-evaluation" class="area-evaluation"></div><button id="export-event">下载该任务日历</button><p id="export-state" role="status"></p>`;
  if($('target'))$('target').onchange=e=>{target=Number(e.target.value);areaCache=null;stopPlayback();offset=0;$('offset').value=0;renderCandidateTrails();renderRating();scheduleDraw();};
  if($('prediction-bearing'))$('prediction-bearing').onchange=e=>{if(historyMode()&&(!hasReplayEvidence(selected)||['sourced_heading','reported_sector'].includes(headingEstimate(selected).kind)))return;const n=e.target.valueAsNumber;if(!Number.isFinite(n)||!e.target.checkValidity()){e.target.value=azimuth;return;}if(warningConstraint&&!inBearingArc(n,warningConstraint)){e.target.value=azimuth;return;}azimuth=n;manualDirection=true;renderRating();areaCache=null;stopPlayback();offset=0;$('offset').value=0;scheduleDraw();};
  if($('restore-heading'))$('restore-heading').onclick=()=>{if(historyMode()&&(!hasReplayEvidence(selected)||['sourced_heading','reported_sector'].includes(headingEstimate(selected).kind)))return;azimuth=headingEstimate(l).azimuth;manualDirection=false;warningConstraint=null;renderRating();$('prediction-bearing').value=azimuth;areaCache=null;stopPlayback();offset=0;$('offset').value=0;scheduleDraw();};
@@ -335,7 +335,7 @@ function scheduleDraw(){cancelAnimationFrame(frame);frame=requestAnimationFrame(
 function renderTaskContext(){
  const l=activeLaunch();
  $('mobile-task-name').textContent=l?.name||'请先选择发射任务';
- const label=l?(manualLaunch?'模拟发射':!preciseTime(l)?'发射时刻待定':historyMode()?'实际发射':'计划发射'):'发射时间待定';
+ const label=l?(manualLaunch?'模拟发射':l.timing?.basis==='notice_window'?'航警时间窗':!preciseTime(l)?'发射时刻待定':historyMode()?'实际发射':'计划发射'):'发射时间待定';
  const content=`<span class="task-time-label">${label}</span>${l?timeHTML(launchTimePair(l)):''}`;
  if($('mobile-task-time').innerHTML!==content)$('mobile-task-time').innerHTML=content;
 }

@@ -1,3 +1,4 @@
+import {isWarningLaunch,reconcileWarningEntries} from './warning-state.js';
 import {withDeadline} from './deadline.js';
 import { readFile, writeFile, mkdir, rename } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -19,7 +20,7 @@ export async function atomicJSON(file, value) {
 }
 // Exactly one writer owns this snapshot. Other services reread the same atomic file.
 export function createLaunchFeed({file, readOnly=false, seed, fetchRange, beforeSave=async()=>{},
-  clock=Date.now, ttl=1800000, nearTtl=600000,fetchTimeoutMs=70000}) {
+  discover, discoveryTtl=1800000, clock=Date.now, ttl=1800000, nearTtl=600000,fetchTimeoutMs=70000}) {
   let state, initializing, running, readFailed=false;
   async function disk() {
     const value = JSON.parse(await readFile(file,'utf8'));
@@ -66,8 +67,23 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
     return clock()>=Math.max(f.retryAt||0,state.globalRetryAt||0) &&
       (force || f.partial || !f.fetchedAt || clock()-ms(f.fetchedAt)>=effectiveTtl(range));
   }
+  function discoveryDue(){return discover && (!state.discovery?.checkedAt || clock()-ms(state.discovery.checkedAt)>=discoveryTtl);}
   async function cycle(force) {
     await init();if(readOnly)return;
+    // Independent of LL2 cooldown: notice discovery still works during upstream outages.
+    if(discoveryDue()) {
+      const next=structuredClone(state);
+      try {
+        const data=await withDeadline(()=>discover(),{timeoutMs:25000});
+        next.entries=reconcileWarningEntries(next.entries,data.launches,clock());
+        next.discovery={checkedAt:iso(clock()),fetchedAt:iso(clock()),source:data.source,noticeCount:data.noticeCount,candidateCount:data.launches.length,status:'ok'};
+      }catch(error){
+        next.discovery={...next.discovery,checkedAt:iso(clock()),status:'retrying',warning:'航警源暂不可用，自动重试中'};
+        next.entries=reconcileWarningEntries(next.entries,next.entries.filter(e=>isWarningLaunch(e.launch)).map(e=>e.launch),clock());
+        console.warn('[warning-discovery]',error.message);
+      }
+      next.revision++;next.updatedAt=iso(clock());await atomicJSON(file,next);state=next;
+    }
     // Serial requests share a global 429 cooldown instead of competing for quota.
     for(const range of ['history','upcoming'].sort((a,b)=>ms(state.feeds[a]?.checkedAt||state.feeds[a]?.fetchedAt)-ms(state.feeds[b]?.checkedAt||state.feeds[b]?.fetchedAt))) {
       if(!due(range,force))continue;
@@ -90,6 +106,7 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
         if(error.status===429)next.globalRetryAt=retryAt;
         console.warn(`[launch-feed] ${range}: ${error.message}; retry ${iso(retryAt)}`);
       }else delete next.feeds[range].warning;
+      if(discover)next.entries=reconcileWarningEntries(next.entries,next.entries.filter(e=>isWarningLaunch(e.launch)).map(e=>e.launch),clock());
       next.revision++;next.updatedAt=iso(clock());
       await beforeSave(next.entries.map(x=>x.launch));
       await atomicJSON(file,next);state=next;
@@ -103,15 +120,15 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
     await init();
     if(!readOnly) {
       if(force||!state.entries.length)await refresh({force});
-      else if(['history','upcoming'].some(key=>due(key,false)))void refresh().catch(error=>console.error('[launch-feed]',error.message));
+      else if(discoveryDue()||['history','upcoming'].some(key=>due(key,false)))void refresh().catch(error=>console.error('[launch-feed]',error.message));
     }
     const f=state?.feeds[range]||{};
     const stale=readFailed||!f.fetchedAt||Boolean(f.partial)||clock()-ms(f.fetchedAt)>= (state?effectiveTtl(range):ttl);
-    const launches=(state?.entries||[]).filter(x=>x.range===range).map(x=>({...x.launch,dataRange:range,
+    const launches=(state?.entries||[]).filter(x=>x.range===range && (!isWarningLaunch(x.launch)||ms(x.launch.timing.windowEnd)>clock())).map(x=>({...x.launch,dataRange:range,
       ...(range==='upcoming' && x.launch.result?.code==='pending' && ms(x.launch.timing?.net) && ms(x.launch.timing.net)<clock()
         ? {dataPending:true} : {})}));
     launches.sort((a,b)=>(ms(a.timing?.net)||Infinity)-(ms(b.timing?.net)||Infinity));
-    return {launches,fetchedAt:f.fetchedAt||null,source:f.source,revision:state?.revision||0,
+    return {launches,discovery:state.discovery||null,fetchedAt:f.fetchedAt||null,source:f.source,revision:state?.revision||0,
       snapshotAt:state?.updatedAt||null,latestAt:f.latestAt||f.fetchedAt||null,stale,
       refreshing:Boolean(running),retryAt:f.retryAt?iso(f.retryAt):null,
       warning:stale?(f.warning||'发射数据待更新，自动重试中'):null};

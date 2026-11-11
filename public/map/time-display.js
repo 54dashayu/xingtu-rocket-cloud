@@ -14,6 +14,10 @@ export function timePair(date,pad={},dateOnly=false){
 }
 export function launchTimePair(launch){
   const precision=launch.timing?.precision || '';
+  if(launch.timing?.basis==='notice_window'){
+    const a=timePair(launch.timing.windowStart,launch.pad),b=timePair(launch.timing.windowEnd,launch.pad);
+    return {...a,local:a.local+'—'+b.local,beijing:a.beijing+'—'+b.beijing,note:'航警时间窗 · 点火时刻待核实'};
+  }
   if(!Number.isFinite(Date.parse(launch.timing?.net))||/month|quarter|year|月份|季度|年份/i.test(precision))return {...timePair(null,launch.pad),note:precision || '时间待定'};
   const timed=/分钟|秒|小时|minute|second|hour/i.test(precision) && !['tbd','approximate','postponed','cancelled'].includes(launch.scheduleStatus?.code);
   // Coarse dates are displayed as dates in both zones, never as fabricated midnight clocks.

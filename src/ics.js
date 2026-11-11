@@ -11,7 +11,7 @@ function fold(line) {
 }
 export function calendarTiming(launch) {
   const ms = Date.parse(launch.timing?.net);
-  if (!Number.isFinite(ms) || ['tbd', 'approximate', 'postponed'].includes(launch.scheduleStatus?.code)) return null;
+  if (!Number.isFinite(ms) || ['tbd', 'approximate', 'postponed', 'unverified'].includes(launch.scheduleStatus?.code)) return null;
   const precision = launch.timing.precision || '';
   if (!/分钟|秒|小时|日期|到日|minute|second|hour|^day$/i.test(precision)) return null;
   const date = new Date(ms + 8 * 3600000).toISOString().slice(0, 10);

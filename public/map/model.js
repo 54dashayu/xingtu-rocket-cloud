@@ -26,6 +26,7 @@ export function preciseTime(launch) {
   return Number.isFinite(Date.parse(launch.timing?.net)) && /分钟|秒|小时|minute|second|hour/i.test(launch.timing?.precision || '') && !['cancelled','postponed','tbd','approximate'].includes(launch.scheduleStatus?.code);
 }
 export function countdown(launch, now = Date.now()) {
+  if(launch.timing?.basis==='notice_window')return '待核实任务 · 不作发射倒计时';
   if (['success','failure','partial'].includes(launch.result?.code)&&Date.parse(launch.timing?.net)<=now) return `${launch.result.label||'已发射'} · 历史记录`;
   if (!preciseTime(launch)) return '时间待定 / 不倒计时';
   const sec = Math.floor((Date.parse(launch.timing.net) - now) / 1000);

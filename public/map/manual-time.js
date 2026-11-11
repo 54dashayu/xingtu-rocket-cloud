@@ -15,5 +15,5 @@ export function localTimeCandidates(value,zone){
 }
 export function simulationLaunch(launch,net){
  if(!Number.isFinite(Date.parse(net)))throw new RangeError('Invalid simulation time');
- return {...launch,manualTime:true,timing:{...launch.timing,net,precision:'手动模拟 · 精确到分钟',windowStart:null,windowEnd:null},scheduleStatus:{code:'confirmed',label:'手动模拟'},result:{code:'pending'},flightProfile:null,trajectory:null,cloudEvidence:null};
+ return {...launch,manualTime:true,timing:{...launch.timing,net,basis:'manual',precision:'手动模拟 · 精确到分钟',windowStart:null,windowEnd:null},scheduleStatus:{code:'confirmed',label:'手动模拟'},result:{code:'pending'},flightProfile:null,trajectory:null,cloudEvidence:null};
 }

@@ -53,7 +53,9 @@ function card(launch) {
   const historyResourceLinks = history
     ? historyResources.length ? `<div class="history-card-links">${historyResources.map((resource) => `<a data-resource href="${escapeHtml(resource.url)}" target="_blank" rel="noreferrer">${escapeHtml(resource.name)} ↗</a>`).join('')}</div>` : ''
     : '';
-  const time = scheduled
+  const time = launch.timing.basis==='notice_window'
+    ? `<div class="time"><div><strong>航警时间窗（北京时间）</strong><small>${formatter.format(new Date(launch.timing.windowStart))}—${formatter.format(new Date(launch.timing.windowEnd))}</small><small>点火时刻待核实 · 不作发射倒计时</small></div></div>`
+    : scheduled
     ? `<div class="time"><div class="date-box"><small>${date.month}月</small><strong>${date.day}</strong></div><div><strong>${date.hour}:${date.minute} 北京时间</strong><small>${utcFormatter.format(new Date(launch.timing.net))} 世界协调时</small><div class="countdown${isUrgentCountdown(launch.timing.net) ? ' countdown-urgent' : ''}" data-net="${launch.timing.net}">${countdown(launch.timing.net)}</div></div></div>`
     : `<div class="time uncertain-time"><div class="date-box"><small>计划</small><strong>待定</strong></div><div><strong>${escapeHtml(launch.timing.precision || '时间待定')}</strong><small>以公开来源后续更新为准</small></div></div>`;
   return `<article class="launch-card" data-id="${launch.id}" tabindex="0" style="--accent:${launch.crewed ? '#39d6d1' : '#ff6935'}">
@@ -80,7 +82,7 @@ function writeSnapshot(data) {
 function render(data, cached = false) {
   data = {...data, results: data.results.map(localizeLaunch)};
   state.launches = data.results;
-  const next = data.results.find((launch) => launch.timing.net);
+  const next = data.results.find((launch) => launch.timing.net && launch.timing.basis!=='notice_window');
   $('#count').textContent = data.meta.count; $('#next-time').textContent = state.view === 'history' ? '已完成' : (next ? countdown(next.timing.net) : '--');
   const suffix = cached || data.meta.refreshing ? '（缓存已显示，正在刷新）' : data.meta.stale ? '（缓存）' : '';
   const warning = data.meta.warning ? ` · ${data.meta.warning}` : '';
@@ -116,12 +118,12 @@ async function load({quiet=false}={}) {
 function showDetail(launch) {
   const body = $('#detail-body');
   const scheduled = Boolean(launch.timing.net);
-  const time = scheduled
+  const time = launch.timing.basis==='notice_window' ? `${formatter.format(new Date(launch.timing.windowStart))}—${formatter.format(new Date(launch.timing.windowEnd))} 北京时间` : scheduled
     ? `${formatter.format(new Date(launch.timing.net))} 北京时间<br><small>${utcFormatter.format(new Date(launch.timing.net))} 世界协调时</small>`
     : `${escapeHtml(launch.timing.precision || '时间待定')}<br><small>尚未公布可导入日历的具体时间</small>`;
   const provenance = launch.provenance ? `<p class="provenance"><strong>${escapeHtml(launch.provenance.label)}</strong> · ${escapeHtml(launch.provenance.confidence)}${launch.provenance.lastVerified ? ` · 核验于 ${escapeHtml(launch.provenance.lastVerified.slice(0, 10))}` : ''}</p>` : '';
   const status = state.view === 'history' ? launch.result.label : launch.scheduleStatus.label;
-  const timeLabel = state.view === 'history' ? '实际发射时间' : '计划时间';
+  const timeLabel = launch.timing.basis==='notice_window'?'航警时间窗（非点火时间）':state.view === 'history' ? '实际发射时间' : '计划时间';
   const resources = state.view === 'history' ? historyResourcesFor(launch) : [];
   const cloud=cloudStatus(launch);
   const forecast=launch.rocketCloud;
@@ -164,7 +166,7 @@ function updateBackToTop() { backToTop.classList.toggle('visible', window.scroll
 window.addEventListener('scroll', updateBackToTop, { passive: true });
 backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 updateBackToTop();
-setInterval(() => { if (state.view !== 'upcoming') return; document.querySelectorAll('[data-net]').forEach((node) => { node.textContent = countdown(node.dataset.net); node.classList.toggle('countdown-urgent', isUrgentCountdown(node.dataset.net)); }); const next = state.launches.find((launch) => launch.timing.net); if (next) $('#next-time').textContent = countdown(next.timing.net); }, 1000);
+setInterval(() => { if (state.view !== 'upcoming') return; document.querySelectorAll('[data-net]').forEach((node) => { node.textContent = countdown(node.dataset.net); node.classList.toggle('countdown-urgent', isUrgentCountdown(node.dataset.net)); }); const next = state.launches.find((launch) => launch.timing.net && launch.timing.basis!=='notice_window'); if (next) $('#next-time').textContent = countdown(next.timing.net); }, 1000);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register(`${basePath}/sw.js`).catch(() => {});
 load();
 

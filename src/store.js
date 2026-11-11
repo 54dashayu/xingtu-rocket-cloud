@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import {withDeadline,createRequestBudget} from './upstream-request.js';
 import { createLaunchFeed } from './launch-feed.js';
 import { calendarArchive } from './calendar-archive.js';
+import {fetchWarningDiscovery} from './warning-discovery.js';
 import { config } from './config.js';
 import { normalizeLaunches } from './normalize.js';
 import { getSupplements, mergeSupplements } from './supplements.js';
@@ -106,7 +107,7 @@ export function fetchUpcomingPages(fetcher=fetch){return fetchLaunchPages(config
 export function fetchPreviousPages(fetcher=fetch){return fetchLaunchPages(config.previousUrl,fetcher);}
 const reserveRequest=createRequestBudget({file:new URL('launch-request-budget.json',config.launchSnapshotFile)});
 function newFeed(){return createLaunchFeed({
-  file:config.launchSnapshotFile,readOnly:config.launchFeedReadOnly,ttl:config.cacheTtlMs,
+  discover:fetchWarningDiscovery,file:config.launchSnapshotFile,readOnly:config.launchFeedReadOnly,ttl:config.cacheTtlMs,
   seed:async()=>({upcoming:await readDisk(config.cacheFile),history:await readDisk(config.historyCacheFile)}),
   beforeSave:launches=>calendarArchive.merge(launches),
   fetchRange:async (range,{signal,deepFetchedAt}={})=>{

@@ -17,3 +17,10 @@ test('explicit orbit classes select labelled assumptions, not fabricated mission
  assert.equal(headingEstimate({...l,mission:{inclination:5}}).kind,'fallback');
  assert.equal(inclinationHeading(30,30),90);assert.equal(inclinationHeading(38,5),null);assert.equal(inclinationHeading(90,90),null);
 });
+
+test('notice corridor is a labelled estimate and never overrides mission evidence',()=>{
+ const l={warningDiscovery:{headingEstimate:188.8}};
+ assert.equal(headingEstimate(l).azimuth,189);assert.equal(headingEstimate(l).kind,'estimated');
+ assert.match(headingEstimate(l).basis,/非官方/);
+ assert.equal(headingEstimate({...l,direction:{kind:'sourced_heading',azimuth:190}}).azimuth,190);
+});
