@@ -1,3 +1,4 @@
+import {launchReliability} from './launch-reliability.js';
 import { mapLaunch, preciseTime } from '../public/map/model.js';
 import { simulationProfile } from '../public/map/prediction.js';
 import { visibilityFootprint, visibilitySamples, observerVisibility } from '../public/map/visibility.js';
@@ -13,7 +14,7 @@ export function sampleCells(cells,count=9){
  return selected;
 }
 export function modelAssessment(raw,{target=150,observer=null,azimuth,now=Date.now()}={}){
- const l=mapLaunch(raw),history=!raw.manualScenario&&Date.parse(l.timing?.net)<=now,base={time:l.timing?.net,target,observer,siteSolarAltitude:l.rocketCloud.solarAltitude};
+ const l=mapLaunch(raw),history=!raw.manualScenario&&Date.parse(l.timing?.net)<=now,base={time:l.timing?.net,target,observer,siteSolarAltitude:l.rocketCloud.solarAltitude,reliability:launchReliability(raw)};
  if(!preciseTime(l)||!l.coordinates)return {...base,code:'pending',label:'发射时刻或场址待补充',points:[]};
  const key=JSON.stringify([raw,target,observer,azimuth,history]),cached=memo.get(key);if(cached)return cached;
  const profile=simulationProfile(l,{target,historical:history,...(azimuth===undefined?{}:{azimuth})});
@@ -50,7 +51,7 @@ const noticeMemo=new Map();
 // Sample the notice interval, never promote its start to a published ignition time.
 async function assessNoticeWindow(launch,options){
  const start=Date.parse(launch.timing.windowStart),end=Date.parse(launch.timing.windowEnd),heading=launch.warningDiscovery?.headingEstimate;
- if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||end-start>7200000||!Number.isFinite(heading)||heading<0||heading>=360){
+ if(!launchReliability(launch).assessment.eligible||!Number.isFinite(start)||!Number.isFinite(end)||end<=start||end-start>7200000||!Number.isFinite(heading)||heading<0||heading>=360){
   return assessCloud({...launch,manualScenario:true},options);
  }
  const key=JSON.stringify([launch,options.target,options.observer,options.weatherEnabled]);
@@ -69,7 +70,7 @@ async function assessNoticeWindow(launch,options){
  const scores=ranked.map(s=>s.score),min=complete?Math.min(...scores):null,max=complete?Math.max(...scores):null;
  const reason=`按航警窗口采样 ${samples.length} 个时刻，航向参考 ${heading}°；时间窗与方向均非正式发射参数。天气仅对应采样指数最高的参考时刻。`;
  const windowIndex={score:max,min,max,label:complete?`火箭云指数 ${min===max?max:min+'–'+max}（航警预估）`:'火箭云指数 · 待评估',reason,reference:true,limits:'0–100 分是几何关注指数，不是可见概率。范围为所采样时刻的评分范围，非置信区间；未计天气和未知火箭型号的误差。'};
- const value={...result,net:launch.timing.net,windowIndex,noticeWindow:{start:launch.timing.windowStart,end:launch.timing.windowEnd,heading,referenceTime:best.net,samples:samples.map(({net,score})=>({net,score}))},limits:reason+' '+result.limits};
+ const value={...result,model:{...result.model,reliability:launchReliability(launch)},net:launch.timing.net,windowIndex,noticeWindow:{start:launch.timing.windowStart,end:launch.timing.windowEnd,heading,referenceTime:best.net,samples:samples.map(({net,score})=>({net,score}))},limits:reason+' '+result.limits};
  if(noticeMemo.size>30)noticeMemo.delete(noticeMemo.keys().next().value);
  if(!options.weatherProvider)noticeMemo.set(key,{at:Date.now(),result:value});
  return value;

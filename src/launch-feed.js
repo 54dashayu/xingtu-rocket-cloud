@@ -1,3 +1,4 @@
+import {launchReliability} from './launch-reliability.js';
 import {reconcileOfficialEntries} from './official-state.js';
 import {isWarningLaunch,reconcileWarningEntries} from './warning-state.js';
 import {withDeadline} from './deadline.js';
@@ -68,6 +69,7 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
     return clock()>=Math.max(f.retryAt||0,state.globalRetryAt||0) &&
       (force || f.partial || !f.fetchedAt || clock()-ms(f.fetchedAt)>=effectiveTtl(range));
   }
+  const noticeCandidates=next=>next.discovery?.candidates||next.entries.filter(e=>isWarningLaunch(e.launch)).map(e=>e.launch);
   function discoveryDue(){return discover && (!state.discovery?.checkedAt || clock()-ms(state.discovery.checkedAt)>=discoveryTtl);}
   function officialDue(){const interval=state.official?.sources?.some(s=>s.status==='retrying')?Math.min(officialTtl,600000):officialTtl;return official&&(!state.official?.checkedAt||clock()-ms(state.official.checkedAt)>=interval);}
   function applyOfficial(next){
@@ -84,7 +86,7 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
       try{next.official=await withDeadline(()=>official(next.official||{}),{timeoutMs:180000});}
       catch(error){next.official={...next.official,checkedAt:iso(clock()),sources:(next.official?.sources||[{id:'cmse'},{id:'casc'}]).map(s=>({...s,status:'retrying'})),warning:'官方公告读取暂缓，自动重试中'};console.warn('[official-announcements]',error.message);}
       applyOfficial(next);
-      if(discover)next.entries=reconcileWarningEntries(next.entries,next.entries.filter(e=>isWarningLaunch(e.launch)).map(e=>e.launch),clock());
+      if(discover)next.entries=reconcileWarningEntries(next.entries,noticeCandidates(next),clock());
       next.revision++;next.updatedAt=iso(clock());await beforeSave(next.entries.map(x=>x.launch));await atomicJSON(file,next);state=next;
     }
     // Independent of LL2 cooldown: notice discovery still works during upstream outages.
@@ -93,10 +95,10 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
       try {
         const data=await withDeadline(()=>discover(),{timeoutMs:25000});
         next.entries=reconcileWarningEntries(next.entries,data.launches,clock());
-        next.discovery={checkedAt:iso(clock()),fetchedAt:iso(clock()),source:data.source,noticeCount:data.noticeCount,candidateCount:data.launches.length,status:'ok'};
+        next.discovery={checkedAt:iso(clock()),fetchedAt:iso(clock()),source:data.source,noticeCount:data.noticeCount,candidateCount:data.launches.length,candidates:data.launches,status:'ok'};
       }catch(error){
         next.discovery={...next.discovery,checkedAt:iso(clock()),status:'retrying',warning:'航警源暂不可用，自动重试中'};
-        next.entries=reconcileWarningEntries(next.entries,next.entries.filter(e=>isWarningLaunch(e.launch)).map(e=>e.launch),clock());
+        next.entries=reconcileWarningEntries(next.entries,noticeCandidates(next),clock());
         console.warn('[warning-discovery]',error.message);
       }
       next.revision++;next.updatedAt=iso(clock());await atomicJSON(file,next);state=next;
@@ -124,7 +126,7 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
         console.warn(`[launch-feed] ${range}: ${error.message}; retry ${iso(retryAt)}`);
       }else delete next.feeds[range].warning;
       applyOfficial(next);
-      if(discover)next.entries=reconcileWarningEntries(next.entries,next.entries.filter(e=>isWarningLaunch(e.launch)).map(e=>e.launch),clock());
+      if(discover)next.entries=reconcileWarningEntries(next.entries,noticeCandidates(next),clock());
       next.revision++;next.updatedAt=iso(clock());
       await beforeSave(next.entries.map(x=>x.launch));
       await atomicJSON(file,next);state=next;
@@ -142,12 +144,12 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
     }
     const f=state?.feeds[range]||{};
     const stale=readFailed||!f.fetchedAt||Boolean(f.partial)||clock()-ms(f.fetchedAt)>= (state?effectiveTtl(range):ttl);
-    const launches=(state?.entries||[]).filter(x=>x.range===range && (!isWarningLaunch(x.launch)||ms(x.launch.timing.windowEnd)>clock())).map(x=>({...x.launch,dataRange:range,
+    const launches=(state?.entries||[]).filter(x=>x.range===range && (!isWarningLaunch(x.launch)||ms(x.launch.timing.windowEnd)>clock())).map(x=>({...x.launch,dataRange:range,dataReliability:launchReliability(x.launch),
       ...(isWarningLaunch(x.launch)?{name:x.launch.name.replace("疑似发射","发射")}:{}),
       ...(range==='upcoming' && x.launch.result?.code==='pending' && ms(x.launch.timing?.net) && ms(x.launch.timing.net)<clock()
         ? {dataPending:true} : {})}));
     launches.sort((a,b)=>(ms(a.timing?.net)||Infinity)-(ms(b.timing?.net)||Infinity));
-    return {launches,official:state.official?{checkedAt:state.official.checkedAt,sources:state.official.sources,reconciliation:state.official.reconciliation,reviewCount:state.official.reviews?.length||0,spacemapper:state.official.spacemapper}:null,discovery:state.discovery||null,fetchedAt:f.fetchedAt||null,source:f.source,revision:state?.revision||0,
+    return {launches,official:state.official?{checkedAt:state.official.checkedAt,sources:state.official.sources,reconciliation:state.official.reconciliation,reviewCount:state.official.reviews?.length||0,spacemapper:state.official.spacemapper}:null,discovery:state.discovery?Object.fromEntries(Object.entries(state.discovery).filter(([key])=>key!=='candidates')):null,fetchedAt:f.fetchedAt||null,source:f.source,revision:state?.revision||0,
       snapshotAt:state?.updatedAt||null,latestAt:f.latestAt||f.fetchedAt||null,stale,
       refreshing:Boolean(running),retryAt:f.retryAt?iso(f.retryAt):null,
       warning:stale?(f.warning||'发射数据待更新，自动重试中'):null};

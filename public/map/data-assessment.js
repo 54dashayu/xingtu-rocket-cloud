@@ -38,6 +38,8 @@ export function renderDataAssessment(box,{launch,target,historical,scenario,azim
   }
   body.querySelector('.retry-assessment').onclick=()=>{requests.delete(url);renderDataAssessment(box,{launch,target,historical,scenario,azimuth,onResult});};
   const populationBox=body.querySelector(".population-context");if(populationBox)populationCopy(populationBox,launch);
+  const evidence=r.model?.reliability||launch.dataReliability;
+  if(evidence){const detail=document.createElement('details'),summary=document.createElement('summary'),p=document.createElement('p');summary.textContent='任务资料：'+evidence.label;p.textContent=Object.values(evidence.fields).map(f=>f.label).join(' · ')+'。'+evidence.note;detail.append(summary,p);body.insertBefore(detail,body.querySelector('.retry-assessment'));}
   onResult(r);
  };
  request(url).then(display).catch(e=>{if(token!==sequence||!box.isConnected)return;requests.delete(url);body.innerHTML=`<p>暂时没能查到观看建议，请稍后重试。<small>查询失败不代表看不到火箭云。</small></p><button type="button">重试</button>`;body.querySelector('button').onclick=()=>renderDataAssessment(box,{launch,target,historical,scenario,azimuth,onResult});});

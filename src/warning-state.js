@@ -5,7 +5,7 @@ function distanceKm(a,b){
  return 12742*Math.asin(Math.sqrt(Math.max(0,Math.min(1,h))));
 }
 export function warningMatches(candidate,launch){
- if(isWarningLaunch(launch))return false;
+ if(isWarningLaunch(launch)||['cancelled','postponed'].includes(launch.scheduleStatus?.code))return false;
  const lat=Number(launch.pad?.latitude),lon=Number(launch.pad?.longitude);
  const sameSite=(launch.pad?.originalLocation||launch.pad?.location||'').includes(candidate.pad.originalLocation)||
   (launch.pad?.latitude!=null&&launch.pad?.longitude!=null&&Number.isFinite(lat)&&Number.isFinite(lon)&&distanceKm({latitude:lat,longitude:lon},{latitude:candidate.pad.latitude,longitude:candidate.pad.longitude})<80);
@@ -13,12 +13,16 @@ export function warningMatches(candidate,launch){
  return sameSite&&precise&&t>=Date.parse(candidate.timing.windowStart)-30*60000&&t<=Date.parse(candidate.timing.windowEnd)+30*60000;
 }
 export function reconcileWarningEntries(entries,candidates,now=Date.now()){
- const regular=entries.filter(e=>!isWarningLaunch(e.launch));
+ const regular=entries.filter(e=>!isWarningLaunch(e.launch)).map(e=>{
+  if(e.range!=='upcoming'||!e.launch.warningReference)return e;
+  const {warningReference,...launch}=e.launch;
+  return {...e,launch};
+ });
  const retained=[];
  for(const c of candidates){
   if(Date.parse(c.timing.windowEnd)<=now)continue;
   const matches=regular.filter(e=>warningMatches(c,e.launch));
-  if(matches.length===1){const e=matches[0];e.launch={...e.launch,warningReference:{...c.warningDiscovery,match:'时间与场址匹配参考'},sources:[...(e.launch.sources||[]),...c.sources.filter(s=>!e.launch.sources?.some(x=>x.url===s.url))]};}
+  if(matches.length===1){const e=matches[0];e.launch={...e.launch,warningReference:{...c.warningDiscovery,windowStart:c.timing.windowStart,windowEnd:c.timing.windowEnd,match:'时间与场址匹配参考'},sources:[...(e.launch.sources||[]),...c.sources.filter(s=>!e.launch.sources?.some(x=>x.url===s.url))]};}
   else retained.push({range:'upcoming',launch:c});
  }
  return [...regular,...retained];
