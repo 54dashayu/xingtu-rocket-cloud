@@ -34,6 +34,7 @@ export function scoreObserver(parcels,observer){
 }
 export function cloudIndex(launch,assessment=launch.cloudAssessment){
  const pending=reason=>({score:null,label:'火箭云指数 · 待评估',reason,limits:INDEX_LIMIT});
+ if(launch.timing?.basis==='notice_window'&&assessment?.net===launch.timing.net&&assessment?.windowIndex)return assessment.windowIndex;
  if(!preciseTime(launch))return pending('发射时刻未精确到小时，暂不评分');
  if(!assessment||assessment.net!==launch.timing?.net)return pending('等待本次计划时刻的几何计算');
  const old=cache.get(launch);if(old?.assessment===assessment)return old.value;
@@ -54,5 +55,5 @@ export function cloudIndex(launch,assessment=launch.cloudAssessment){
 export function indexBadge(launch){
  const index=cloudIndex(launch);
  // All strings are generated internally; no upstream HTML is interpolated.
- return `<span class="cloud-index ${index.score===null?'pending':index.score>=65?'high':index.score>=35?'medium':'low'}" tabindex="0" title="${index.reason}。${index.reference?'参考轨迹推演；航向和动力学仍有不确定性。':''}${index.limits}">${index.label}${index.reference?'（参考）':''}</span>`;
+ return `<span class="cloud-index ${index.score===null?'pending':index.score>=65?'high':index.score>=35?'medium':'low'}" tabindex="0" title="${index.reason}。${index.reference?'参考轨迹推演；航向和动力学仍有不确定性。':''}${index.limits}">${index.label}${index.reference&&!launch.warningDiscovery?'（参考）':''}</span>`;
 }

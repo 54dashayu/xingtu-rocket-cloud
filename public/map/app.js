@@ -1,7 +1,7 @@
 import {readReportSummary,withReportCount} from './report-summary.js?v=0.03-0021';
 const model3DEnabled=['http:','https:'].includes(location.protocol);
 const task3DUrl=(id,history)=>`./3d/index.html?launch=${encodeURIComponent(id)}&range=${history?'history':'upcoming'}`;
-import { indexBadge } from './cloud-index.js?v=0.03-0015';
+import { indexBadge } from './cloud-index.js?v=0.03-0027';
 import { localizeLaunch } from '../launch-localization.js';
 import { chineseMissionLabel } from '../mission-labels.js?v=0.02';
 import { createMissionCache } from './mission-cache.js?v=0.03-0019';
@@ -12,7 +12,7 @@ import { mountObservationReport } from './observation-report.js?v=0.03-0020';
 import { mountObservationArchive } from './observation-archive.js?v=0.03-0020';
 import { installTianditu } from './tianditu.js?v=0.02';
 import { renderHeadingConstraints, inBearingArc } from './heading-constraints.js?v=0.02';
-import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0015';
+import { renderDataAssessment, assessMissionList } from './data-assessment.js?v=0.03-0027';
 import { areaFill, groundLightTone, AREA_OPACITY, areaLegend } from './area-colors.js?v=20261024ax';
 import { localDateTime, localTimeCandidates, simulationLaunch } from './manual-time.js?v=0.03-0025';
 import { playbackWindow, clampPlayback, TAIL_SECONDS } from './timeline.js?v=20261024ao';

@@ -5,7 +5,7 @@ export function assessmentCopy(result,{historical=false,scenario=false}={}){
  const when=past?'当时':'';
  const counts={clearer:c.clearer||0,mixed:c.mixed||0,obstructed:c.obstructed||0,missing:c.missing||0};
  const total=Object.values(counts).reduce((a,b)=>a+b,0);
- const context=scenario?'按你设置的时间或方向试算':past?'根据发射时的光照和历史天气估算':'根据预计发射时的光照和天气估算';
+ const context=result.noticeWindow?'按航警时间窗和估算方向试算；天气对应采样指数最高的时刻':scenario?'按你设置的时间或方向试算':past?'根据发射时的光照和历史天气估算':'根据预计发射时的光照和天气估算';
  const base={context,total,counts,limited:'只查看了部分参考地点；你所在位置还需结合当地天气和现场遮挡判断。'};
  if(m.code==='pending')return {...base,title:'发射时间或地点还未确定',light:'暂时无法判断哪里适合观看。',weather:'确定发射时间和地点后，再来查看天气建议。'};
  if(m.code==='preliminary')return {...base,title:'飞行资料还不够，暂时无法判断',light:'还不能确定可能观看的范围。',weather:'补充飞行资料后，才能查看相关地点的天气。'};

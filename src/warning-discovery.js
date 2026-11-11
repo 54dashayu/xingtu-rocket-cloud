@@ -42,7 +42,7 @@ export function discoverWarningLaunches(rows,{now=Date.now(),sites=MAJOR_SITES}=
   const start=Math.min(...p.notices.map(n=>n.start)),end=Math.max(...p.notices.map(n=>n.end));
   const ids=p.notices.map(n=>n.row.notam_id).sort();
   const id='notice-'+createHash('sha256').update(p.site.id+'|'+ids.join('|')).digest('hex').slice(0,20);
-  const name=`${p.site.short}疑似发射（待核实）`,net=new Date(start).toISOString();
+  const name=`${p.site.short}发射（待核实）`,net=new Date(start).toISOString();
   out.push({id,uid:id+'@launch-calendar.local',name,originalName:null,rocket:'火箭型号待核实',originalRocket:null,
    timing:{net,windowStart:net,windowEnd:new Date(end).toISOString(),precision:'航警时间窗 · 非点火时间',basis:'notice_window'},
    scheduleStatus:{code:'unverified',label:'待核实任务',upstream:'航警线索'},result:{code:'pending',label:'是否发射待核实',verified:false},
@@ -50,7 +50,7 @@ export function discoverWarningLaunches(rows,{now=Date.now(),sites=MAJOR_SITES}=
    agency:{id:null,name:'发射机构待核实',originalName:null,ownership:'unknown',type:'Unknown'},crewed:null,
    livestream:{available:false,live:false,urls:[]},resources:[],image:null,
    pad:{name:null,location:p.site.name+'（航警推断）',originalLocation:p.site.name,timezone:p.site.timezone,latitude:p.site.latitude,longitude:p.site.longitude},
-   mission:{name,type:'疑似发射',description:'多个短时危险区在时间与方向上吻合。任务、发射场和点火时刻仍待确认；显示时间为航警生效窗口。',orbit:null},
+   mission:{name,type:'待核实发射',description:'多个短时危险区在时间与方向上吻合。任务、发射场和点火时刻仍待确认；显示时间为航警生效窗口。',orbit:null},
    provenance:{kind:'navigation_warning_candidate',label:'航警发现 · 待核实',confidence:'多区域几何线索，非发射公告',confidenceRank:0,siteId:p.site.id},
    warningDiscovery:{noticeIds:ids,headingEstimate:Math.round(p.arc.center*10)/10,headingBasis:'通告区域中心连线估算，非实际航向',notices:p.notices.map(n=>({id:n.row.notam_id,from:n.row.from_utc,to:n.row.to_utc,polygon:n.points,raw:n.row.raw}))},
    sources:[{name:'NOTAM公开聚合 · '+ids.join('、'),url:'https://rocket.rainywhisper.com/notams.csv',role:'reference'}]});

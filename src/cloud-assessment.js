@@ -1,6 +1,8 @@
 import { mapLaunch, preciseTime } from '../public/map/model.js';
 import { simulationProfile } from '../public/map/prediction.js';
 import { visibilityFootprint, visibilitySamples, observerVisibility } from '../public/map/visibility.js';
+import { cloudIndex } from '../public/map/cloud-index.js';
+import { simulationLaunch } from '../public/map/manual-time.js';
 import { weatherAt } from './weather.js';
 const memo=new Map();
 // Spatially spread sample points. These are not a weather raster or population coverage estimate.
@@ -27,6 +29,7 @@ export function modelAssessment(raw,{target=150,observer=null,azimuth,now=Date.n
  if(memo.size>100)memo.delete(memo.keys().next().value);memo.set(key,result);return result;
 }
 export async function assessCloud(launch,options={}){
+ if(launch.timing?.basis==='notice_window'&&!launch.manualScenario)return assessNoticeWindow(launch,options);
  const model=modelAssessment(launch,options);
  // First iOS release is geometry-only: return before any weather provider call.
  if(options.weatherEnabled===false)return {version:'geometry-only-1',launchId:launch.id,net:launch.timing?.net,generatedAt:new Date(options.now??Date.now()).toISOString(),launchSource:launch.sources||[],model,
@@ -41,4 +44,33 @@ export async function assessCloud(launch,options={}){
  const conclusion=model.code!=='possible'?model.label:!available.length?'几何条件符合 · 天气待更新':weather.counts.clearer?'存在遮挡较少的观测采样点':weather.counts.mixed?'几何条件符合 · 天气条件一般':'采样点遮挡风险较高';
  return {version:'geometry-weather-2',launchId:launch.id,net:launch.timing?.net,generatedAt:new Date(options.now??Date.now()).toISOString(),launchSource:launch.sources||[],model,weather,conclusion,
  limits:'天气只评估观测点遮挡；不代表尾迹一定形成或可见。未计算高层大气扩散、散射亮度和视线沿途云层。区域采用最多9个采样点，不是整片区域天气结论。'};
+}
+
+const noticeMemo=new Map();
+// Sample the notice interval, never promote its start to a published ignition time.
+async function assessNoticeWindow(launch,options){
+ const start=Date.parse(launch.timing.windowStart),end=Date.parse(launch.timing.windowEnd),heading=launch.warningDiscovery?.headingEstimate;
+ if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||end-start>7200000||!Number.isFinite(heading)||heading<0||heading>=360){
+  return assessCloud({...launch,manualScenario:true},options);
+ }
+ const key=JSON.stringify([launch,options.target,options.observer,options.weatherEnabled]);
+ const cached=noticeMemo.get(key);if(!options.weatherProvider&&cached&&Date.now()-cached.at<300000)return cached.result;
+ const intervals=Math.ceil((end-start)/300000),samples=[];
+ for(let i=0;i<=intervals;i++){
+  const net=new Date(start+(end-start)*i/intervals).toISOString();
+  const scenario={...simulationLaunch(launch,net),manualScenario:true};
+  const assessment=await assessCloud(scenario,{...options,azimuth:heading,weatherEnabled:false});
+  const index=cloudIndex(mapLaunch(scenario),assessment);
+  samples.push({net,score:index.score,scenario,assessment});
+ }
+ const complete=samples.every(s=>Number.isFinite(s.score));
+ const ranked=samples.filter(s=>Number.isFinite(s.score)).sort((a,b)=>b.score-a.score),best=ranked[0]||samples[0];
+ const result=options.weatherEnabled===false?best.assessment:await assessCloud(best.scenario,{...options,azimuth:heading});
+ const scores=ranked.map(s=>s.score),min=complete?Math.min(...scores):null,max=complete?Math.max(...scores):null;
+ const reason=`按航警窗口采样 ${samples.length} 个时刻，航向参考 ${heading}°；时间窗与方向均非正式发射参数。天气仅对应采样指数最高的参考时刻。`;
+ const windowIndex={score:max,min,max,label:complete?`火箭云指数 ${min===max?max:min+'–'+max}（航警预估）`:'火箭云指数 · 待评估',reason,reference:true,limits:'0–100 分是几何关注指数，不是可见概率。范围为所采样时刻的评分范围，非置信区间；未计天气和未知火箭型号的误差。'};
+ const value={...result,net:launch.timing.net,windowIndex,noticeWindow:{start:launch.timing.windowStart,end:launch.timing.windowEnd,heading,referenceTime:best.net,samples:samples.map(({net,score})=>({net,score}))},limits:reason+' '+result.limits};
+ if(noticeMemo.size>30)noticeMemo.delete(noticeMemo.keys().next().value);
+ if(!options.weatherProvider)noticeMemo.set(key,{at:Date.now(),result:value});
+ return value;
 }

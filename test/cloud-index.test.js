@@ -39,3 +39,27 @@ test('same observer has darkening sunset and brightening dawn, with no eastward 
  assert.equal(scoreObserver(make('2026-03-20T18:10:00Z'),observer).trend,'天色渐暗');
  assert.equal(scoreObserver(make('2026-03-20T06:00:00Z'),observer).trend,'天色渐亮');
 });
+
+import {readFile} from 'node:fs/promises';
+import {discoverWarningLaunches} from '../src/warning-discovery.js';
+import {assessCloud} from '../src/cloud-assessment.js';
+import {mapLaunch,preciseTime,countdown} from '../public/map/model.js';
+test('notice window gets sampled score range without claiming precise launch time or fetching weather',async()=>{
+ const rows=JSON.parse(await readFile(new URL('./fixtures/notices-1119.json',import.meta.url)));
+ const launch=discoverWarningLaunches(rows,{now:Date.parse('2026-11-11T15:00:00Z')})[0],before=JSON.stringify(launch);
+ const a=await assessCloud(launch,{target:150,weatherEnabled:false,weatherProvider:()=>{throw Error('unexpected weather');}});
+ assert.equal(a.noticeWindow.samples.length,7);
+ assert.equal(a.noticeWindow.samples[0].net,launch.timing.windowStart);
+ assert.equal(a.noticeWindow.samples.at(-1).net,launch.timing.windowEnd);
+ assert.ok(a.noticeWindow.samples.every(s=>Number.isFinite(s.score)));
+ assert.equal(a.model.heading,launch.warningDiscovery.headingEstimate);
+ assert.equal(a.windowIndex.min,Math.min(...a.noticeWindow.samples.map(s=>s.score)));
+ assert.equal(a.windowIndex.max,Math.max(...a.noticeWindow.samples.map(s=>s.score)));
+ assert.equal(cloudIndex(mapLaunch(launch),a).score,a.windowIndex.max);
+ assert.match(indexBadge({...mapLaunch(launch),cloudAssessment:a}),/航警预估/);
+ assert.equal(JSON.stringify(launch),before);assert.equal(preciseTime(launch),false);assert.match(countdown(launch),/不作发射倒计时/);
+});
+test('notice without direction remains pending',async()=>{
+ const l={id:'bad-notice',timing:{basis:'notice_window',windowStart:'2026-11-18T22:43:00Z',windowEnd:'2026-11-18T23:10:00Z',net:'2026-11-18T22:43:00Z'}};
+ const a=await assessCloud(l,{weatherEnabled:false});assert.equal(a.model.code,'pending');assert.equal(a.windowIndex,undefined);
+});

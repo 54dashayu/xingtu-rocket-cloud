@@ -143,6 +143,7 @@ export function createLaunchFeed({file, readOnly=false, seed, fetchRange, before
     const f=state?.feeds[range]||{};
     const stale=readFailed||!f.fetchedAt||Boolean(f.partial)||clock()-ms(f.fetchedAt)>= (state?effectiveTtl(range):ttl);
     const launches=(state?.entries||[]).filter(x=>x.range===range && (!isWarningLaunch(x.launch)||ms(x.launch.timing.windowEnd)>clock())).map(x=>({...x.launch,dataRange:range,
+      ...(isWarningLaunch(x.launch)?{name:x.launch.name.replace("疑似发射","发射")}:{}),
       ...(range==='upcoming' && x.launch.result?.code==='pending' && ms(x.launch.timing?.net) && ms(x.launch.timing.net)<clock()
         ? {dataPending:true} : {})}));
     launches.sort((a,b)=>(ms(a.timing?.net)||Infinity)-(ms(b.timing?.net)||Infinity));
