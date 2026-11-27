@@ -15,3 +15,11 @@ test('reference names are marked, identifiers and unknown names preserved', () =
   assert.deepEqual(displayName('长征12A｜第 2 次飞行'), {text: '长征12A｜第 2 次飞行', provisional: false});
 });
 
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const mini=null; // Mini Program is not distributed in this repository.
+test('web and mini program dictionaries remain identical',{skip:'Mini Program source excluded from public repository'}, () => {
+  for (const name of ['Bandwagon 5 (Dedicated Mid-Inclination Rideshare)', 'The Sea God Surveys (iQPS Launch 9)', "We're Not Hawking Around (3x HawkEye 360)", 'SSLV', 'AayulSAT-1A & others', '长征12A']) {
+    if(mini)assert.deepEqual(mini.displayName(name), displayName(name));
+  }
+});

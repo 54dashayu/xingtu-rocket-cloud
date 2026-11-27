@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {visibilitySamples,visibilityFootprint,observerVisibility,jellyfishReferenceHeight} from '../public/map/visibility.js';
+import {visibilitySamples,visibilityFootprint,observerVisibility} from '../public/map/visibility.js';
 import {simulationProfile} from '../public/map/prediction.js';
 import {solarPosition,wrap} from '../public/map/solar.js';
 const l={coordinates:{latitude:38.8583,longitude:111.5802},direction:{kind:'reported_sector',azimuth:225},timing:{net:'2026-10-23T10:15:00Z'}};
@@ -68,10 +68,9 @@ test('low-altitude sunlit trails are eligible before 50 km and observation repor
  const shadowed={...point,height:0.1};
  assert.equal(visibilityFootprint(launch,{...options,profile:{full:[shadowed]}}).cells.length,0,'Earth shadow still excludes an unlit low trail');
 });
-test('high-altitude highlight cannot include future emissions and does not alter ordinary low-altitude visibility',()=>{
+test('explicit height filtering cannot include future emissions and does not alter ordinary low-altitude visibility',()=>{
  const profile=simulationProfile(l,{target:150});
- const height=jellyfishReferenceHeight(profile);
- assert.ok(height>60&&height<80);
+ const height=70; // Explicit geometry filter only, never a morphology threshold.
  const options={profile,persistenceSeconds:300,untilSeconds:profile.duration};
  assert.equal(visibilityFootprint(l,{...options,atSeconds:120,minEmissionHeight:height}).cells.length,0);
  assert.ok(visibilityFootprint(l,{...options,atSeconds:120,minElevation:1}).cells.length>0);

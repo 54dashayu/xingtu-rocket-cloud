@@ -1,13 +1,7 @@
-import { flightProfile } from './flight-path.js?v=0.03-0031';
-import { distanceKm, horizonKm, isSunlit } from './model.js?v=20261024ad';
-import { solarPosition, altitudeAt, rad, deg, wrap } from './solar.js?v=20261024ad';
+import { flightProfile } from './flight-path.js?v=0.03-0035';
+import { distanceKm, horizonKm, isSunlit } from './model.js?v=0.03-0035';
+import { solarPosition, altitudeAt, rad, deg, wrap } from './solar.js?v=0.03-0035';
 const R=6371;
-// Highlight onset follows the simulated separation altitude when available.
-// A sourced path without staging information uses the generic separation-height reference,
-// not an asserted separation event for that mission. Neither predicts cloud morphology.
-export function jellyfishReferenceHeight(profile){
- return Number.isFinite(profile.plumeStartHeight)&&profile.plumeStartHeight>0?profile.plumeStartHeight:70;
-}
 export function elevationAt(observer,point){
  const angle=distanceKm(observer,point)/R;
  return deg(Math.atan2((R+point.height)*Math.cos(angle)-R,(R+point.height)*Math.sin(angle)));

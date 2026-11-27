@@ -11,9 +11,9 @@ const FACILITY_COORDINATES = [
   [/安岛|Andøya/i, [69.29, 16.02]], [/萨克萨沃德|SaxaVord/i, [60.82, -0.88]]
 ];
 
-import { solarAltitude } from './solar.js?v=20261024ad';
-import { localSunContext } from './sun-events.js?v=20261024ad';
-export { solarAltitude } from './solar.js?v=20261024ad';
+import { solarAltitude } from './solar.js?v=0.03-0035';
+import { localSunContext } from './sun-events.js?v=0.03-0035';
+export { solarAltitude } from './solar.js?v=0.03-0035';
 
 export function launchCoordinates(pad = {}) {
   pad ||= {};

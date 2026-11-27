@@ -1,9 +1,9 @@
-import {playbackWindow} from '../map/timeline.js?v=0.03-0031';
-import {mapLaunch} from '../map/model.js';
-import {simulationProfile} from '../map/prediction.js?v=0.03-0031';
-import {visibilitySamples,visibilityFootprint,elevationAt,parcelVisibility} from '../map/visibility.js?v=0.03-0015';
-import {solarPosition,altitudeAt} from '../map/solar.js';
-import {sunEvents} from '../map/sun-events.js';
+import {playbackWindow} from '../map/timeline.js?v=0.03-0035';
+import {mapLaunch} from '../map/model.js?v=0.03-0035';
+import {simulationProfile} from '../map/prediction.js?v=0.03-0035';
+import {visibilitySamples,visibilityFootprint,elevationAt,parcelVisibility} from '../map/visibility.js?v=0.03-0035';
+import {solarPosition,altitudeAt} from '../map/solar.js?v=0.03-0035';
+import {sunEvents} from '../map/sun-events.js?v=0.03-0035';
 export {solarPosition,altitudeAt,elevationAt};
 export const R=6371;
 export function xyz(p,scale=1){const a=p.latitude*Math.PI/180,b=p.longitude*Math.PI/180,r=1+(p.height||0)*scale/R;return [r*Math.cos(a)*Math.cos(b),r*Math.sin(a),-r*Math.cos(a)*Math.sin(b)];}

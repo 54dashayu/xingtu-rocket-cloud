@@ -1,4 +1,4 @@
-import { MAJOR_SITES } from './sites.js';
+import { MAJOR_SITES } from './sites.js?v=0.03-0035';
 // SVG map navigation. Convert client coordinates through the root SVG matrix so
 // dragging and zoom anchors also work in the letterboxed parts of the map.
 export function installMapNavigation({world, viewport, zoomIn, zoomOut, reset, back, onExitFocus, onChange, onInteract}) {

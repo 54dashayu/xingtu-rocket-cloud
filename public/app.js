@@ -1,8 +1,12 @@
+import {createMissionCache} from './map/mission-cache.js?v=0.03-0036';
+const readMissions=createMissionCache();
+const datasets=new Map();
+import {propulsionSummary,propulsionDetails} from './map/propulsion-view.js?v=0.03-0035';
 const model3DEnabled=['http:','https:'].includes(location.protocol);
 const task3DUrl=(id,history)=>`./3d/index.html?launch=${encodeURIComponent(id)}&range=${history?'history':'upcoming'}`;
-import { localizeLaunch } from './launch-localization.js';
-import { cloudStatus } from './cloud-status.js?v=20261024r';
-import { displayName } from './name-display.js?v=20261016';
+import { localizeLaunch } from './launch-localization.js?v=0.03-0035';
+import { cloudStatus } from './cloud-status.js?v=0.03-0035';
+import { displayName } from './name-display.js?v=0.03-0035';
 const $ = (selector) => document.querySelector(selector);
 const state = { launches: [], timer: null, view: 'upcoming', loadToken: 0 };
 const basePath = location.pathname.startsWith('/launch-calendar/') ? '/launch-calendar'
@@ -38,7 +42,7 @@ function historyResourcesFor(launch) {
 }
 function rocketCloudHint(launch) {
   const cloud=cloudStatus(launch);
-  if(cloud.code!=='observed')return '';
+  if(!['observed','reminder','retrospective'].includes(cloud.code))return '';
   return `<span class="rocket-cloud rocket-cloud-${cloud.code}" title="${escapeHtml(cloud.description)}">☁ ${escapeHtml(cloud.label)}</span>`;
 }
 
@@ -60,19 +64,13 @@ function card(launch) {
     : `<div class="time uncertain-time"><div class="date-box"><small>计划</small><strong>待定</strong></div><div><strong>${escapeHtml(launch.timing.precision || '时间待定')}</strong><small>以公开来源后续更新为准</small></div></div>`;
   return `<article class="launch-card" data-id="${launch.id}" tabindex="0" style="--accent:${launch.crewed ? '#39d6d1' : '#ff6935'}">
     <div class="card-top"><span class="flag">${flag(launch.country.code)} ${escapeHtml(launch.country.name)}</span><span class="${history ? 'result' : 'status'} ${history ? launch.result.code : launch.scheduleStatus.code}">${escapeHtml(history ? launch.result.label : launch.scheduleStatus.label)}</span></div>
-    <h3>${nameHtml(launch.name)}</h3><div class="meta">${nameHtml(launch.rocket)}${launch.crewed ? ' · 👨‍🚀 载人任务' : ''}${launch.livestream.available ? ' · ◉ 有直播' : ''}</div><div class="location">◎ ${escapeHtml(launch.pad.location || launch.pad.name || '发射地点待定')}</div>
+    <h3>${nameHtml(launch.name)}</h3><div class="meta">${nameHtml(launch.rocket)}${launch.crewed ? ' · 👨‍🚀 载人任务' : ''}${launch.livestream.available ? ' · ◉ 有直播' : ''}</div><div class="propulsion-summary">${propulsionSummary(launch)}</div><div class="location">◎ ${escapeHtml(launch.pad.location || launch.pad.name || '发射地点待定')}</div>
     ${history ? time.replace(/<div class="countdown"[^>]*>.*?<\/div>/, '<div class="countdown">实际发射记录</div>') : time}
     <div class="card-foot"><span class="agency">${escapeHtml(launch.agency.name)} · ${escapeHtml(launch.agency.ownership === 'private' ? '民营/商业' : launch.agency.ownership === 'state' ? '国营/政府' : '未分类')}</span><span class="card-cloud-status">${rocketCloudHint(launch)}${model3DEnabled&&cloudStatus(launch).code===(history?'observed':'reminder')?`<a class="launch-3d" data-resource href="${task3DUrl(launch.id,history)}" aria-label="3D模型：${escapeHtml(launch.name)}">3D模型</a>`:''}${history ? historyResourceHint : ''}</span></div>${historyResourceLinks}
   </article>`;
 }
 
-function queryString() {
-  const params = new URLSearchParams({ days: '30' });
-  for (const id of ['region', 'ownership', 'crewed', 'q']) { const value = $(`#${id}`).value.trim(); if (value && value !== 'all') params.set(id, value); }
-  return params.toString();
-}
-
-function cacheKey() { return `launch-calendar:${state.view}:${queryString()}:v1`; }
+function cacheKey() { return `launch-calendar:${state.view}:all:v2`; }
 function readSnapshot() {
   try { return JSON.parse(localStorage.getItem(cacheKey()) || 'null'); } catch { return null; }
 }
@@ -80,42 +78,45 @@ function writeSnapshot(data) {
   try { localStorage.setItem(cacheKey(), JSON.stringify({ ...data, cachedAt: Date.now() })); } catch { /* 存储不可用时仍正常联网加载 */ }
 }
 function render(data, cached = false) {
-  data = {...data, results: data.results.map(localizeLaunch)};
+  const region=$('#region').value,ownership=$('#ownership').value,crew=$('#crewed').value,q=$('#q').value.trim().toLowerCase();
+  const results=data.results.map(localizeLaunch).filter(l=>(!region||l.region===region)&&(!ownership||l.agency.ownership===ownership)&&(crew==='all'||(crew==='unknown'?typeof l.crewed!=='boolean':(crew==='true')===l.crewed))&&(!q||[l.name,l.originalName,l.rocket,l.originalRocket,l.agency.name,l.agency.originalName,l.mission?.name,l.pad.location].some(v=>v?.toLowerCase().includes(q))));
+  data = {...data, results};
   state.launches = data.results;
   const next = data.results.find((launch) => launch.timing.net && launch.timing.basis!=='notice_window');
-  $('#count').textContent = data.meta.count; $('#next-time').textContent = state.view === 'history' ? '已完成' : (next ? countdown(next.timing.net) : '--');
-  const suffix = cached || data.meta.refreshing ? '（缓存已显示，正在刷新）' : data.meta.stale ? '（缓存）' : '';
+  $('#count').textContent = data.results.length; $('#next-time').textContent = state.view === 'history' ? '已完成' : (next ? countdown(next.timing.net) : '--');
+  const suffix = cached ? '（本次更新中）' : data.meta.stale || data.meta.refreshing || data.meta.clientUpdate ? '（已保留缓存，可手动刷新）' : '';
   const warning = data.meta.warning ? ` · ${data.meta.warning}` : '';
-  $('#updated').textContent = `数据更新：${formatter.format(new Date(data.meta.fetchedAt))}${suffix}${warning}`;
+  $('#updated').textContent = `数据更新：${(data.meta.fetchedAt?formatter.format(new Date(data.meta.fetchedAt)):'时间待确认')}${suffix}${warning}`;
   $('#launches').innerHTML = data.results.length ? data.results.map(card).join('') : '<div class="empty">暂无符合条件的近期任务。</div>';
 }
 
-async function load({quiet=false}={}) {
-  const token = ++state.loadToken;
-  const snapshot = readSnapshot();
-  if (!quiet && snapshot?.results && snapshot?.meta) render(snapshot, true);
-  else if(!quiet) $('#launches').innerHTML = '<div class="loading">正在读取发射数据…</div>';
-  try {
-    const endpoint = state.view === 'history' ? '/api/launches/previous' : '/api/launches';
-    const response = await fetch(`${basePath}${endpoint}?${queryString()}`, {cache:"no-store",signal:AbortSignal.timeout(20000)});
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    // 切换视图时，较慢的旧请求不能覆盖当前列表。
-    if (token !== state.loadToken) return;
-    writeSnapshot(data);
-    render(data);
-  } catch (error) {
-    if (token !== state.loadToken) return;
-    // 已有本地快照时保留可读内容，避免一次网络失败把历史列表替换为错误页。
-    if (snapshot?.results && snapshot?.meta) {
-      $('#updated').textContent = `数据更新：${formatter.format(new Date(snapshot.meta.fetchedAt))}（本地缓存；更新稍后自动重试）`;
-      return;
-    }
-    $('#launches').innerHTML = `<div class="error">暂时无法获取数据。<br><small>${escapeHtml(error.message)}</small></div>`;
-  }
+function renderCurrent(){const data=datasets.get(state.view);if(data)render(data);}
+async function load({force=false}={}) {
+  const token=++state.loadToken,view=state.view;
+  const snapshot=datasets.get(view)||readSnapshot();
+  if(snapshot?.results&&snapshot?.meta){datasets.set(view,snapshot);render(snapshot,true);}
+  else $('#launches').innerHTML='<div class="loading">正在读取发射数据…</div>';
+  $('#refresh').disabled=true;
+  const apply=(data,interim=false)=>{
+    if(token!==state.loadToken)return;
+    datasets.set(view,data);writeSnapshot(data);render(data,interim);
+  };
+  try{
+    const endpoint=view==='history'?'/api/launches/previous':'/api/launches';
+    const data=await readMissions(`${basePath}${endpoint}?days=30`,{force,onSnapshot:data=>{if(!snapshot)apply(data,true);}});
+    apply(data);
+  }catch(error){
+    if(token!==state.loadToken)return;
+    const available=datasets.get(view);
+    if(available){render(available);$('#updated').textContent+=' · 更新失败，保留当前列表，可手动刷新';}
+    else $('#launches').innerHTML=`<div class="error">暂时无法获取数据。<br><small>${escapeHtml(error.message)}</small></div>`;
+  }finally{if(token===state.loadToken)$('#refresh').disabled=false;}
 }
 
+let detailRequest;
 function showDetail(launch) {
+  detailRequest?.abort();
+  const request=detailRequest=new AbortController();
   const body = $('#detail-body');
   const scheduled = Boolean(launch.timing.net);
   const time = launch.timing.basis==='notice_window' ? `${formatter.format(new Date(launch.timing.windowStart))}—${formatter.format(new Date(launch.timing.windowEnd))} 北京时间` : scheduled
@@ -135,14 +136,19 @@ function showDetail(launch) {
     : '';
   body.innerHTML = `<p class="eyebrow dark">${flag(launch.country.code)} ${escapeHtml(launch.country.name)} · ${escapeHtml(status)}</p><h2>${nameHtml(launch.name)}</h2>
     <p class="detail-time"><small>${timeLabel}</small><br>${time}</p>${rocketCloud}${provenance}<p>${escapeHtml(launch.mission.description || '任务详情待发布。')}</p>
-    <div class="detail-grid"><div><small>发射机构</small>${escapeHtml(launch.agency.name)}</div><div><small>运载火箭</small>${nameHtml(launch.rocket)}</div><div><small>发射场</small>${escapeHtml(launch.pad.location || launch.pad.name || '待定')}</div><div><small>时间精度</small>${escapeHtml(launch.timing.precision || '未知')}</div></div>
+    <div class="detail-grid"><div><small>发射机构</small>${escapeHtml(launch.agency.name)}</div><div><small>载人属性</small>${escapeHtml(launch.crewLabel||(launch.crewed===true?'载人任务':launch.crewed===false?'非载人任务':'待核实'))}</div><div><small>运载火箭</small>${nameHtml(launch.rocket)}</div><div><small>发射场</small>${escapeHtml(launch.pad.location || launch.pad.name || '待定')}</div><div><small>时间精度</small>${escapeHtml(launch.timing.precision || '未知')}</div></div>
     <div class="detail-grid"><div><small>火箭原名</small>${escapeHtml(launch.originalRocket || '上游未提供')}</div><div><small>载荷／任务原名</small>${escapeHtml(launch.mission.originalName || '上游未提供')}</div><div><small>完整发射名称（原文）</small>${escapeHtml(launch.originalName || '上游未提供')}</div></div>
-    <p><strong>来源与核验</strong></p><div class="source-list">${launch.sources.map((source) => `<a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.name)} ↗</a>`).join('')}</div>${resourceBlock}
+    ${propulsionDetails(launch)}<details><summary id="detail-index">火箭云指数评估中…</summary><p id="detail-index-note"></p></details><p><strong>来源与核验</strong></p><div class="source-list">${launch.sources.map((source) => `<a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.name)} ↗</a>`).join('')}</div>${resourceBlock}
     <p class="notice">${state.view === 'history' ? '实际结果以来源记录为准，后续可能补充任务详情。' : '发射计划可能随时变动，请在活动前再次核对。'}</p>`;
   $('#detail').showModal();
+  fetch(`${basePath}/api/launches/${encodeURIComponent(launch.id)}/cloud-assessment?weather=off&range=${state.view}`,{signal:request.signal}).then(async r=>{if(!r.ok)throw Error();return r.json();}).then(r=>{
+    if(detailRequest!==request||r.launchId!==launch.id||r.net!==launch.timing.net)return;
+    $('#detail-index').textContent=r.index?.label||'火箭云指数暂未取得';
+    $('#detail-index-note').textContent=[r.index?.reason,r.index?.limits].filter(Boolean).join('。');
+  }).catch(e=>{if(e.name!=='AbortError'&&detailRequest===request)$('#detail-index').textContent='火箭云指数暂未取得';});
 }
 
-for (const id of ['region', 'ownership', 'crewed']) $(`#${id}`).addEventListener('change', load);
+for (const id of ['region', 'ownership', 'crewed']) $(`#${id}`).addEventListener('change', renderCurrent);
 function setView(view) {
   state.view = view;
   const history = view === 'history';
@@ -154,9 +160,10 @@ function setView(view) {
   $('#calendar-all').hidden = false;
   load();
 }
+$('#refresh').addEventListener('click',()=>void load({force:true}));
 $('#view-upcoming').addEventListener('click', () => setView('upcoming'));
 $('#view-history').addEventListener('click', () => setView('history'));
-let searchTimer; $('#q').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(load, 250); });
+let searchTimer; $('#q').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(renderCurrent, 250); });
 $('#launches').addEventListener('click', (event) => { if (event.target.closest('[data-resource]')) return; const item = event.target.closest('[data-id]'); if(item){showDetail(state.launches.find((launch)=>launch.id===item.dataset.id));} });
 $('#launches').addEventListener('keydown', (event) => { if (event.key === 'Enter') event.target.click(); });
 $('#detail .close').addEventListener('click', () => $('#detail').close());
@@ -170,5 +177,5 @@ setInterval(() => { if (state.view !== 'upcoming') return; document.querySelecto
 if ('serviceWorker' in navigator) navigator.serviceWorker.register(`${basePath}/sw.js`).catch(() => {});
 load();
 
-setInterval(()=>{if(!document.hidden)void load({quiet:true});},60000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)void load({quiet:true});});
+
+

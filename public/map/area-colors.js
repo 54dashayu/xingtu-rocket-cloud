@@ -1,7 +1,6 @@
 // Shared paint colors and alpha; disjoint cells avoid stacking opacity.
 export const AREA_OPACITY=.48;
 export const AREA_COLORS=Object.freeze({
- jellyfish:{color:'#376bad',label:'水母云关注区',detail:'分离阶段参考高度以上 · 仰角≥5°'},
  higher:{color:'#668fb7',label:'较暗天空',detail:'太阳低于−6° · 仰角≥5°'},
  twilight:{color:'#8db3d4',label:'暮光天空',detail:'太阳−6°至−1° · 仰角≥5°'},
  low:{color:'#b9d4e5',label:'低仰角边缘',detail:'仰角1–5° · 易遮挡'}

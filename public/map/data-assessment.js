@@ -1,22 +1,25 @@
-import { installWeatherPlaces } from './weather-place.js?v=0.03-0031';
-import { populationCopy } from './population-display.js';
-import { cloudIndex } from './cloud-index.js?v=0.03-0031';
-import { assessmentCopy } from './assessment-copy.js?v=0.03-0027';
+import {ASSESSMENT_VERSION} from './morphology.js?v=0.03-0035';
+import { installWeatherPlaces,weatherLocationHTML,coordinatesLabel } from './weather-place.js?v=0035-weather-place1';
+import { populationCopy } from './population-display.js?v=0.03-0035';
+import { cloudIndex } from './cloud-index.js?v=0.03-0035';
+import { assessmentCopy } from './assessment-copy.js?v=0.03-0035';
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const geometryOnly=/Xingtu\/ios\//.test(globalThis.navigator?.userAgent||'');
 const requests=new Map();let sequence=0,queueGeneration=0;
-const assessmentURL=(launch,target,historical,scenario=false,azimuth)=>`./api/launches/${encodeURIComponent(launch.id)}/cloud-assessment?${geometryOnly?'weather=off&':''}range=${historical?'history':'upcoming'}&target=${target}&net=${encodeURIComponent(launch.timing?.net||'')}${scenario&&launch.manualTime?'&simulationTime='+encodeURIComponent(launch.timing.net):''}${scenario&&Number.isFinite(azimuth)?'&azimuth='+azimuth:''}`;
+const assessmentURL=(launch,target,historical,scenario=false,azimuth)=>`./api/launches/${encodeURIComponent(launch.id)}/cloud-assessment?model=${encodeURIComponent(ASSESSMENT_VERSION)}&${geometryOnly?'weather=off&':''}range=${historical?'history':'upcoming'}&target=${target}&net=${encodeURIComponent(launch.timing?.net||'')}${scenario&&launch.manualTime?'&simulationTime='+encodeURIComponent(launch.timing.net):''}${scenario&&Number.isFinite(azimuth)?'&azimuth='+azimuth:''}`;
 function request(url){
  let entry=requests.get(url);if(!entry||Date.now()-entry.time>300000){
-  entry={time:Date.now(),promise:fetch(url,{signal:AbortSignal.timeout(45000)}).then(async response=>{if(!response.ok)throw Error(`HTTP ${response.status}`);return response.json();})};requests.set(url,entry);
-  entry.promise.catch(()=>requests.delete(url));
+  entry={time:Date.now(),promise:fetch(url,{signal:AbortSignal.timeout(45000)}).then(async response=>{if(!response.ok)throw Error(`HTTP ${response.status}`);const result=await response.json();if(result.assessmentVersion!==ASSESSMENT_VERSION)throw Error("评估模型已更新，请稍后重试");return result;})};requests.set(url,entry);
+  entry.promise.catch(()=>{if(requests.get(url)===entry)requests.delete(url);});
  }return entry.promise;
 }
 // Evaluate each loaded mission without blocking the calendar; no report search is involved.
-export async function assessMissionList(launches,historical,onResult){
+export function invalidateAssessments(){requests.clear();queueGeneration++;sequence++;}
+export async function assessMissionList(launches,historical,onResult,{force=false}={}){
  const generation=++queueGeneration;
  for(const launch of launches){
   if(generation!==queueGeneration)return;
+  if(!force&&launch.cloudAssessment?.net===launch.timing?.net)continue;
   try{const r=await request(assessmentURL(launch,0,historical));if(generation!==queueGeneration)return;if(r.net===launch.timing?.net)onResult(launch,r);}catch{}
  }
 }
@@ -32,7 +35,7 @@ export function renderDataAssessment(box,{launch,target,historical,scenario,azim
   if(r.net!==launch.timing?.net){body.textContent='发射时刻已更新，请刷新任务列表后重新评估。';return;}
   const index=cloudIndex(launch,r);
   const w=r.weather,copy=assessmentCopy(r,{historical,scenario});
-  body.innerHTML=`${!historical&&!scenario?`<details class="index-explanation"><summary>${escape(index.label)} · 查看依据</summary><p>${escape(index.reason)}</p><p>${escape(index.limits)}</p><p class="population-context">正在查询场址周边人口分布…</p><p>天色、尾迹受光和仰角逐时联合计算；傍晚变暗与清晨变亮自然进入评分，不给向东发射或人口更多的地区额外加分。${index.reference?"当前使用参考轨迹，非任务实测。":""}</p></details>`:""}<p><strong>${escape(copy.title)}</strong></p><p class="assessment-context">${escape(copy.context)}</p><p>${escape(copy.light)}</p><p>${escape(copy.weather)}</p>${copy.total?`<small>${escape(copy.limited)}</small>`:''}<details class="weather-locations"><summary>查看各地点天气与数据来源</summary><small>发射：${escape(r.launchData?.source||'Launch Library 2')} · ${r.launchData?.stale?'缓存待更新':'已获取'}<br>更新：${escape(r.launchData?.fetchedAt||'—')}<br>天气：Open-Meteo · ${escape(w.label)}<br>${escape(r.limits)}</small>${w.samples.map(p=>`<p class="weather-point"><span data-weather-place data-lat="${p.latitude}" data-lon="${p.longitude}" data-coordinates="${p.latitude.toFixed(1)}°, ${p.longitude.toFixed(1)}°">${p.latitude.toFixed(1)}°, ${p.longitude.toFixed(1)}°</span> · ${escape(p.label)}<br><small>云量 ${p.values.cloud_cover??'—'}% · 降水 ${p.values.precipitation??'—'} mm · 能见度 ${p.values.visibility==null?'缺测':(p.values.visibility/1000).toFixed(1)+' km'}<br>${escape(p.time||'无对应时次')}（UTC）</small></p>`).join('')}<small>云量 ≤30% 且无明显降水为遮挡较少；云量 ≥80%、降水 ≥1 mm/h 或能见度 &lt;5 km 为遮挡风险较高。属于观测筛选规则，不是出现概率。</small><p><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">天气数据：Open-Meteo</a></p></details><button type="button" class="retry-assessment">重新查看</button>`;
+  body.innerHTML=`${!historical&&!scenario?`<details class="index-explanation"><summary>${escape(index.label)} · 查看依据</summary><p>${escape(index.reason)}</p><p>${escape(index.limits)}</p><p class="population-context">正在查询场址周边人口分布…</p><p>天色、尾迹受光和仰角逐时联合计算；傍晚变暗与清晨变亮自然进入评分，不给向东发射或人口更多的地区额外加分。${index.reference?"当前使用参考轨迹，非任务实测。":""}</p></details>`:""}<p><strong>${escape(copy.title)}</strong></p><p class="assessment-context">${escape(copy.context)}</p><p>${escape(copy.light)}</p><p>${escape(copy.weather)}</p>${copy.total?`<small>${escape(copy.limited)}</small>`:''}<details class="weather-locations" style="overflow-wrap:anywhere"><summary>查看各地点天气与数据来源</summary><small>城市方位仅供定位，天气按原坐标采样。</small><small>发射：${escape(r.launchData?.source||'Launch Library 2')} · ${r.launchData?.stale?'缓存待更新':'已获取'}<br>更新：${escape(r.launchData?.fetchedAt||'—')}<br>天气：Open-Meteo · ${escape(w.label)}<br>${escape(r.limits)}</small>${w.samples.map(p=>`<p class="weather-point">${weatherLocationHTML(p)} · ${escape(p.label)}<br><small>云量 ${p.values.cloud_cover??'—'}% · 降水 ${p.values.precipitation??'—'} mm · 能见度 ${p.values.visibility==null?'缺测':(p.values.visibility/1000).toFixed(1)+' km'}<br>${escape(p.time||'无对应时次')}（UTC）</small></p>`).join('')}<details class="weather-sample-coordinates"><summary>原始采样坐标</summary>${w.samples.map(p=>`<p>${escape(coordinatesLabel(p.latitude,p.longitude))}</p>`).join('')}</details><small>云量 ≤30% 且无明显降水为遮挡较少；云量 ≥80%、降水 ≥1 mm/h 或能见度 &lt;5 km 为遮挡风险较高。属于观测筛选规则，不是出现概率。</small><p><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">天气数据：Open-Meteo</a></p></details><button type="button" class="retry-assessment">重新查看</button>`;
   if(w.status==='disabled'){
    box.querySelector('.rating-limit').textContent='光照与几何';
    body.innerHTML=`<p><strong>${escape(r.model.label)}</strong></p><p>${historical&&!scenario?'根据发射时刻':'根据设定的发射时刻'}分析阳光、地影和观测角度。</p><p>此版本未提供天气预测，请结合当地天气与现场遮挡判断。</p><small>${escape(r.limits)}</small><details><summary>数据来源与说明</summary><p>发射：${escape(r.launchData?.source||'Launch Library 2')}<br>更新：${escape(r.launchData?.fetchedAt||'—')}</p><p>${escape(index.limits)}</p></details><button type="button" class="retry-assessment">重新分析</button>`;

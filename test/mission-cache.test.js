@@ -3,16 +3,16 @@ import assert from 'node:assert/strict';
 import {createMissionCache} from '../public/map/mission-cache.js';
 import {chineseMissionLabel} from '../public/mission-labels.js';
 import {translateMissionName,translateRocket} from '../src/translate.js';
-test('preload and replay share one request, refresh and expiry renew it',async()=>{
+test('preload and replay share one request, refresh renews it and elapsed time alone does not',async()=>{
  let calls=0,now=0;
- const read=createMissionCache(async()=>{calls++;return{ok:true,json:async()=>({results:[]})};},()=>now);
+ const read=createMissionCache(async()=>{calls++;return{ok:true,json:async()=>({results:[],meta:{}})};},()=>now);
  const a=read('/history'),b=read('/history');assert.equal(a,b);await a;
  await read('/history');assert.equal(calls,1);
  await read('/history',{force:true});assert.equal(calls,2);
- now=300001;await read('/history');assert.equal(calls,3);
+ now=300001;await read('/history');assert.equal(calls,2);
 });
 test('failed preloads can retry',async()=>{
- let count=0;const read=createMissionCache(async()=>({ok:++count>1,status:503,json:async()=>({results:[]})}));
+ let count=0;const read=createMissionCache(async()=>({ok:++count>1,status:503,json:async()=>({results:[],meta:{}})}));
  await assert.rejects(read('/history'));await read('/history');assert.equal(count,2);
 });
 test('calendar and map use the same Smart Dragon and SatNet Chinese names',()=>{

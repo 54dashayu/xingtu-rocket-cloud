@@ -1,7 +1,8 @@
-import { mountPublicReports } from './public-reports.js?v=0.03-0020';
-import { loadArchiveRecords } from './archive-evidence.js?v=0.02';
-import { cloudStatus } from '../cloud-status.js?v=20261024ba';
-import { appendArchiveMedia } from './archive-media.js?v=0.03-0020';
+import {propulsionInfo} from './propulsion.js?v=0.03-0035';
+import { mountPublicReports } from './public-reports.js?v=0.03-0035';
+import { loadArchiveRecords } from './archive-evidence.js?v=0.03-0035';
+import { cloudStatus } from '../cloud-status.js?v=0.03-0035';
+import { appendArchiveMedia } from './archive-media.js?v=0.03-0035';
 export function archivePeriod(time, now = Date.now()) {
   const age = now - Date.parse(time);
   return !Number.isFinite(age) || age < 0 ? 'future' : age <= 365 * 86400000 ? 'year' : 'older';
@@ -17,7 +18,7 @@ export function archiveTasks(launches, records) {
     const time=launch.timing?.net||launch.net;
     if((!confirmed&&!reports)||archivePeriod(time)==='future')continue;
     const old=items.get(launch.id);
-    items.set(launch.id,{...old,id:launch.id,name:launch.name,time,place:old?.place||'未公开',site:launch.pad?.location,confirmed:confirmed||old?.confirmed||false,reports,sources:old?.sources||launch.cloudEvidence?.observation?.sources||[]});
+    items.set(launch.id,{...old,id:launch.id,name:launch.name,time,place:old?.place||'未公开',site:launch.pad?.location,propulsion:propulsionInfo(launch).summary,confirmed:confirmed||old?.confirmed||false,reports,sources:old?.sources||launch.cloudEvidence?.observation?.sources||[]});
   }
   return [...items.values()].sort((a,b)=>Date.parse(b.time)-Date.parse(a.time));
 }
@@ -39,6 +40,7 @@ export async function mountObservationArchive(container,{onReplay,loadTasks=asyn
     card.append(summary,body);
     summary.append(node('h3',item.name),node('p',`${item.confirmed?'媒体证实':''}${item.confirmed&&item.reports?' · ':''}${item.reports?'有用户报告 '+item.reports+' 条（含待核对关联）':''}`,'archive-evidence-label'));
     summary.append(node('p',new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(item.time))+' 北京时间','archive-source-time'));
+    summary.append(node('p',item.propulsion||'推进剂待核实','propulsion-summary'));
     if(item.site)summary.append(node('p','发射地点：'+item.site));
     summary.append(node('span','查看详情与照片','archive-open-hint'));
     body.append(node('p','观测地点：'+item.place));

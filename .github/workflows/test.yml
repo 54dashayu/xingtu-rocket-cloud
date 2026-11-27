@@ -11,7 +11,11 @@ jobs:
         with:
           node-version: '22'
       - run: npm run verify
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: python3 -m pip install -r analytics/requirements.txt
       - run: npm run test:3d
+      - run: npm run test:android-adapter
       - run: python3 -m unittest discover -s analytics/tests -v
       - run: node --test analytics/tests/tracker.test.cjs

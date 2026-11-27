@@ -1,9 +1,9 @@
-import { hasReplayEvidence } from './archive-evidence.js?v=0.02';
-import { heightPreset } from './height-presets.js?v=0.03-0031';
-import { headingEstimate } from './heading-estimate.js?v=20261024ad';
-import { flightProfile } from './flight-path.js?v=0.03-0031';
-import { poweredFlight, ascentToHeight, interpolateState, stageSchedule, engineState } from './ascent-dynamics.js?v=0.03-0031';
-import { destination, preciseTime } from './model.js?v=20261024al';
+import { hasReplayEvidence } from './archive-evidence.js?v=0.03-0035';
+import { heightPreset } from './height-presets.js?v=0.03-0035';
+import { headingEstimate } from './heading-estimate.js?v=0.03-0035';
+import { flightProfile } from './flight-path.js?v=0.03-0035';
+import { poweredFlight, ascentToHeight, interpolateState, engineState } from './ascent-dynamics.js?v=0.03-0035';
+import { destination, preciseTime } from './model.js?v=0.03-0035';
 export function simulationProfile(launch,{target=0,elapsed=Infinity,azimuth=headingEstimate(launch).azimuth,rangeFactor=1,historical=false}={}){
  heightPreset(target);
  const sourced=flightProfile(launch,{target,elapsed,preferFinalCutoff:historical||target===0});
@@ -18,13 +18,9 @@ export function simulationProfile(launch,{target=0,elapsed=Infinity,azimuth=head
  if(!solution.reached)return {...sourced,reason:'参考动力学未到达所选高度，不延伸轨迹'};
  // Non-unit scaling is an offline sensitivity scenario, not a physics integration result.
  const full=solution.full.map(p=>({...p,emitting:engineState(p.seconds).thrust>0})).map(p=>rangeFactor===1?{...p}:{...p,...destination(launch.coordinates,azimuth,p.downrange*rangeFactor),downrange:p.downrange*rangeFactor});
- // The reference vehicle's first stage separation supplies a display onset only.
- // It is not a recovered vehicle-specific separation altitude or cloud morphology threshold.
- const separation=solution.raw.find(p=>p.seconds>=stageSchedule().separation);
- const plumeStartHeight=separation?.height??null;
  const duration=solution.duration,t=Math.min(duration,Math.max(0,elapsed)),points=full.filter(p=>p.seconds<=t);
  if(points.at(-1)?.seconds!==t){const b=full.find(p=>p.seconds>t),a=points.at(-1);if(a&&b)points.push({...interpolateState(a,b,t),emitting:engineState(t).thrust>0});}
- return {full,points,duration,elapsed:t,range:full.at(-1).downrange,target:full.at(-1).height,requestedTarget:target,...(target===0?{endpointKind:'reference-final-cutoff'}:{}),reached:true,kind:'predicted',label:'上升段动力学模拟',azimuth,source:null,method:'reference-ecef-rk4',parameters:'generic-two-stage',plumeStartHeight,rangeScaled:rangeFactor!==1};
+ return {full,points,duration,elapsed:t,range:full.at(-1).downrange,target:full.at(-1).height,requestedTarget:target,...(target===0?{endpointKind:'reference-final-cutoff'}:{}),reached:true,kind:'predicted',label:'上升段动力学模拟',azimuth,source:null,method:'reference-ecef-rk4',parameters:'generic-two-stage',rangeScaled:rangeFactor!==1};
 }
 
 // Match the analysis/playback prerequisites instead of showing a dead historical 3D entry.

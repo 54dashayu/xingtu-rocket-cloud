@@ -1,4 +1,4 @@
-import { localizeName, hasReferenceTranslation } from './launch-localization.js';
+import { localizeName, hasReferenceTranslation } from './launch-localization.js?v=0.03-0035';
 // 网页显示层词典；通用描述直接翻译，专有名称参考译法单独标记。
 // 与小程序共用显示规则；保留原文与计划状态。
 const descriptiveRules = [

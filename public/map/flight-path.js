@@ -1,4 +1,4 @@
-import { heightPreset } from './height-presets.js?v=0.03-0031';
+import { heightPreset } from './height-presets.js?v=0.03-0035';
 // Mission-specific geodetic samples. No default range, heading, or ballistic curve.
 const wrap=x=>((x+180)%360+360)%360-180;
 export function validFlightData(launch){

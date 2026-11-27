@@ -1,4 +1,4 @@
-import {prepareReportPhoto} from './report-photo.js?v=20261105-photo';
+import {prepareReportPhoto} from './report-photo.js?v=0.03-0035';
 const LOCATION_FAILURE='定位失败，请换个环境重试，或手动填写城市、经纬度。';
 export function reportCoordinates(latitude,longitude,place=''){
  const lat=latitude.trim(),lon=longitude.trim();

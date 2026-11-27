@@ -1,4 +1,4 @@
-import { localizeName } from './launch-localization.js';
+import { localizeName } from './launch-localization.js?v=0.03-0035';
 // Shared additions to the calendar/API's Chinese name rules. Preserve unknown names.
 export function chineseMissionLabel(value = '') {
   return localizeName(value).replace(/\bSmart Dragon[ -]*3\b/gi, '捷龙三号')

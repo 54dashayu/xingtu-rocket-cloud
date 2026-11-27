@@ -1,4 +1,4 @@
-const CACHE = 'launch-calendar-shell-v14';
+const CACHE = 'launch-calendar-shell-v15-0036';
 const scope = new URL(self.registration.scope).pathname.replace(/\/$/, '');
 const SHELL = [`${scope}/`, `${scope}/styles.css`, `${scope}/refinements.css`, `${scope}/app.js`, `${scope}/manifest.webmanifest`, `${scope}/icons/icon.svg`];
 self.addEventListener('install', (event) => event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL))));

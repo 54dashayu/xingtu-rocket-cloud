@@ -1,0 +1,2227 @@
+{
+  "schemaVersion": 1,
+  "version": "long-march-20261123-1",
+  "checkedAt": "2026-11-23",
+  "policy": {
+    "sourcePriority": [
+      "official",
+      "reference",
+      "encyclopedia"
+    ],
+    "displayDifferences": false,
+    "engineCountUnit": "each_component",
+    "scope": "主推进系统；不含逃逸/姿控/离轨小发动机，不自动生成任务时序",
+    "ingestion": "人工核对字段；Wiki抓取结果不可直接覆盖已核对库"
+  },
+  "sources": {
+    "cnsa:family": {
+      "name": "官方推进剂资料",
+      "url": "https://www.cnsa.gov.cn/n6758968/n6758973/c6771770/content.html",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23"
+    },
+    "cnsa:2f": {
+      "name": "官方推进剂资料",
+      "url": "https://www.cnsa.gov.cn/n6758824/n6759008/n6759011/c6794041/content.html",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23"
+    },
+    "cnsa:3a": {
+      "name": "官方推进剂资料",
+      "url": "https://www.cnsa.gov.cn/n6758824/n6759008/n6759011/c6794045/content.html",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23"
+    },
+    "cnsa:6": {
+      "name": "官方推进剂资料",
+      "url": "https://www.cnsa.gov.cn/n6758824/n6759008/n6759011/c6794254/content.html",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23"
+    },
+    "casc:8a": {
+      "name": "官方推进剂资料",
+      "url": "https://m.spacechina.com/n2014789/n2414549/c4761721/content.html",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23"
+    },
+    "itu:2023": {
+      "name": "ITU 运载器资料",
+      "url": "https://www.itu.int/dms_pub/itu-r/opb/hdb/R-HDB-65-2023-PDF-C.pdf",
+      "kind": "reference",
+      "role": "primary",
+      "checkedAt": "2026-11-23"
+    },
+    "wiki:YF-21C": {
+      "name": "卫星百科 · YF-21C",
+      "url": "https://sat.huijiwiki.com/wiki/YF-21C",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征二号丙": {
+      "name": "卫星百科 · 长征二号丙",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%BA%8C%E5%8F%B7%E4%B8%99",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征二号丁运载火箭": {
+      "name": "卫星百科 · 长征二号丁运载火箭",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%BA%8C%E5%8F%B7%E4%B8%81%E8%BF%90%E8%BD%BD%E7%81%AB%E7%AE%AD",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征二号F": {
+      "name": "卫星百科 · 长征二号F",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%BA%8C%E5%8F%B7F",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "mediawiki_revision",
+      "revision": 258880,
+      "revisedAt": "2026-11-18T04:55:55Z"
+    },
+    "wiki:YF-24": {
+      "name": "卫星百科 · YF-24",
+      "url": "https://sat.huijiwiki.com/wiki/YF-24",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:YF-75": {
+      "name": "卫星百科 · YF-75",
+      "url": "https://sat.huijiwiki.com/wiki/YF-75",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征三号甲": {
+      "name": "卫星百科 · 长征三号甲",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%B8%89%E5%8F%B7%E7%94%B2",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征三号乙": {
+      "name": "卫星百科 · 长征三号乙",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%B8%89%E5%8F%B7%E4%B9%99",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征三号丙": {
+      "name": "卫星百科 · 长征三号丙",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%B8%89%E5%8F%B7%E4%B8%99",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:YF-40B": {
+      "name": "卫星百科 · YF-40B",
+      "url": "https://sat.huijiwiki.com/wiki/YF-40B",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征四号乙": {
+      "name": "卫星百科 · 长征四号乙",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%9B%9B%E5%8F%B7%E4%B9%99",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征四号丙": {
+      "name": "卫星百科 · 长征四号丙",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%9B%9B%E5%8F%B7%E4%B8%99",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:YF-100": {
+      "name": "卫星百科 · YF-100",
+      "url": "https://sat.huijiwiki.com/wiki/YF-100",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:YF-75D": {
+      "name": "卫星百科 · YF-75D",
+      "url": "https://sat.huijiwiki.com/wiki/YF-75D",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征五号": {
+      "name": "卫星百科 · 长征五号",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%BA%94%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征五号B": {
+      "name": "卫星百科 · 长征五号B",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%BA%94%E5%8F%B7B",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:YF-115": {
+      "name": "卫星百科 · YF-115",
+      "url": "https://sat.huijiwiki.com/wiki/YF-115",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征六号": {
+      "name": "卫星百科 · 长征六号",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%85%AD%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征六号甲": {
+      "name": "卫星百科 · 长征六号甲",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%85%AD%E5%8F%B7%E7%94%B2",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征六号丙": {
+      "name": "卫星百科 · 长征六号丙",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%85%AD%E5%8F%B7%E4%B8%99",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征七号": {
+      "name": "卫星百科 · 长征七号",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%B8%83%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征七号A": {
+      "name": "卫星百科 · 长征七号A",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E4%B8%83%E5%8F%B7A",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征八号": {
+      "name": "卫星百科 · 长征八号",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%85%AB%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征八号甲": {
+      "name": "卫星百科 · 长征八号甲",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%85%AB%E5%8F%B7%E7%94%B2",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征十一号": {
+      "name": "卫星百科 · 长征十一号",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%8D%81%E4%B8%80%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征十二号": {
+      "name": "卫星百科 · 长征十二号",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%8D%81%E4%BA%8C%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:长征十二号甲": {
+      "name": "卫星百科 · 长征十二号甲",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%95%BF%E5%BE%81%E5%8D%81%E4%BA%8C%E5%8F%B7%E7%94%B2",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    }
+  },
+  "models": [
+    {
+      "id": "cz2c",
+      "name": "长征二号丙",
+      "aliases": [
+        "长征二号丙",
+        "长征2C",
+        "Long March 2C",
+        "CZ-2C",
+        "LM-2C"
+      ],
+      "configurationScope": "基础两级；发动机具体改型按批次核对，不包含FP/SM/远征上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征二号丙",
+            "wiki:YF-21C"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征二号丙",
+            "wiki:YF-21C"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        }
+      ]
+    },
+    {
+      "id": "cz2d",
+      "name": "长征二号丁",
+      "aliases": [
+        "长征二号丁",
+        "长征2D",
+        "Long March 2D",
+        "CZ-2D",
+        "LM-2D"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征二号丁运载火箭",
+            "wiki:YF-21C"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征二号丁运载火箭",
+            "wiki:YF-21C"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        }
+      ]
+    },
+    {
+      "id": "cz2f",
+      "name": "长征二号F",
+      "aliases": [
+        "长征二号F",
+        "长征2F",
+        "Long March 2F",
+        "CZ-2F",
+        "LM-2F"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-20K",
+              "count": 4,
+              "unit": "台",
+              "scope": "basic_configuration"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征二号F"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24K",
+              "count": 1,
+              "unit": "组",
+              "scope": "basic_configuration"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征二号F"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-25K",
+              "count": 1,
+              "unit": "台",
+              "scope": "basic_configuration"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征二号F"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:2f"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:2f"
+        },
+        {
+          "component": "booster",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:2f"
+        }
+      ]
+    },
+    {
+      "id": "cz2fg",
+      "name": "长征二号F/G",
+      "aliases": [
+        "长征二号F/G",
+        "长征2F/G",
+        "Long March 2F/G",
+        "CZ-2F/G",
+        "LM-2F/G"
+      ],
+      "configurationScope": "F/G；沿用已核对推进剂，发动机具体改型待独立核对",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:长征二号F"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:长征二号F"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "hypergolic",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:长征二号F"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:2f"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:2f"
+        },
+        {
+          "component": "booster",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:2f"
+        }
+      ]
+    },
+    {
+      "id": "cz3a",
+      "name": "长征三号甲",
+      "aliases": [
+        "长征三号甲",
+        "长征3A",
+        "Long March 3A",
+        "CZ-3A",
+        "LM-3A"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号甲",
+            "wiki:YF-21C",
+            "wiki:YF-24",
+            "wiki:YF-75"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号甲",
+            "wiki:YF-21C",
+            "wiki:YF-24",
+            "wiki:YF-75"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号甲",
+            "wiki:YF-21C",
+            "wiki:YF-24",
+            "wiki:YF-75"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:3a"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:3a"
+        },
+        {
+          "component": "stage3",
+          "values": {
+            "fuel": "hydrolox"
+          },
+          "sourceRef": "cnsa:3a"
+        }
+      ]
+    },
+    {
+      "id": "cz3b",
+      "name": "长征三号乙",
+      "aliases": [
+        "长征三号乙",
+        "长征3B",
+        "Long March 3B",
+        "CZ-3B",
+        "LM-3B"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙",
+            "wiki:YF-21C",
+            "wiki:YF-75"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙",
+            "wiki:YF-21C",
+            "wiki:YF-75"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙",
+            "wiki:YF-21C",
+            "wiki:YF-75"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-25系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙",
+            "wiki:YF-21C",
+            "wiki:YF-75"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage3",
+          "values": {
+            "fuel": "hydrolox"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "booster",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        }
+      ]
+    },
+    {
+      "id": "cz3c",
+      "name": "长征三号丙",
+      "aliases": [
+        "长征三号丙",
+        "长征3C",
+        "Long March 3C",
+        "CZ-3C",
+        "LM-3C"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号丙",
+            "wiki:YF-21C",
+            "wiki:YF-75"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号丙",
+            "wiki:YF-21C",
+            "wiki:YF-75"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号丙",
+            "wiki:YF-21C",
+            "wiki:YF-75"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 2,
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-25系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号丙",
+            "wiki:YF-21C",
+            "wiki:YF-75"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz3be",
+      "name": "长征三号乙增强型",
+      "aliases": [
+        "长征三号乙增强型",
+        "长征3B/E",
+        "Long March 3B/E",
+        "CZ-3B/E",
+        "LM-3B/E",
+        "Long March 3B E"
+      ],
+      "configurationScope": "增强构型；不包含远征上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-25系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage3",
+          "values": {
+            "fuel": "hydrolox"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "booster",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        }
+      ]
+    },
+    {
+      "id": "cz3bg2",
+      "name": "长征三号乙改二型",
+      "aliases": [
+        "长征三号乙改二型",
+        "长征3B/G2",
+        "Long March 3B/G2",
+        "CZ-3B/G2",
+        "LM-3B/G2"
+      ],
+      "configurationScope": "增强构型；不包含远征上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-25系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征三号乙"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage3",
+          "values": {
+            "fuel": "hydrolox"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "booster",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        }
+      ]
+    },
+    {
+      "id": "cz4b",
+      "name": "长征四号乙",
+      "aliases": [
+        "长征四号乙",
+        "长征4B",
+        "Long March 4B",
+        "CZ-4B",
+        "LM-4B"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征四号乙",
+            "wiki:YF-21C",
+            "wiki:YF-24",
+            "wiki:YF-40B"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-24系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征四号乙",
+            "wiki:YF-21C",
+            "wiki:YF-24",
+            "wiki:YF-40B"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-40系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征四号乙",
+            "wiki:YF-21C",
+            "wiki:YF-24",
+            "wiki:YF-40B"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage3",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        }
+      ]
+    },
+    {
+      "id": "cz4c",
+      "name": "长征四号丙",
+      "aliases": [
+        "长征四号丙",
+        "长征4C",
+        "Long March 4C",
+        "CZ-4C",
+        "LM-4C"
+      ],
+      "configurationScope": "三级；YF-40具体改型按任务批次核对，通用库不指定关机时间",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-21系列",
+              "count": 1,
+              "unit": "组",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征四号丙"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-22E",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            },
+            {
+              "model": "YF-23H",
+              "count": 4,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征四号丙"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-40系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征四号丙"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        },
+        {
+          "component": "stage3",
+          "values": {
+            "fuel": "hypergolic"
+          },
+          "sourceRef": "cnsa:family"
+        }
+      ]
+    },
+    {
+      "id": "cz5",
+      "name": "长征五号",
+      "aliases": [
+        "长征五号",
+        "长征5",
+        "Long March 5",
+        "CZ-5",
+        "LM-5"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-77",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征五号",
+            "wiki:YF-100",
+            "wiki:YF-75D"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75D",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征五号",
+            "wiki:YF-100",
+            "wiki:YF-75D"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征五号",
+            "wiki:YF-100",
+            "wiki:YF-75D"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz5b",
+      "name": "长征五号B",
+      "aliases": [
+        "长征五号B",
+        "长征5B",
+        "Long March 5B",
+        "CZ-5B",
+        "LM-5B",
+        "长征五号乙"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-77",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征五号B",
+            "wiki:YF-100"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征五号B",
+            "wiki:YF-100"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz6",
+      "name": "长征六号",
+      "aliases": [
+        "长征六号",
+        "长征6",
+        "Long March 6",
+        "CZ-6",
+        "LM-6"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征六号",
+            "wiki:YF-100",
+            "wiki:YF-115"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-115系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征六号",
+            "wiki:YF-100",
+            "wiki:YF-115"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hypergolic",
+          "engines": [
+            {
+              "model": "YF-50E",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征六号",
+            "wiki:YF-100",
+            "wiki:YF-115"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "kerolox"
+          },
+          "sourceRef": "cnsa:6"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "kerolox"
+          },
+          "sourceRef": "cnsa:6"
+        }
+      ]
+    },
+    {
+      "id": "cz6a",
+      "name": "长征六号甲",
+      "aliases": [
+        "长征六号甲",
+        "长征6A",
+        "Long March 6A",
+        "CZ-6A",
+        "LM-6A",
+        "长征六号改"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征六号甲",
+            "wiki:YF-115",
+            "itu:2023"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-115系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征六号甲",
+            "wiki:YF-115",
+            "itu:2023"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "FG-112",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征六号甲",
+            "wiki:YF-115",
+            "itu:2023"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz6c",
+      "name": "长征六号丙",
+      "aliases": [
+        "长征六号丙",
+        "长征6C",
+        "Long March 6C",
+        "CZ-6C",
+        "LM-6C"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征六号丙",
+            "wiki:YF-115"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-115系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征六号丙",
+            "wiki:YF-115"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz7",
+      "name": "长征七号",
+      "aliases": [
+        "长征七号",
+        "长征7",
+        "Long March 7",
+        "CZ-7",
+        "LM-7"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征七号",
+            "wiki:YF-100",
+            "wiki:YF-115"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-115系列",
+              "count": 4,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征七号",
+            "wiki:YF-100",
+            "wiki:YF-115"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征七号",
+            "wiki:YF-100",
+            "wiki:YF-115"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz7a",
+      "name": "长征七号甲",
+      "aliases": [
+        "长征七号甲",
+        "长征7A",
+        "Long March 7A",
+        "CZ-7A",
+        "LM-7A",
+        "长征七号A"
+      ],
+      "configurationScope": "现役基础构型，不采用条目后续发展章节中的计划发动机",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征七号A",
+            "wiki:YF-115",
+            "itu:2023"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-115系列",
+              "count": 4,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征七号A",
+            "wiki:YF-115",
+            "itu:2023"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征七号A",
+            "wiki:YF-115",
+            "itu:2023"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征七号A",
+            "wiki:YF-115",
+            "itu:2023"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz8",
+      "name": "长征八号",
+      "aliases": [
+        "长征八号",
+        "长征8",
+        "Long March 8",
+        "CZ-8",
+        "LM-8"
+      ],
+      "configurationScope": "未给出助推器构型；仅使用两种构型共有的芯级资料",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号"
+          ]
+        }
+      ],
+      "officialOverrides": [],
+      "boostersKnown": false
+    },
+    {
+      "id": "cz822",
+      "name": "长征八号双助推型",
+      "aliases": [
+        "长征八号双助推型",
+        "长征822(HO)",
+        "Long March 822(HO)",
+        "CZ-822(HO)",
+        "LM-822(HO)",
+        "Long March 8 (2 boosters)",
+        "长征8双助推型"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 2,
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz820",
+      "name": "长征八号无助推型",
+      "aliases": [
+        "长征八号无助推型",
+        "长征820(HO)",
+        "Long March 820(HO)",
+        "CZ-820(HO)",
+        "LM-820(HO)",
+        "Long March 8 (Core Only)",
+        "Long March 8 (core-only)",
+        "长征8无助推型"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz8a",
+      "name": "长征八号甲",
+      "aliases": [
+        "长征八号甲",
+        "长征8A",
+        "Long March 8A",
+        "CZ-8A",
+        "LM-8A"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号甲",
+            "wiki:长征八号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "hydrolox",
+          "engines": [
+            {
+              "model": "YF-75H",
+              "count": 2,
+              "unit": "台",
+              "scope": "documented_configuration"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号甲",
+            "wiki:长征八号"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 2,
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征八号甲",
+            "wiki:长征八号"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "kerolox"
+          },
+          "sourceRef": "casc:8a"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "hydrolox"
+          },
+          "sourceRef": "casc:8a"
+        },
+        {
+          "component": "booster",
+          "values": {
+            "count": 2
+          },
+          "sourceRef": "casc:8a"
+        }
+      ]
+    },
+    {
+      "id": "cz11",
+      "name": "长征十一号",
+      "aliases": [
+        "长征十一号",
+        "长征11",
+        "Long March 11",
+        "CZ-11",
+        "LM-11"
+      ],
+      "configurationScope": "陆射标准型；二至四级发动机名称待核实",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "SP35",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征十一号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:长征十一号"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:长征十一号"
+          ]
+        },
+        {
+          "id": "stage4",
+          "kind": "stage",
+          "name": "4级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:长征十一号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz12",
+      "name": "长征十二号",
+      "aliases": [
+        "长征十二号",
+        "长征12",
+        "Long March 12",
+        "CZ-12",
+        "LM-12"
+      ],
+      "configurationScope": "基础构型；不包含任务另配上面级",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-100J",
+              "count": 4,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征十二号",
+            "wiki:YF-115"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-115B",
+              "count": 2,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征十二号",
+            "wiki:YF-115"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "cz12a",
+      "name": "长征十二号甲",
+      "aliases": [
+        "长征十二号甲",
+        "长征12A",
+        "Long March 12A",
+        "CZ-12A",
+        "LM-12A",
+        "长征十二号A"
+      ],
+      "configurationScope": "两级甲烷构型；不与十二号煤油构型或垂直起降试验箭合并",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "龙云",
+              "count": 7,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征十二号甲"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "YF-209真空型",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_family"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:长征十二号甲"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    }
+  ]
+}

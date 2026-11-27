@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {prepareMission,missionMode,missionScenario,missionEvents} from './missions.js';
-import {CITY_GROUPS,installObservers} from './observers.js';
+import {prepareMission,missionMode,missionScenario,missionEvents} from '../../public/3d/missions.js';
+import {CITY_GROUPS,installObservers} from '../../public/3d/observers.js';
 const raw={id:'test',name:'测试任务',rocket:'测试火箭',pad:{latitude:40.96,longitude:100.29},timing:{net:'2030-11-04T10:29:18Z',precision:'精确到秒'},scheduleStatus:{code:'confirmed'},result:{code:'pending'}};
 test('missing mission events are explicitly estimated, not labelled as task data',()=>{const s=missionScenario(prepareMission(raw));assert.equal(s.sourced,false);assert.ok(s.profile.full.length);assert.ok(missionEvents(s).every(e=>e.origin==='estimate'));assert.ok(missionEvents(s).find(e=>e.id==='stage1').point);assert.equal(missionEvents(s).find(e=>e.id==='payload').point,null);});
 test('cloud evidence requires past flight result and linked public evidence',()=>{const l={...raw,timing:{...raw.timing,net:'2020-11-04T10:29:18Z'},result:{code:'success'}};assert.equal(missionMode(prepareMission(l)).confirmed,false);l.cloudEvidence={observation:{status:'confirmed',sources:[{url:'https://example.org/evidence'}]}};assert.equal(missionMode(prepareMission(l)).confirmed,true);});

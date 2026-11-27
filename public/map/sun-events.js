@@ -1,5 +1,5 @@
-import { findSite } from './sites.js?v=20261024ad';
-import { solarAltitude } from './solar.js?v=20261024ad';
+import { findSite } from './sites.js?v=0.03-0035';
+import { solarAltitude } from './solar.js?v=0.03-0035';
 // Standard apparent sunrise/sunset threshold: solar centre -0.833 degrees.
 // Includes typical refraction and solar radius only; excludes terrain and weather.
 // NOAA: https://gml.noaa.gov/grad/solcalc/solareqns.PDF

@@ -1,8 +1,9 @@
-import { cloudOpportunity } from '../cloud-status.js?v=20261024al';
-import { flightProfile } from './flight-path.js?v=0.03-0031';
-import { MAJOR_SITES, findSite } from './sites.js?v=20261024ad';
-import { rad, deg, clamp, wrap, solarPosition, altitudeAt } from './solar.js?v=20261024ad';
-import { launchCoordinates, rocketCloudForecast } from './rocket-cloud.js?v=20261024ad';
+import {withCrewStatus} from '../crew-status.js?v=0.03-0035';
+import { cloudOpportunity } from '../cloud-status.js?v=0.03-0035';
+import { flightProfile } from './flight-path.js?v=0.03-0035';
+import { MAJOR_SITES, findSite } from './sites.js?v=0.03-0035';
+import { rad, deg, clamp, wrap, solarPosition, altitudeAt } from './solar.js?v=0.03-0035';
+import { launchCoordinates, rocketCloudForecast } from './rocket-cloud.js?v=0.03-0035';
 export const EARTH_KM = 6371;
 export const DISCLAIMER = '几何初判，不保证可见。不含天气、能见度、高空风和实际飞行轨迹。';
 export function destination(origin, bearing, km) {
@@ -46,6 +47,7 @@ export function directionScenario(launch) {
   return {kind:'unconfirmed',azimuth:90,label:'方向待确认',basis:'尚无该任务匹配的发射方位资料；不凭轨道类型或发射场填入默认航向',sources:[],officialTrajectory:null};
 }
 export function mapLaunch(launch) {
+  launch=withCrewStatus(launch);
   const site=findSite(launch.pad);
   const enriched={...launch,pad:{...launch.pad,...(!launch.pad?.timezone && site?{timezone:site.timezone}: {})}};
   return { ...enriched, siteId: site?.id || null, coordinates: launchCoordinates(launch.pad) || (site?{latitude:site.latitude,longitude:site.longitude,source:site.coordinateSource}:null), direction: directionScenario(launch), rocketCloud: rocketCloudForecast(enriched), observer: null, weather: { status: 'not_connected', source: null } };

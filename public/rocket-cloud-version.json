@@ -1,8 +1,13 @@
 {
-  "name": "星途·火箭云预测",
+  "name": "星途日历·火箭云",
   "version": "0.03",
-  "releaseDate": "2026-11-12",
+  "releaseDate": "2026-11-26",
   "path": "/rocket-cloud/",
-  "build": "0031",
-  "platform": "web"
+  "build": "0036",
+  "platform": "web",
+  "revision": "morphology1",
+  "hotfix": "calendar-refresh1",
+  "includedHotfixes": [
+    "weather-place2"
+  ]
 }

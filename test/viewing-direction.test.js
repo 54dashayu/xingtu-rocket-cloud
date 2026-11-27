@@ -13,7 +13,7 @@ test('view direction reverses with the Sun, not fixed east/west or launch headin
  assert.equal(viewingElongation(o,{...o,height:150},sunrise),90);
 });
 test('towards-Sun tint is modest and never erases a region',()=>{
- for(const band of ['jellyfish','higher','twilight','low']){
+ for(const band of ['higher','twilight','low']){
   const away=areaFill(band,directionTone(180)),towards=areaFill(band,directionTone(0));
   for(const start of [1,3,5])assert.ok(parseInt(towards.slice(start,start+2),16)>parseInt(away.slice(start,start+2),16));
   assert.notEqual(towards,'#ffffff');

@@ -40,3 +40,17 @@ platforms/android/snapshot/
 # Shared atomic launch feed (runtime data)
 data/launch-snapshot.json
 data/launch-snapshot.json.*.tmp
+
+# Private project surfaces and generated reviews
+miniprogram/
+project.config.json
+project.private.config.json
+**/output/
+**/docs/project-overview/
+**/src/main/assets/
+**/snapshot/
+**/www/
+*.cer
+*.pem
+*.key
+*.p8

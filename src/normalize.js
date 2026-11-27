@@ -1,3 +1,4 @@
+import {withCrewStatus} from '../public/crew-status.js';
 const REGION_BY_COUNTRY = new Map([
   ['CN', '中国'], ['US', '美国'], ['RU', '俄罗斯'], ['JP', '日本'], ['IN', '印度'],
   ['FR', '欧洲'], ['DE', '欧洲'], ['IT', '欧洲'], ['GB', '欧洲'], ['EU', '欧洲'],
@@ -116,7 +117,8 @@ export function normalizeLaunch(raw) {
       type: agencyType
     },
     rocket: translateRocket(rawRocket), originalRocket: rawRocket,
-    crewed: Boolean(raw.is_crewed),
+    crewed: typeof raw.is_crewed==='boolean'?raw.is_crewed:null,
+    crewEvidence:typeof raw.is_crewed==='boolean'?{kind:'ll2',value:raw.is_crewed,sourceName:'Launch Library 2',url:`https://ll.thespacedevs.com/2.3.0/launches/${raw.id}/`,basis:'上游 is_crewed 字段'}:null,
     livestream: { available: videos.length > 0, live: Boolean(raw.webcast_live), urls: videos },
     resources: publicResources(raw, videos),
     mission: {
@@ -135,7 +137,7 @@ export function normalizeLaunch(raw) {
     image: raw.image?.thumbnail_url || raw.image?.image_url || null,
     sources: sourceLinks(raw)
   };
-  return { ...launch, rocketCloud: rocketCloudForecast(launch) };
+  return withCrewStatus({ ...launch, rocketCloud: rocketCloudForecast(launch) });
 }
 
 export function normalizeLaunches(payload) {
@@ -146,14 +148,14 @@ export function normalizeLaunches(payload) {
 export function filterLaunches(launches, params) {
   const values = (key) => params.getAll(key).flatMap((value) => value.split(',')).filter(Boolean);
   const includes = (key, value) => { const selected = values(key); return !selected.length || selected.some((x) => x.toLowerCase() === String(value).toLowerCase()); };
-  const bool = (key, value) => !params.has(key) || params.get(key) === 'all' || (params.get(key) === 'true') === value;
+  const bool = (key, value) => !params.has(key) || params.get(key) === 'all' || (params.get(key)==='unknown'?typeof value!=='boolean':(params.get(key) === 'true') === value);
   const now = Date.now();
   const days = Number(params.get('days') || 0);
   const until = days > 0 ? now + days * 86400000 : Infinity;
   const since = days > 0 ? now - days * 86400000 : -Infinity;
   const range = params.get('range') || 'upcoming';
   const query = (params.get('q') || '').trim().toLowerCase();
-  const filtered = launches.filter((launch) => {
+  const filtered = launches.map(withCrewStatus).filter((launch) => {
     const timestamp = launch.timing.net ? Date.parse(launch.timing.net) : null;
     // 无具体时间的中国补充计划也可展示，但会排在有时间的近期任务之后，且不会导出 ICS。
     const inRange = range === 'previous'

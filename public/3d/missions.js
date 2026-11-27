@@ -1,11 +1,11 @@
-import {playbackWindow} from '../map/timeline.js?v=0.03-0031';
-import {flightEvents,eventPoint} from './events.js';
-import {mapLaunch,preciseTime} from '../map/model.js';
-import {simulationProfile} from '../map/prediction.js?v=0.03-0031';
-import {headingEstimate} from '../map/heading-estimate.js';
-import {cloudStatus} from '../cloud-status.js';
-import {attachArchiveEvidence} from '../map/archive-evidence.js';
-import {localizeLaunch} from '../launch-localization.js';
+import {playbackWindow} from '../map/timeline.js?v=0.03-0035';
+import {flightEvents,eventPoint} from './events.js?v=0.03-0035';
+import {mapLaunch,preciseTime} from '../map/model.js?v=0.03-0035';
+import {simulationProfile} from '../map/prediction.js?v=0.03-0035';
+import {headingEstimate} from '../map/heading-estimate.js?v=0.03-0035';
+import {cloudStatus} from '../cloud-status.js?v=0.03-0035';
+import {attachArchiveEvidence} from '../map/archive-evidence.js?v=0.03-0035';
+import {localizeLaunch} from '../launch-localization.js?v=0.03-0035';
 export function prepareMission(raw,records=[]){return mapLaunch(localizeLaunch(attachArchiveEvidence(raw,records)));}
 export function missionMode(l,now=Date.now()){
  const historical=Date.parse(l.timing?.net)<=now;

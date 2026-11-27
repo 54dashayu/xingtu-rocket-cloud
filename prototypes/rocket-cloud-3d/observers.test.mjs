@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {nearestObserverCity} from './observers.js';
+import {nearestObserverCity} from '../../public/3d/observers.js';
 test('default observer follows nearby Chinese launch cities',()=>{
  assert.equal(nearestObserverCity({latitude:28.25,longitude:102.03}).name,'西昌');
  assert.equal(nearestObserverCity({latitude:19.61,longitude:110.95}).name,'文昌');

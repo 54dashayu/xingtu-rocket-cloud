@@ -58,3 +58,37 @@ test('weather cache cannot reuse previous hour from same day/location',async()=>
  const first=await weatherAt(points,'2026-11-07T00:00:00Z',options),second=await weatherAt(points,'2026-11-07T01:00:00Z',options);
  assert.equal(first.points[0].code,'clearer');assert.equal(second.points[0].code,'obstructed');
 });
+
+test('dusk darkening opens contrast windows while mirrored dawn closes them',()=>{
+ // Same plume/elevation, mirrored Sun positions: no unconditional dusk area multiplier.
+ const dusk=[92,93,94,95,96,97,98].map((s,i)=>({...point(-5,-s),time:i*30000}));
+ const dawn=[98,97,96,95,94,93,92].map((s,i)=>({...point(5,s),time:i*30000}));
+ assert.equal(parcelVisibility(o,dusk[0]).possible,false);
+ assert.equal(parcelVisibility(o,dusk.at(-1)).possible,true);
+ assert.equal(parcelVisibility(o,dawn[0]).possible,true);
+ assert.equal(parcelVisibility(o,dawn.at(-1)).possible,false);
+ assert.equal(observerVisibility([dusk],o).firstTime,180000-observerVisibility([dawn],o).lastTime);
+ // Darker sky cannot make an unilluminated plume visible.
+ assert.equal(parcelVisibility(o,{...dusk.at(-1),sunlit:false}).possible,false);
+});
+
+test('equal-altitude real Sun comparison favors the dark side and evolves oppositely after ascent',async()=>{
+ const {sunEvents}=await import('../public/map/sun-events.js');
+ const {simulationProfile}=await import('../public/map/prediction.js');
+ const coordinates={latitude:34.63,longitude:-120.61};
+ const events=sunEvents('2026-11-06T20:00:00Z',coordinates,'America/Los_Angeles',-3);
+ const footprints={};
+ for(const kind of ['sunrise','sunset']){
+  const launch={coordinates,timing:{net:events[kind]}};
+  const profile=simulationProfile(launch,{target:150,azimuth:180});
+  const areas=[240,480].map(atSeconds=>visibilityFootprint(launch,{profile,atSeconds,persistenceSeconds:300,minElevation:1}));
+  footprints[kind]=areas;
+  for(const area of areas){
+   const east=area.cells.filter(c=>c.longitude>coordinates.longitude).length;
+   const west=area.cells.filter(c=>c.longitude<coordinates.longitude).length;
+   assert.ok(kind==='sunset'?east>west:west>east);
+  }
+ }
+ assert.ok(footprints.sunset[1].cells.length>footprints.sunset[0].cells.length);
+ assert.ok(footprints.sunrise[1].cells.length<footprints.sunrise[0].cells.length);
+});

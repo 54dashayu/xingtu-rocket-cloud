@@ -1,3 +1,4 @@
+import { adaptReportSummary } from './report-summary-adapter.mjs';
 import { cp, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve, relative } from 'node:path';
@@ -20,4 +21,9 @@ await writeFile(resolve(root,'snapshot/manifest.json'),JSON.stringify({createdAt
 await cp(destination,resolve(root,'www'),{recursive:true});
 const page=(await readFile(resolve(destination,'map.html'),'utf8')).replace('<script defer src="/xingtu-analytics/tracker.js"></script>','');
 await writeFile(resolve(root,'www/index.html'),page);
-console.log(`Snapshot created: ${files.length} public assets; four-tab app entry bundled.`);
+// Android alignment fix: the calendar merges report-summary counts; the 3D entry
+// must fetch the same public counts before applying historical replay eligibility.
+const modelApp=resolve(root,'www/3d/app.js');
+const modelCode=await readFile(modelApp,'utf8');
+await writeFile(modelApp,adaptReportSummary(modelCode));
+console.log(`Snapshot created: ${files.length} public assets; integrated app entry bundled.`);

@@ -19,7 +19,7 @@ function overlay(l,r){
  const fields={name:r.mission,time:r.time,result:r.result,site:r.site.name};
  const sources=[...(l.sources||[]).filter(s=>s.url!==r.url),source];
  return {...l,name:`${l.rocket&&l.rocket!=='未知火箭'?l.rocket:r.rocket}｜${r.mission}`,rocket:l.rocket&&l.rocket!=='未知火箭'?l.rocket:r.rocket,
- mission:{...l.mission,name:r.mission},crewed:l.crewed??r.crewed,
+ mission:{...l.mission,name:r.mission},crewed:r.crewEvidence?.kind==='official'?r.crewed:(l.crewed??null),crewEvidence:r.crewEvidence||l.crewEvidence||null,
  timing:{...l.timing,net:keepSeconds||oldTime===newTime?l.timing.net:r.time,windowStart:keepSeconds||oldTime===newTime?l.timing.net:r.time,windowEnd:keepSeconds||oldTime===newTime?l.timing.net:r.time,precision:keepSeconds?l.timing.precision:r.precision,basis:r.actual?'official_actual':'official_planned'},
  scheduleStatus:{code:'confirmed',label:'已确认',upstream:r.sourceName},
  result:r.result==='pending'?(l.result||{code:'pending',label:'结果待更新',verified:false}):{code:r.result,label:r.result==='success'?'发射成功':'发射失败',verified:true,upstream:r.sourceName},

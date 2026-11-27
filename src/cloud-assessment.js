@@ -1,3 +1,5 @@
+import {ASSESSMENT_VERSION,morphologyAssessment} from '../public/map/morphology.js';
+import { PROPULSION_VERSION } from '../public/map/propulsion.js';
 import {launchReliability} from './launch-reliability.js';
 import { mapLaunch, preciseTime } from '../public/map/model.js';
 import { simulationProfile } from '../public/map/prediction.js';
@@ -16,7 +18,7 @@ export function sampleCells(cells,count=9){
 export function modelAssessment(raw,{target=0,observer=null,azimuth,now=Date.now()}={}){
  const l=mapLaunch(raw),history=!raw.manualScenario&&Date.parse(l.timing?.net)<=now,base={time:l.timing?.net,target,observer,siteSolarAltitude:l.rocketCloud.solarAltitude,reliability:launchReliability(raw)};
  if(!preciseTime(l)||!l.coordinates)return {...base,code:'pending',label:'发射时刻或场址待补充',points:[]};
- const key=JSON.stringify([raw,target,observer,azimuth,history]),cached=memo.get(key);if(cached)return cached;
+ const key=JSON.stringify([ASSESSMENT_VERSION,raw,target,observer,azimuth,history]),cached=memo.get(key);if(cached)return cached;
  const profile=simulationProfile(l,{target,historical:history,...(azimuth===undefined?{}:{azimuth})});
  let result;
  if(!profile.full.length)result={...base,code:'preliminary',label:'晨昏初筛 · 轨迹参数待补',candidate:['possible','favorable'].includes(l.rocketCloud.code),reason:profile.reason,points:[]};
@@ -30,6 +32,10 @@ export function modelAssessment(raw,{target=0,observer=null,azimuth,now=Date.now
  if(memo.size>100)memo.delete(memo.keys().next().value);memo.set(key,result);return result;
 }
 export async function assessCloud(launch,options={}){
+ const result=await assessCloudRaw(launch,options);
+ return {...result,assessmentVersion:ASSESSMENT_VERSION,morphology:morphologyAssessment(launch),index:result.windowIndex||cloudIndex(mapLaunch(launch),result)};
+}
+async function assessCloudRaw(launch,options={}){
  if(launch.timing?.basis==='notice_window'&&!launch.manualScenario)return assessNoticeWindow(launch,options);
  const model=modelAssessment(launch,options);
  // First iOS release is geometry-only: return before any weather provider call.
@@ -54,7 +60,7 @@ async function assessNoticeWindow(launch,options){
  if(!launchReliability(launch).assessment.eligible||!Number.isFinite(start)||!Number.isFinite(end)||end<=start||end-start>7200000||!Number.isFinite(heading)||heading<0||heading>=360){
   return assessCloud({...launch,manualScenario:true},options);
  }
- const key=JSON.stringify([launch,options.target,options.observer,options.weatherEnabled]);
+ const key=JSON.stringify([ASSESSMENT_VERSION,launch,options.azimuth,options.target,options.observer,options.weatherEnabled]);
  const cached=noticeMemo.get(key);if(!options.weatherProvider&&cached&&Date.now()-cached.at<300000)return cached.result;
  const intervals=Math.ceil((end-start)/300000),samples=[];
  for(let i=0;i<=intervals;i++){
@@ -62,15 +68,15 @@ async function assessNoticeWindow(launch,options){
   const scenario={...simulationLaunch(launch,net),manualScenario:true};
   const assessment=await assessCloud(scenario,{...options,azimuth:heading,weatherEnabled:false});
   const index=cloudIndex(mapLaunch(scenario),assessment);
-  samples.push({net,score:index.score,scenario,assessment});
+  samples.push({net,score:index.score,min:index.min??index.score,max:index.max??index.score,scenario,assessment});
  }
  const complete=samples.every(s=>Number.isFinite(s.score));
  const ranked=samples.filter(s=>Number.isFinite(s.score)).sort((a,b)=>b.score-a.score),best=ranked[0]||samples[0];
  const result=options.weatherEnabled===false?best.assessment:await assessCloud(best.scenario,{...options,azimuth:heading});
- const scores=ranked.map(s=>s.score),min=complete?Math.min(...scores):null,max=complete?Math.max(...scores):null;
+ const scores=ranked.map(s=>s.score),min=complete?Math.min(...ranked.map(s=>s.min)):null,max=complete?Math.max(...ranked.map(s=>s.max)):null;
  const reason=`按航警窗口采样 ${samples.length} 个时刻，航向参考 ${heading}°；时间窗与方向均非正式发射参数。天气仅对应采样指数最高的参考时刻。`;
- const windowIndex={score:max,min,max,label:complete?`火箭云指数 ${min===max?max:min+'–'+max}（航警预估）`:'火箭云指数 · 待评估',reason,reference:true,limits:'0–100 分是几何关注指数，不是可见概率。范围为所采样时刻的评分范围，非置信区间；未计天气和未知火箭型号的误差。'};
- const value={...result,model:{...result.model,reliability:launchReliability(launch)},net:launch.timing.net,windowIndex,noticeWindow:{start:launch.timing.windowStart,end:launch.timing.windowEnd,heading,referenceTime:best.net,samples:samples.map(({net,score})=>({net,score}))},limits:reason+' '+result.limits};
+ const windowIndex={modelVersion:PROPULSION_VERSION,assessmentVersion:ASSESSMENT_VERSION,score:max,min,max,label:complete?`火箭云指数 ${min===max?max:min+'–'+max}（航警预估）`:'火箭云指数 · 待评估',reason,reference:true,limits:'0–100 分为几何与推进剂情景的实验性指数，不是可见概率或水母形态概率。范围包含采样时刻及已知推进剂情景，非置信区间；未知型号仅评估几何，未计天气。'};
+ const value={...result,model:{...result.model,reliability:launchReliability(launch)},net:launch.timing.net,windowIndex,noticeWindow:{start:launch.timing.windowStart,end:launch.timing.windowEnd,heading,referenceTime:best.net,samples:samples.map(({net,score,min,max})=>({net,score,min,max}))},limits:reason+' '+result.limits};
  if(noticeMemo.size>30)noticeMemo.delete(noticeMemo.keys().next().value);
  if(!options.weatherProvider)noticeMemo.set(key,{at:Date.now(),result:value});
  return value;

@@ -345,3 +345,52 @@ body[data-mobile-page="reports"] .mobile-task-context{display:none}
 .mission .mission-badges .mission-report,.mission .mission-badges .mission-3d{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;height:36px;min-height:36px;min-width:66px;padding:0 10px;border:1px solid #b7cde8;border-radius:7px;background:#f5f9ff;color:#3267a9;font-family:inherit;font-size:13px;font-weight:600;line-height:1.2;text-decoration:none;white-space:nowrap;vertical-align:middle}
 .mission .mission-badges .mission-report:hover,.mission .mission-badges .mission-3d:hover{background:#dceafd;border-color:#628cc0}
 @media(pointer:coarse){.mission .mission-badges .mission-report,.mission .mission-badges .mission-3d{height:44px;min-height:44px}}
+
+.propulsion-summary{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.86em;color:var(--muted,#637c91);margin:3px 0}.propulsion-details{font-size:.9em;margin:8px 0}.propulsion-details p{margin:6px 0}
+
+/* Portrait pages follow the calendar: 18px page title, 15px card title,
+   13px content/controls, 12px field labels; desktop keeps its existing layout. */
+@media(max-width:850px) and (orientation:portrait){
+ /* Keep the original map/playback height; the moved legend scrolls below it.
+    Specificity also covers the native shell's fixed map-panel height. */
+ body[data-mobile-page="map"] .map-panel{height:auto!important;overflow:visible}
+ .map-panel>.map-content{flex:none;height:calc(100dvh - var(--mobile-top-height,118px) - 68px - env(safe-area-inset-bottom));min-height:420px}
+ #map-area-slot{margin:0 12px 12px}
+ #map-area-slot .area-evaluation{margin:0;padding:11px 9px}
+ #map-area-slot .area-color-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #map-area-slot .area-color-row{min-width:0}
+ #map-area-slot .area-color-row b{font-size:12px}
+ #map-area-slot .area-color-row small{font-size:11px;line-height:1.5}
+ #map-area-slot .view-direction-key{margin:8px 0 0}
+ #map-area-slot .view-direction-key small{display:none}
+ #map-area-slot .area-brief{font-size:11px;margin:4px 0}
+ #map-area-slot .area-notes summary{font-size:12px;color:#366fb7;cursor:pointer}
+ #map-area-slot .area-notes small{margin-top:6px;line-height:1.6}
+ .report-page{padding:10px 9px}
+ .report-content{padding:11px 9px;border-radius:9px;font-size:13px;line-height:1.6}
+ .report-content h1{font-size:18px;line-height:1.6}
+ .report-content h2,.report-content h3,.archive-task-summary h3,.public-photo-grid h3{font-size:15px;line-height:1.5}
+ .report-content .report-intro,.archive-intro,.report-result>p,.archive-source-card p{font-size:13px;margin:6px 0 10px}
+ .report-content .report-basics,.report-content .report-grid{gap:8px}
+ .report-content label,.report-photo-field legend{font-size:12px}
+ .report-content input:not([type=checkbox]),.report-content textarea,.report-content select{font-size:13px;line-height:1.6;padding:7px 8px}
+ .report-content button,.report-tabs button{font-size:13px;line-height:1.4;min-height:36px;padding:7px 10px}
+ .report-tabs{gap:6px;margin-bottom:12px;padding-bottom:9px}
+ .report-content form>label{gap:4px;margin-top:10px}
+ .report-photo-field,.report-coordinates{margin-top:12px;padding:9px}
+ .observation-archive{margin-top:14px;padding-top:12px}
+ .archive-source-card,.report-candidate{padding:11px 9px;margin:9px 0;border-radius:9px}
+ .archive-task-card{padding:0}
+ .archive-task-card>.archive-task-summary,.archive-task-body{padding:11px 9px}
+ .archive-task-summary h3{margin:0 0 7px}
+ .archive-task-body .archive-actions>button,.archive-task-body .archive-actions>a{font-size:13px}
+ .archive-source-card summary,.archive-open-hint,.archive-media figcaption{font-size:13px}
+ .archive-media h4{font-size:15px;margin:12px 0 7px}
+ .report-content .report-hint,.report-content .report-privacy,.report-content .report-intro small{font-size:12px;line-height:1.6}
+}
+
+/* Local header preview: stage roles stay distinct without adding a tall card. */
+.map-propellant-header{display:flex;flex-wrap:wrap;flex:none;gap:2px 14px;padding:5px 12px;background:#f3f7fc;border-bottom:1px solid #d3e0ef;color:#526f8c;font-size:12px;line-height:1.5;min-width:0}
+.map-propellant-header>span{max-width:100%;overflow-wrap:anywhere}
+.map-propellant-header b{font-weight:500;color:#365b7f}
+@media(max-width:850px) and (orientation:portrait){.map-propellant-header{gap:1px 12px;padding:4px 12px}}

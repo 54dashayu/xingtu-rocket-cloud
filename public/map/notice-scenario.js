@@ -1,4 +1,5 @@
-import {simulationLaunch} from './manual-time.js?v=0.03-0030';
+import {ASSESSMENT_VERSION} from './morphology.js?v=0.03-0035';
+import {simulationLaunch} from './manual-time.js?v=0.03-0035';
 // Reuse the canonical full-flight window assessment; never turn a window into an official ignition time.
 export function noticeScenario(launch,assessment){
  const w=assessment?.noticeWindow,t=Date.parse(w?.referenceTime),start=Date.parse(launch.timing?.windowStart),end=Date.parse(launch.timing?.windowEnd);
@@ -10,8 +11,8 @@ export function noticeScenario(launch,assessment){
 const pending=new Map();
 export async function loadNoticeScenario(launch,base='./api/'){
  if(launch.timing?.basis!=='notice_window')return null;
- const url=`${base}launches/${encodeURIComponent(launch.id)}/cloud-assessment?target=0&weather=off&range=upcoming&net=${encodeURIComponent(launch.timing.net)}`;
+ const url=`${base}launches/${encodeURIComponent(launch.id)}/cloud-assessment?model=${encodeURIComponent(ASSESSMENT_VERSION)}&target=0&weather=off&range=upcoming&net=${encodeURIComponent(launch.timing.net)}`;
  let entry=pending.get(url);
- if(!entry||Date.now()-entry.at>300000){entry={at:Date.now(),promise:fetch(url,{signal:AbortSignal.timeout(45000)}).then(async r=>{if(!r.ok)throw Error('航警参考时刻暂未取得，请重试');return r.json();})};pending.set(url,entry);entry.promise.catch(()=>pending.delete(url));}
+ if(!entry||Date.now()-entry.at>300000){entry={at:Date.now(),promise:fetch(url,{signal:AbortSignal.timeout(45000)}).then(async r=>{if(!r.ok)throw Error('航警参考时刻暂未取得，请重试');const result=await r.json();if(result.assessmentVersion!==ASSESSMENT_VERSION)throw Error("评估版本已更新，请重新获取航警参考时刻");return result;})};pending.set(url,entry);entry.promise.catch(()=>pending.delete(url));}
  return noticeScenario(launch,await entry.promise);
 }

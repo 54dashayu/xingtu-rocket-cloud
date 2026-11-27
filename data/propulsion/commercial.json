@@ -1,0 +1,2012 @@
+{
+  "schemaVersion": 1,
+  "version": "commercial-20261123-1-v3fuel",
+  "checkedAt": "2026-11-23",
+  "policy": {
+    "sourcePriority": [
+      "official",
+      "reference",
+      "encyclopedia"
+    ],
+    "displayDifferences": false,
+    "scope": "已执行发射的运载型号；按当前可核实配置作参考；不生成任务时序",
+    "engineCountUnit": "each_component"
+  },
+  "sources": {
+    "spacex:falcon-guide": {
+      "name": "官方型号资料",
+      "url": "https://www.spacex.com/assets/media/falcon-users-guide-2025-05-09.pdf",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23",
+      "access": "published_document"
+    },
+    "spacex:starship": {
+      "name": "官方型号资料",
+      "url": "https://new.spacex.com/vehicles/starship",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23",
+      "access": "published_document"
+    },
+    "landspace:zq3-y1": {
+      "name": "官方型号资料",
+      "url": "https://www.landspace.com/news-detail.html?itemid=66",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23",
+      "access": "published_document"
+    },
+    "galactic:ceres-control": {
+      "name": "官方型号资料",
+      "url": "https://galactic-energy.cn/index.php/Show/cid/11/aid/172",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23",
+      "access": "published_document"
+    },
+    "galactic:ceres2-flown": {
+      "name": "官方型号资料",
+      "url": "https://www.galactic-energy.cn/index.php/Show/cid/11/aid/278",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23",
+      "access": "published_document"
+    },
+    "galactic:pallas-flown": {
+      "name": "官方型号资料",
+      "url": "https://www.galactic-energy.cn/index.php/Show/cid/11/aid/275",
+      "kind": "official",
+      "role": "primary",
+      "checkedAt": "2026-11-23",
+      "access": "published_document"
+    },
+    "wiki:猎鹰1号": {
+      "name": "卫星百科 · 猎鹰1号",
+      "url": "https://sat.huijiwiki.com/wiki/%E7%8C%8E%E9%B9%B01%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:猎鹰9号": {
+      "name": "卫星百科 · 猎鹰9号",
+      "url": "https://sat.huijiwiki.com/wiki/%E7%8C%8E%E9%B9%B09%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:重型猎鹰": {
+      "name": "卫星百科 · 重型猎鹰",
+      "url": "https://sat.huijiwiki.com/wiki/%E9%87%8D%E5%9E%8B%E7%8C%8E%E9%B9%B0",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:星舰": {
+      "name": "卫星百科 · 星舰",
+      "url": "https://sat.huijiwiki.com/wiki/%E6%98%9F%E8%88%B0",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:朱雀一号": {
+      "name": "卫星百科 · 朱雀一号",
+      "url": "https://sat.huijiwiki.com/wiki/%E6%9C%B1%E9%9B%80%E4%B8%80%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:天鹊-12": {
+      "name": "卫星百科 · 天鹊-12",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%A4%A9%E9%B9%8A-12",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:朱雀二号": {
+      "name": "卫星百科 · 朱雀二号",
+      "url": "https://sat.huijiwiki.com/wiki/%E6%9C%B1%E9%9B%80%E4%BA%8C%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:天鹊-15A": {
+      "name": "卫星百科 · 天鹊-15A",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%A4%A9%E9%B9%8A-15A",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:朱雀二号E": {
+      "name": "卫星百科 · 朱雀二号E",
+      "url": "https://sat.huijiwiki.com/wiki/%E6%9C%B1%E9%9B%80%E4%BA%8C%E5%8F%B7E",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:朱雀三号": {
+      "name": "卫星百科 · 朱雀三号",
+      "url": "https://sat.huijiwiki.com/wiki/%E6%9C%B1%E9%9B%80%E4%B8%89%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:谷神星一号": {
+      "name": "卫星百科 · 谷神星一号",
+      "url": "https://sat.huijiwiki.com/wiki/%E8%B0%B7%E7%A5%9E%E6%98%9F%E4%B8%80%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:谷神星二号": {
+      "name": "卫星百科 · 谷神星二号",
+      "url": "https://sat.huijiwiki.com/wiki/%E8%B0%B7%E7%A5%9E%E6%98%9F%E4%BA%8C%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:苍穹-50": {
+      "name": "卫星百科 · 苍穹-50",
+      "url": "https://sat.huijiwiki.com/wiki/%E8%8B%8D%E7%A9%B9-50",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:智神星一号": {
+      "name": "卫星百科 · 智神星一号",
+      "url": "https://sat.huijiwiki.com/wiki/%E6%99%BA%E7%A5%9E%E6%98%9F%E4%B8%80%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:YF-102": {
+      "name": "卫星百科 · YF-102",
+      "url": "https://sat.huijiwiki.com/wiki/YF-102",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:天火-11": {
+      "name": "卫星百科 · 天火-11",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%A4%A9%E7%81%AB-11",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:天火-31": {
+      "name": "卫星百科 · 天火-31",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%A4%A9%E7%81%AB-31",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:天龙二号": {
+      "name": "卫星百科 · 天龙二号",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%A4%A9%E9%BE%99%E4%BA%8C%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:天龙三号": {
+      "name": "卫星百科 · 天龙三号",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%A4%A9%E9%BE%99%E4%B8%89%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:力箭一号": {
+      "name": "卫星百科 · 力箭一号",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%8A%9B%E7%AE%AD%E4%B8%80%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:YF-102V": {
+      "name": "卫星百科 · YF-102V",
+      "url": "https://sat.huijiwiki.com/wiki/YF-102V",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:引导页:发射记录/2026": {
+      "name": "卫星百科 · 引导页:发射记录/2026",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%BC%95%E5%AF%BC%E9%A1%B5%3A%E5%8F%91%E5%B0%84%E8%AE%B0%E5%BD%95/2026",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:力箭二号": {
+      "name": "卫星百科 · 力箭二号",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%8A%9B%E7%AE%AD%E4%BA%8C%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:引力一号": {
+      "name": "卫星百科 · 引力一号",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%BC%95%E5%8A%9B%E4%B8%80%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "wiki:双曲线一号": {
+      "name": "卫星百科 · 双曲线一号",
+      "url": "https://sat.huijiwiki.com/wiki/%E5%8F%8C%E6%9B%B2%E7%BA%BF%E4%B8%80%E5%8F%B7",
+      "kind": "encyclopedia",
+      "role": "supplementary",
+      "checkedAt": "2026-11-23",
+      "access": "search_index"
+    },
+    "spacex:flight12": {
+      "name": "SpaceX · 星舰第十二次试飞",
+      "url": "https://www.spacex.com/launches/starship-flight-12/",
+      "kind": "official",
+      "access": "search_index"
+    }
+  },
+  "models": [
+    {
+      "id": "falcon1",
+      "name": "猎鹰1号",
+      "aliases": [
+        "猎鹰1号",
+        "Falcon 1",
+        "猎鹰一号"
+      ],
+      "provider": "SpaceX",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞型号参考配置；具体飞行的发动机状态以任务资料为准",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:猎鹰1号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Merlin 1 系列",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:猎鹰1号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Kestrel",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:猎鹰1号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "falcon9",
+      "name": "猎鹰9号",
+      "aliases": [
+        "猎鹰9号",
+        "Falcon 9",
+        "猎鹰9",
+        "猎鹰九号"
+      ],
+      "provider": "SpaceX",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "按当前猎鹰9号资料作参考，不作为早期v1.0/v1.1飞行实装证明",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:猎鹰9号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Merlin 1D",
+              "count": 9,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:猎鹰9号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Merlin Vacuum (MVacD)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:猎鹰9号"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "kerolox",
+            "engines": [
+              {
+                "model": "Merlin 1D",
+                "count": 9,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "spacex:falcon-guide"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "kerolox",
+            "engines": [
+              {
+                "model": "Merlin Vacuum (MVacD)",
+                "count": 1,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "spacex:falcon-guide"
+        }
+      ]
+    },
+    {
+      "id": "falcon9-block5",
+      "name": "猎鹰9号 Block 5型",
+      "aliases": [
+        "猎鹰9号 Block 5型",
+        "Falcon 9 Block 5",
+        "猎鹰9号 Block 5"
+      ],
+      "provider": "SpaceX",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞型号参考配置；具体飞行的发动机状态以任务资料为准",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:猎鹰9号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Merlin 1D",
+              "count": 9,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:猎鹰9号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Merlin Vacuum (MVacD)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:猎鹰9号"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "kerolox",
+            "engines": [
+              {
+                "model": "Merlin 1D",
+                "count": 9,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "spacex:falcon-guide"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "kerolox",
+            "engines": [
+              {
+                "model": "Merlin Vacuum (MVacD)",
+                "count": 1,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "spacex:falcon-guide"
+        }
+      ]
+    },
+    {
+      "id": "falconheavy",
+      "name": "重型猎鹰",
+      "aliases": [
+        "重型猎鹰",
+        "Falcon Heavy",
+        "猎鹰重型"
+      ],
+      "provider": "SpaceX",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞型号参考配置；具体飞行的发动机状态以任务资料为准",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:重型猎鹰"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Merlin 1D",
+              "count": 9,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:重型猎鹰"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Merlin Vacuum (MVacD)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:重型猎鹰"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 2,
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "Merlin 1D",
+              "count": 9,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:重型猎鹰"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "kerolox",
+            "engines": [
+              {
+                "model": "Merlin 1D",
+                "count": 9,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "spacex:falcon-guide"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "kerolox",
+            "engines": [
+              {
+                "model": "Merlin Vacuum (MVacD)",
+                "count": 1,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "spacex:falcon-guide"
+        },
+        {
+          "component": "booster",
+          "values": {
+            "fuel": "kerolox",
+            "engines": [
+              {
+                "model": "Merlin 1D",
+                "count": 9,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ],
+            "count": 2
+          },
+          "sourceRef": "spacex:falcon-guide"
+        }
+      ]
+    },
+    {
+      "id": "starship",
+      "name": "星舰",
+      "aliases": [
+        "星舰",
+        "Starship",
+        "Starship / Super Heavy",
+        "Starship Super Heavy"
+      ],
+      "provider": "SpaceX",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "官方当前33+6台完整组合体参考；不匹配单独低空试验原型机；超重是一级，不是侧助推器",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:星舰"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "Raptor 系列",
+              "count": 33,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:星舰"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "Raptor 海平面型",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            },
+            {
+              "model": "Raptor Vacuum",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:星舰"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "methalox",
+            "engines": [
+              {
+                "model": "Raptor 系列",
+                "count": 33,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "spacex:starship"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "methalox",
+            "engines": [
+              {
+                "model": "Raptor 海平面型",
+                "count": 3,
+                "unit": "台",
+                "scope": "model_reference"
+              },
+              {
+                "model": "Raptor Vacuum",
+                "count": 3,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "spacex:starship"
+        }
+      ]
+    },
+    {
+      "id": "starship-v1",
+      "name": "星舰V1",
+      "aliases": [
+        "星舰V1",
+        "Starship V1",
+        "Starship Block 1"
+      ],
+      "provider": "SpaceX",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "V1完整组合体已飞配置参考；不包含未飞的早期规划构型",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:星舰"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "Raptor 2",
+              "count": 33,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:星舰"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "Raptor 2 海平面型",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            },
+            {
+              "model": "Raptor 2 真空型",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:星舰"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "starship-v2",
+      "name": "星舰V2",
+      "aliases": [
+        "星舰V2",
+        "Starship V2",
+        "Starship Block 2"
+      ],
+      "provider": "SpaceX",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "V2完整组合体已飞配置参考；不包含未飞的早期规划构型",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:星舰"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "Raptor 2",
+              "count": 33,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:星舰"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "Raptor 2 海平面型",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            },
+            {
+              "model": "Raptor 2 真空型",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:星舰"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "zq1",
+      "name": "朱雀一号",
+      "aliases": [
+        "朱雀一号",
+        "Zhuque-1",
+        "Zhuque 1",
+        "ZQ-1",
+        "朱雀1号"
+      ],
+      "provider": "蓝箭航天",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已试射的三级固体构型；发动机型号名称待核实",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:朱雀一号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:朱雀一号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:朱雀一号"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:朱雀一号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "zq2",
+      "name": "朱雀二号",
+      "aliases": [
+        "朱雀二号",
+        "Zhuque-2",
+        "Zhuque 2",
+        "ZQ-2",
+        "朱雀2",
+        "朱雀2号"
+      ],
+      "provider": "蓝箭航天",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞型号参考配置；具体飞行的发动机状态以任务资料为准",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:朱雀二号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "天鹊-12 (TQ-12)",
+              "count": 4,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:朱雀二号",
+            "wiki:天鹊-12"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "天鹊-12真空型 (TQ-12V)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            },
+            {
+              "model": "天鹊-11游机 (TQ-11)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:朱雀二号",
+            "wiki:天鹊-12"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "zq2e",
+      "name": "朱雀二号E",
+      "aliases": [
+        "朱雀二号E",
+        "Zhuque-2E",
+        "Zhuque 2E",
+        "ZQ-2E",
+        "Zhuque-2E Block 2",
+        "朱雀二号E型",
+        "朱雀二号改进型"
+      ],
+      "provider": "蓝箭航天",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "采用遥二及以后已飞改进状态；遥一一级为TQ-12，另有独立记录",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:朱雀二号E"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "天鹊-12A (TQ-12A)",
+              "count": 4,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:朱雀二号E",
+            "wiki:天鹊-15A"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "天鹊-15A (TQ-15A)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:朱雀二号E",
+            "wiki:天鹊-15A"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "zq2e-y1",
+      "name": "朱雀二号E遥一",
+      "aliases": [
+        "朱雀二号E遥一",
+        "Zhuque-2E Y1",
+        "ZQ-2E Y1"
+      ],
+      "provider": "蓝箭航天",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "仅对应已飞遥一配置，不自动套用于后续任务",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:朱雀二号E"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "天鹊-12 (TQ-12)",
+              "count": 4,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:朱雀二号E",
+            "wiki:天鹊-12"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "天鹊-15A (TQ-15A)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:朱雀二号E",
+            "wiki:天鹊-12"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "zq3",
+      "name": "朱雀三号",
+      "aliases": [
+        "朱雀三号",
+        "Zhuque-3",
+        "Zhuque 3",
+        "ZQ-3",
+        "朱雀3号",
+        "朱雀三号基本型"
+      ],
+      "provider": "蓝箭航天",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞基本型；不套用型谱规划的TQ-12B/TQ-15B改进型，也不是VTVL验证箭",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "landspace:zq3-y1"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "天鹊-12A (TQ-12A)",
+              "count": 9,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:朱雀三号",
+            "wiki:天鹊-15A"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "methalox",
+          "engines": [
+            {
+              "model": "天鹊-15A (TQ-15A)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:朱雀三号",
+            "wiki:天鹊-15A"
+          ]
+        }
+      ],
+      "officialOverrides": [
+        {
+          "component": "stage1",
+          "values": {
+            "fuel": "methalox",
+            "engines": [
+              {
+                "model": "天鹊-12A (TQ-12A)",
+                "count": 9,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "landspace:zq3-y1"
+        },
+        {
+          "component": "stage2",
+          "values": {
+            "fuel": "methalox",
+            "engines": [
+              {
+                "model": "天鹊-15A (TQ-15A)",
+                "count": 1,
+                "unit": "台",
+                "scope": "model_reference"
+              }
+            ]
+          },
+          "sourceRef": "landspace:zq3-y1"
+        }
+      ]
+    },
+    {
+      "id": "ceres1",
+      "name": "谷神星一号",
+      "aliases": [
+        "谷神星一号",
+        "Ceres-1",
+        "CERES 1",
+        "谷神星1号"
+      ],
+      "provider": "星河动力",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "前三固体、末级液体；XHBJ-1按整套系统记，不把它虚报为一台发动机；末级具体推进剂组合待核实",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:谷神星一号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "光年 GS-1",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:谷神星一号",
+            "galactic:ceres-control"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "光年 GS-2",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:谷神星一号",
+            "galactic:ceres-control"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "光年 GS-3",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:谷神星一号",
+            "galactic:ceres-control"
+          ]
+        },
+        {
+          "id": "stage4",
+          "kind": "stage",
+          "name": "4级",
+          "fuel": "liquid_unspecified",
+          "engines": [
+            {
+              "model": "边界 XHBJ-1",
+              "count": 1,
+              "unit": "套",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:谷神星一号",
+            "galactic:ceres-control"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "ceres1s",
+      "name": "谷神星一号海射型",
+      "aliases": [
+        "谷神星一号海射型",
+        "Ceres-1S",
+        "谷神星一号S",
+        "谷神星1S"
+      ],
+      "provider": "星河动力",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "前三固体、末级液体；XHBJ-1按整套系统记，不把它虚报为一台发动机；末级具体推进剂组合待核实",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:谷神星一号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "光年 GS-1",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:谷神星一号",
+            "galactic:ceres-control"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "光年 GS-2",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:谷神星一号",
+            "galactic:ceres-control"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "光年 GS-3",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:谷神星一号",
+            "galactic:ceres-control"
+          ]
+        },
+        {
+          "id": "stage4",
+          "kind": "stage",
+          "name": "4级",
+          "fuel": "liquid_unspecified",
+          "engines": [
+            {
+              "model": "边界 XHBJ-1",
+              "count": 1,
+              "unit": "套",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:谷神星一号",
+            "galactic:ceres-control"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "ceres2",
+      "name": "谷神星二号",
+      "aliases": [
+        "谷神星二号",
+        "Ceres-2",
+        "CERES 2",
+        "谷神星2号"
+      ],
+      "provider": "星河动力",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞三固一液构型；各级发动机名称和末级燃料组合待核实",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "galactic:ceres2-flown"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:谷神星二号",
+            "galactic:ceres2-flown"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:谷神星二号",
+            "galactic:ceres2-flown"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:谷神星二号",
+            "galactic:ceres2-flown"
+          ]
+        },
+        {
+          "id": "stage4",
+          "kind": "stage",
+          "name": "4级",
+          "fuel": "liquid_unspecified",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:谷神星二号",
+            "galactic:ceres2-flown"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "pallas1",
+      "name": "智神星一号",
+      "aliases": [
+        "智神星一号",
+        "Pallas-1",
+        "PALLAS 1",
+        "智神星1号"
+      ],
+      "provider": "星河动力",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞两级液体基本型；不擅自附加可选液体上面级",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "galactic:pallas-flown"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "苍穹-50 (CQ-50)",
+              "count": 7,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:智神星一号",
+            "wiki:苍穹-50",
+            "galactic:pallas-flown"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "苍穹-50V (CQ-50V)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:智神星一号",
+            "wiki:苍穹-50",
+            "galactic:pallas-flown"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "tianlong2",
+      "name": "天龙二号",
+      "aliases": [
+        "天龙二号",
+        "Tianlong-2",
+        "Tianlong 2",
+        "TL-2",
+        "天龙2号"
+      ],
+      "provider": "天兵科技",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞三级构型；末级主轨控为NTO/MMH，不写成NTO/UDMH；不把八台姿控小发动机纳入主尾迹",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:天龙二号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-102定制版",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:天龙二号",
+            "wiki:YF-102",
+            "wiki:天火-11",
+            "wiki:天火-31"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "天火-11V (TH-11V)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:天龙二号",
+            "wiki:YF-102",
+            "wiki:天火-11",
+            "wiki:天火-31"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "hypergolic_mmh",
+          "engines": [
+            {
+              "model": "天火-31 (TH-31)主轨控发动机",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:天龙二号",
+            "wiki:YF-102",
+            "wiki:天火-11",
+            "wiki:天火-31"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "tianlong3",
+      "name": "天龙三号",
+      "aliases": [
+        "天龙三号",
+        "Tianlong-3",
+        "Tianlong 3",
+        "TL-3",
+        "天龙3号"
+      ],
+      "provider": "天兵科技",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已执行首飞的两级基本构型；首飞失利仍属已飞；不自动附加可选三级",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:天龙三号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "天火-12 (TH-12)",
+              "count": 9,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:天龙三号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "天火-12V (TH-12V)",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:天龙三号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "kinetica1",
+      "name": "力箭一号",
+      "aliases": [
+        "力箭一号",
+        "Kinetica-1",
+        "Kinetica 1",
+        "Lijian-1",
+        "Lijian 1",
+        "ZK-1A",
+        "力箭1号"
+      ],
+      "provider": "中科宇航",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞四级固体构型；二至四级发动机型号名称待核实",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:力箭一号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "SP70",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:力箭一号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:力箭一号"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:力箭一号"
+          ]
+        },
+        {
+          "id": "stage4",
+          "kind": "stage",
+          "name": "4级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:力箭一号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "kinetica2",
+      "name": "力箭二号",
+      "aliases": [
+        "力箭二号",
+        "Kinetica-2",
+        "Kinetica 2",
+        "Lijian-2",
+        "Lijian 2",
+        "力箭2号"
+      ],
+      "provider": "中科宇航",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞CBC构型；两枚侧助推，每枚三台发动机，芯一级三台，二级一台",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:力箭二号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-102",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:力箭二号",
+            "wiki:YF-102V",
+            "wiki:引导页:发射记录/2026"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-102V",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:力箭二号",
+            "wiki:YF-102V",
+            "wiki:引导页:发射记录/2026"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 2,
+          "fuel": "kerolox",
+          "engines": [
+            {
+              "model": "YF-102",
+              "count": 3,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:力箭二号",
+            "wiki:YF-102V",
+            "wiki:引导页:发射记录/2026"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "gravity1",
+      "name": "引力一号",
+      "aliases": [
+        "引力一号",
+        "Gravity-1",
+        "Gravity 1",
+        "YL-1",
+        "引力1号"
+      ],
+      "provider": "东方空间",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "已飞三芯级加四固体助推构型；起飞先点助推器，芯一级空中点火；本库不伪造具体点火时刻",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:引力一号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [
+            {
+              "model": "SR-2500",
+              "count": 1,
+              "unit": "台",
+              "scope": "model_reference"
+            }
+          ],
+          "sourceRefs": [
+            "wiki:引力一号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:引力一号"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:引力一号"
+          ]
+        },
+        {
+          "id": "booster",
+          "kind": "booster",
+          "name": "助推器",
+          "count": 4,
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:引力一号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "hyperbola1",
+      "name": "双曲线一号",
+      "aliases": [
+        "双曲线一号",
+        "Hyperbola-1",
+        "Hyperbola 1",
+        "SQX-1",
+        "双曲线1号"
+      ],
+      "provider": "星际荣耀",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "按遥二及以后已飞四固体配置作型号参考；遥一三固一液另列，不将当前参考当作历史实装证明",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:双曲线一号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:双曲线一号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:双曲线一号"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:双曲线一号"
+          ]
+        },
+        {
+          "id": "stage4",
+          "kind": "stage",
+          "name": "4级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:双曲线一号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "hyperbola1-y1",
+      "name": "双曲线一号遥一",
+      "aliases": [
+        "双曲线一号遥一",
+        "Hyperbola-1 Y1",
+        "SQX-1 Y1"
+      ],
+      "provider": "星际荣耀",
+      "referenceBasis": "flown_model_reference",
+      "configurationScope": "仅遥一已飞三固一液构型；末级燃料组合及具体发动机型号待核实",
+      "flightEvidence": {
+        "status": "flown",
+        "sourceRefs": [
+          "wiki:双曲线一号"
+        ]
+      },
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "芯一级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:双曲线一号"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "2级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:双曲线一号"
+          ]
+        },
+        {
+          "id": "stage3",
+          "kind": "stage",
+          "name": "3级",
+          "fuel": "solid",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:双曲线一号"
+          ]
+        },
+        {
+          "id": "stage4",
+          "kind": "stage",
+          "name": "4级",
+          "fuel": "liquid_unspecified",
+          "engines": [],
+          "sourceRefs": [
+            "wiki:双曲线一号"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    },
+    {
+      "id": "starship-v3",
+      "name": "星舰V3",
+      "aliases": [
+        "Starship V3",
+        "Starship Block 3",
+        "星舰 V3",
+        "星舰V3",
+        "星舰 Block 3"
+      ],
+      "provider": "SpaceX",
+      "referenceBasis": "model_reference",
+      "configurationScope": "猛禽系列液氧甲烷推进剂参考；不由燃料推定本次发动机数量、推力或关机时间。",
+      "components": [
+        {
+          "id": "stage1",
+          "kind": "stage",
+          "name": "超重一级",
+          "fuel": "methalox",
+          "engines": [],
+          "sourceRefs": [
+            "spacex:starship",
+            "spacex:flight12"
+          ]
+        },
+        {
+          "id": "stage2",
+          "kind": "stage",
+          "name": "星舰二级",
+          "fuel": "methalox",
+          "engines": [],
+          "sourceRefs": [
+            "spacex:starship",
+            "spacex:flight12"
+          ]
+        }
+      ],
+      "officialOverrides": []
+    }
+  ]
+}

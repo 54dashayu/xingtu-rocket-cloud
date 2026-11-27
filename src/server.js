@@ -1,3 +1,4 @@
+import { propulsionInfo } from '../public/map/propulsion.js';
 import { surroundingPopulation } from './population.js';
 import { fetchWarnings, warningCandidates } from './navigation-warnings.js';
 import { mapLaunch, preciseTime } from '../public/map/model.js';
@@ -83,12 +84,12 @@ async function api(req, res, url) {
     const data = await getLaunchHistoryData();
     url.searchParams.set('range', 'previous');
     const results = filterLaunches(data.launches, url.searchParams);
-    return json(res, 200, { meta: { count: results.length, officialSources: data.official || null, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, range: 'previous', timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
+    return json(res, 200, { meta: { count: results.length, officialSources: data.official || null, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, range: 'previous', timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>({...attachFlightProfile(attachCloudEvidence(launch)),propulsion:propulsionInfo(launch)})) });
   }
   const data = await getLaunchData();
   if (url.pathname === '/api/launches') {
     const results = filterLaunches(data.launches, url.searchParams);
-    return json(res, 200, { meta: { count: results.length, officialSources: data.official || null, warningDiscovery: data.discovery || null, supplementCount: data.supplementCount || 0, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>attachFlightProfile(attachCloudEvidence(launch))) });
+    return json(res, 200, { meta: { count: results.length, officialSources: data.official || null, warningDiscovery: data.discovery || null, supplementCount: data.supplementCount || 0, fetchedAt: data.fetchedAt, revision: data.revision, snapshotAt: data.snapshotAt, retryAt: data.retryAt, stale: data.stale, refreshing: Boolean(data.refreshing), warning: data.warning || null, source: data.source, timezone: 'UTC in API; client also renders Asia/Shanghai' }, results: results.map(launch=>({...attachFlightProfile(attachCloudEvidence(launch)),propulsion:propulsionInfo(launch)})) });
   }
   if (url.pathname === '/api/calendar.ics') {
     const results = filterLaunches(data.launches, url.searchParams);
@@ -100,7 +101,7 @@ async function api(req, res, url) {
     if (!launch) return json(res, 404, { error: '未找到该发射任务' });
     if (url.pathname.endsWith('.ics') && !isCalendarEligible(launch)) return json(res, 409, { error: '日期尚未确定，暂不能导出单次日历' });
     if (url.pathname.endsWith('.ics')) return send(res, 200, createCalendar([launch], launch.name), { 'content-type': 'text/calendar; charset=utf-8', 'content-disposition': `attachment; filename="launch-${launch.id}.ics"` });
-    return json(res, 200, { meta: { fetchedAt: data.fetchedAt, stale: data.stale }, result: attachFlightProfile(attachCloudEvidence(launch)) });
+    return json(res, 200, { meta: { fetchedAt: data.fetchedAt, stale: data.stale }, result: ({...attachFlightProfile(attachCloudEvidence(launch)),propulsion:propulsionInfo(launch)}) });
   }
   return json(res, 404, { error: '接口不存在' });
 }

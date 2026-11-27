@@ -1,3 +1,4 @@
+import {officialCrewValue} from '../public/crew-status.js';
 // Public official HTML, not an undocumented API. Only structured launch facts are retained.
 import {createHash} from 'node:crypto';
 export const OFFICIAL_SOURCES=[
@@ -62,7 +63,7 @@ export function parseOfficialArticle(html,{url,source,now=Date.now()}){
  if(result!=='pending'&&ts>now+60000)return {reason:'成功或失败时间尚未发生'};
  if(!actual&&result==='pending'&&!/将于|拟于|定于|计划|瞄准/.test(lead))return {reason:'计划或实际状态不明确'};
  const key=createHash('sha256').update(`${identity(mission)}|${site[1]}|${year}`).digest('hex').slice(0,20);
- return {record:{key,sourceId:source.id,sourceName:source.name,url,publishedAt,checkedAt:new Date(now).toISOString(),mission,rocket,site:{name:site[0],key:site[1],latitude:site[2],longitude:site[3]},time:new Date(ts).toISOString(),precision:dt[6]?'精确到秒':'精确到分钟',actual:actual||result!=='pending',result,crewed:/载人飞船/.test(lead)?true:/货运飞船/.test(lead)?false:null}};
+ return {record:{key,sourceId:source.id,sourceName:source.name,url,publishedAt,checkedAt:new Date(now).toISOString(),mission,rocket,site:{name:site[0],key:site[1],latitude:site[2],longitude:site[3]},time:new Date(ts).toISOString(),precision:dt[6]?'精确到秒':'精确到分钟',actual:actual||result!=='pending',result,crewed:officialCrewValue(lead),crewEvidence:typeof officialCrewValue(lead)==='boolean'?{kind:'official',value:officialCrewValue(lead),sourceName:source.name,url,publishedAt,basis:'本次发射公告明确描述乘组或无人状态'}:null}};
 }
 async function fetchHTML(url,fetcher,onBytes=()=>{}){
  const response=await fetcher(url,{signal:AbortSignal.timeout(10000),redirect:'error',headers:{'User-Agent':'XingtuLaunchCalendar/0.03 (+https://space.bh1jss.net/)'}});
